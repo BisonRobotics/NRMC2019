@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/fworg64/NRMC2019/src/mapping/PC2CM/src/pc2_processor/test/pc2_processor_tests.cpp
+gtest/gtest.h
+-
+pc2_processor/pc2_processor.h
+-
+gmock/gmock.h
+-
+
+mapping/PC2CM/include/pc2_processor/pc2_processor.h
+cmath
+-
+

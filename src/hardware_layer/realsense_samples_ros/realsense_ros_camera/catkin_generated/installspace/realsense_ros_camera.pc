@@ -1,0 +1,8 @@
+prefix=/home/fworg64/NRMC2019/install
+
+Name: realsense_ros_camera
+Description: Description of realsense_ros_camera
+Version: 0.8.4
+Cflags: -I/home/fworg64/NRMC2019/install/include
+Libs: -L/home/fworg64/NRMC2019/install/lib -lrealsense_ros_camera
+Requires: message_runtime roscpp sensor_msgs std_msgs nodelet cv_bridge image_transport
