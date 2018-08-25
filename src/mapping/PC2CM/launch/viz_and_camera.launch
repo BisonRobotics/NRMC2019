@@ -1,0 +1,3 @@
+<launch>
+  <node name="pc2cm_master" pkg="pc2cm" type="pc2cm_master"/>
+</launch>

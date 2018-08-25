@@ -14,8 +14,19 @@
 class pc2cmProcessor
 {
 public:
-     pc2cmProcessor(double grid_width, double grid_min_elements); //struct
-     bool getOne();
+    pc2cmProcessor(int one /*double grid_width, double grid_min_elements*/); //struct
+    bool getOne();
+/*
+    bool addPoints(uint8_t* points_3d, uint32_t height, uint32_t row_step,
+                   uint32_t point_step); 
+    //adds points to internal grid (with smooting), returns true if good
+
+    bool takeDoG(uint8_t* grid_2d, uint32_t height, uint32_t row_step,
+                 uint32_t point_step, uint8_t* out_grid, float big, float small);
+    //takes difference of gaussian on given data
+
+*/
+    
      //add points to grid
      //calculate new costmap
      //->median filter on grid?
