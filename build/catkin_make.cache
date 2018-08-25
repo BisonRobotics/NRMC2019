@@ -1,2 +1,0 @@
-hardware_layer/realsense_samples_ros/realsense_ros_camera:mapping/PC2CM
--DCATKIN_DEVEL_PREFIX=/home/fworg64/NRMC2019/devel -DCMAKE_INSTALL_PREFIX=/home/fworg64/NRMC2019/install -G Unix Makefiles
