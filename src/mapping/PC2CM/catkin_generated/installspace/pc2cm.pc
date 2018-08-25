@@ -1,8 +1,0 @@
-prefix=/home/fworg64/NRMC2019/install
-
-Name: pc2cm
-Description: Description of pc2cm
-Version: 0.0.0
-Cflags: -I/home/fworg64/NRMC2019/install/include
-Libs: -L/home/fworg64/NRMC2019/install/lib 
-Requires: roscpp
