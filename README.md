@@ -1,4 +1,4 @@
-# NRMC2018
+# NRMC2019
 Repository for the Bison Robotics NASA Robotic Mining Competition 2018 Entry
 
 # Getting Started
