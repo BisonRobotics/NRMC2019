@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   sensor_msgs
+  pcl_ros
 )
 
 link_directories(/usr/src/gmock/build)
@@ -15,7 +16,7 @@ set(GTEST_LIBRARIES gmock_main)
 
 catkin_package(
     INCLUDE_DIRS include
-    CATKIN_DEPENDS roscpp sensor_msgs
+    CATKIN_DEPENDS roscpp sensor_msgs pcl_ros
 )
 
 include_directories (include ${catkin_INCLUDE_DIRS} )
