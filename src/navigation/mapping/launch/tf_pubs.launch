@@ -1,0 +1,5 @@
+<launch>
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find realsense_ros_camera)/urdf/test_zr300_camera.urdf.xacro'" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <node name="tf_repub" pkg="mapping" type="transforms_publisher"/>
+</launch>
