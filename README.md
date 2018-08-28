@@ -1,12 +1,18 @@
 # NRMC2019
 Repository for the Bison Robotics NASA Robotic Mining Competition 2018 Entry
 
-# Getting Started
+# Getting Started (Easy)
 ## Easy setup
+You should have Ubuntu 16.04
 ```
+# Go to NRMC2019/src/utilities/ansible
+sudo apt install ansible
+ansible-playbook -i "localhost," -c local dev_computer_playbook.yml
 
+# Go to NRMC2019
+catkin_make
 ```
-
+# Getting Started (Manual)
 ## Environment
 The default and recommended environment for this year
 - Ubuntu 16.04 
