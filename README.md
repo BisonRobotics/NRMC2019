@@ -2,6 +2,11 @@
 Repository for the Bison Robotics NASA Robotic Mining Competition 2018 Entry
 
 # Getting Started
+## Easy setup
+```
+
+```
+
 ## Environment
 The default and recommended environment for this year
 - Ubuntu 16.04 
