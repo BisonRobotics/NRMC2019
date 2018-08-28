@@ -14,7 +14,7 @@ before_install:
     useradd -ms /bin/bash travis;
     apt-get update;
     apt-get install sudo"
-  - 'docker exec -t NRMC2019-CI bash -c "echo travis ALL=(ALL) NOPASSWD: ALL >> /etc/sudoers"'
+  - 'docker exec -t NRMC2019-CI bash -c "echo travis ALL=\(ALL\) NOPASSWD: ALL >> /etc/sudoers"'
 
 install:
   - docker exec -u travis -t NRMC2019-CI bash -c "
