@@ -58,10 +58,10 @@ run the following commands.
 cd ~
 
 # If you have ssh keys with github setup on your pc
-git clone git@github.com:BisonRobotics/NRMC2018.git
+git clone git@github.com:BisonRobotics/NRMC2019.git
 
 # If not
-git clone https://github.com/BisonRobotics/NRMC2018.git
+git clone https://github.com/BisonRobotics/NRMC2019.git
 ````
 From here make sure you checkout the branch you'll be working on before proceeding
 ```
@@ -79,15 +79,15 @@ catkin_make
 ```
 If you are using the VREP simulator
 ```
-# Link vrep plugin to vrep install directory (Assumes you placed NRMC2018 and vrep in home directory)
-ln -s ~/NRMC2018/devel/lib/libv_repExtRosInterface.so ~/vrep/
+# Link vrep plugin to vrep install directory (Assumes you placed NRMC2019 and vrep in home directory)
+ln -s ~/NRMC2019/devel/lib/libv_repExtRosInterface.so ~/vrep/
 ```
 Add some optional alias that make launching stuff and working with ROS easier
 ```
 echo "alias vrep='~/vrep/vrep.sh'"                    >> ~/.bashrc
 echo "alias clion='~/clion/bin/clion.sh'"             >> ~/.bashrc
-echo "alias ws='cd ~/NRMC2018'"                       >> ~/.bashrc
-echo "alias wss='source ~/NRMC2018/devel/setup.bash'" >> ~/.bashrc
+echo "alias ws='cd ~/NRMC2019'"                       >> ~/.bashrc
+echo "alias wss='source ~/NRMC2019/devel/setup.bash'" >> ~/.bashrc
 ```
 To start the simulator
 ```
