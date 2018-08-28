@@ -1,93 +1,49 @@
 # NRMC2019
-Repository for the Bison Robotics NASA Robotic Mining Competition 2018 Entry
+Repository for the Bison Robotics NASA Robotic Mining Competition 2019 Entry
 
 # Getting Started
-## Environment
-The default and recommended environment for this year
-- Ubuntu 16.04 
-  - Available at: https://www.ubuntu.com/download/desktop
-- ROS Kinetic
-  - Available at : http://wiki.ros.org/kinetic/Installation/Ubuntu
-    - Follow instructions for desktop install (not full-desktop install)`
-
-## Configure git and other helpful utils
-```
-sudo apt-get update
-sudo apt-get install git tmux ssh vim
-curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash 
-sudo apt-get install -y git-lfs
-```
 
 ## Setup your ssh keys
-Follow these instructions https://help.github.com/articles/connecting-to-github-with-ssh/
+Follow these instructions: https://help.github.com/articles/connecting-to-github-with-ssh/
 
-## Setup an IDE
-I highly recommend using the clion IDE available at https://www.jetbrains.com/clion/. Make sure you sign up for an education account so you don't have to pay for it. Otherwise if you're as hardcore as Dr. Ding, VIM works too.
-
-## Install and build gmock
+## Clone the repo
+There are certain scripts that assume that you have the NRMC2019 repo installed in your home directory. It is recommended you don't try to clone the repo anywhere else.
 ```
-sudo apt-get install build-essential google-mock
-cd /usr/src/gmock
-sudo mkdir build
-cd build
-sudo cmake ../
-sudo make
-```
-
-## Install clang
-```
-sudo apt-get install clang-format-3.6
-```
-
-## Workspace
-Our workspace is the NRM2018 repository this README lives in. Assuming you have your environment properly configured
-run the following commands.
-
-```
-# Clone the repo to your computer
 cd ~
-
-# If you have ssh keys with github setup on your pc
-git clone git@github.com:BisonRobotics/NRMC2018.git
-
-# If not
-git clone https://github.com/BisonRobotics/NRMC2018.git
-````
-From here make sure you checkout the branch you'll be working on before proceeding
+git clone git@github.com:BisonRobotics/NRMC2019.git
 ```
-# Checkout branch
-git checkout <branch_name>
 
-# Pull in submodules
-git submodule update --init --recursive
+## Configure your OS
+Much of the setup process was automated last year. Assuming you are running Ubuntu 16.04, you should be able to just run the following lines of code.
+```
+# Go to NRMC2019/src/utilities/ansible
+sudo apt update
+sudo apt install ansible
+sudo ansible-playbook -i "localhost," -c local dev_computer_playbook.yml
 
-# Install workspace dependencies, respond y to all prompts
-rosdep install --from-paths . --ignore-src --rosdistro=kinetic --default-yes -r --os=ubuntu:xenial
-
-# Build workspace
+# Go to NRMC2019
 catkin_make
 ```
-If you are using the VREP simulator
+If this process doesn't work for you, the manual process is described [here](https://github.com/BisonRobotics/NRMC2019/wiki/Manual-Configuration)
+
+## Setup an IDE
+I highly recommend using the clion IDE available at https://www.jetbrains.com/clion/. Make sure you sign up for an education account so you don't have to pay for it. Otherwise if you're as hardcore as Dr. Ding, VIM works too. 
+
+In order for clion to see the libraries available to ROS, you'll need to source your ROS install setup.bash and ROS workspace setup.bash (after a build) before launching clion from the same terminal
+
+## Setup Workspace
+Our workspace is the NRM2019 repository this README lives in. You can add some optional aliases that make launching stuff and working with ROS easier
 ```
-# Link vrep plugin to vrep install directory (Assumes you placed NRMC2018 and vrep in home directory)
-ln -s ~/NRMC2018/devel/lib/libv_repExtRosInterface.so ~/vrep/
-```
-Add some optional alias that make launching stuff and working with ROS easier
-```
-echo "alias vrep='~/vrep/vrep.sh'"                    >> ~/.bashrc
 echo "alias clion='~/clion/bin/clion.sh'"             >> ~/.bashrc
-echo "alias ws='cd ~/NRMC2018'"                       >> ~/.bashrc
-echo "alias wss='source ~/NRMC2018/devel/setup.bash'" >> ~/.bashrc
+echo "alias ws='cd ~/NRMC2019'"                       >> ~/.bashrc
+echo "alias wss='source ~/NRMC2019/devel/setup.bash'" >> ~/.bashrc
 ```
-To start the simulator
-```
-# Make sure you run each command in a new terminal and have your workspace sourced
-roscore
-vrep
-roslaunch description display.launch
-```
-## Useful unit test commands for debugging
-# Build and run single test suite
+
+## Understand how ROS works
+Do the beginner tutorials: http://wiki.ros.org/ROS/Tutorials.
+
+# Useful unit test commands for debugging
+## Build and run single test suite
 Tab complete is your friend here
 
 catkin_make run_tests_wheel_control_gtest_test_WaypointControllerHelper2
@@ -95,7 +51,7 @@ catkin_make run_tests_wheel_control_gtest_test_WaypointControllerHelper2
 # Build test for debugging 
 catkin_make -DCMAKE_BUILD_TYPE=Debug test_WaypointControllerHelper2
 ```
-# Debug the unit test
+## Debug the unit test
 gdb ./devel/lib/wheel_control/test_WaypointControllerHelper2
 ```
 
