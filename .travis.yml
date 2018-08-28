@@ -22,3 +22,8 @@ install:
     sudo apt-get install -y ansible;
     cd /NRMC2019;
     sudo ansible-playbook -v -i "localhost," -c local src/utilities/ansible/dev_computer_playbook.yml"
+
+script:
+  - docker exec -u travis -t NRMC2019-CI bash -c "catkin_make"
+  - docker exec -u travis -t NRMC2019-CI bash -c "rm -rf build devel"
+  - docker exec -u travis -t NRMC2019-CI bash -c "catkin_make run_tests"
