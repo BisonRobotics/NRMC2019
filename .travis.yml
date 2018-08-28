@@ -1,4 +1,5 @@
-sudo: required
+sudo: false
+dist: trusty
 
 language: python
 
@@ -13,7 +14,7 @@ before_install:
     useradd -ms /bin/bash travis;
     apt-get update;
     apt-get install sudo"
-  - "docker exec -t NRMC2019-CI bash -c 'echo travis ALL=(ALL) NOPASSWD: ALL >> /etc/sudoers'"
+  - "echo :test"
 
 install:
   - docker exec -u travis -t NRMC2019-CI bash -c "
