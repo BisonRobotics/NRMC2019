@@ -23,7 +23,9 @@ catkin_make
 If this process doesn't work for you, the manual process is described [here](https://github.com/BisonRobotics/NRMC2019/wiki/Manual-Configuration)
 
 ## Setup an IDE
-I highly recommend using the clion IDE available at https://www.jetbrains.com/clion/. Make sure you sign up for an education account so you don't have to pay for it. Otherwise if you're as hardcore as Dr. Ding, VIM works too.
+I highly recommend using the clion IDE available at https://www.jetbrains.com/clion/. Make sure you sign up for an education account so you don't have to pay for it. Otherwise if you're as hardcore as Dr. Ding, VIM works too. 
+
+In order for clion to see the libraries available to ROS, you'll need to source your ROS install setup.bash and ROS workspace setup.bash (after a build) before launching clion from the same terminal
 
 ## Setup Workspace
 Our workspace is the NRM2019 repository this README lives in. You can add some optional aliases that make launching stuff and working with ROS easier
