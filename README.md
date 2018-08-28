@@ -17,6 +17,7 @@ git clone git@github.com:BisonRobotics/NRMC2019.git
 Much of the setup process was automated last year. Assuming you are running Ubuntu 16.04, you should be able to just run the following lines of code.
 ```
 # Go to NRMC2019/src/utilities/ansible
+sudo apt update
 sudo apt install ansible
 sudo ansible-playbook -i "localhost," -c local dev_computer_playbook.yml
 
