@@ -6,7 +6,7 @@ Repository for the Bison Robotics NASA Robotic Mining Competition 2019 Entry
 Follow these instructions https://help.github.com/articles/connecting-to-github-with-ssh/
 
 ## Clone the repo
-There are certain scripts that we use that assume that you have the NRMC2019 repo installed in your home directory. It is recommended you don't try to clone the repo anywhere else.
+There are certain scripts that assume that you have the NRMC2019 repo installed in your home directory. It is recommended you don't try to clone the repo anywhere else.
 ```
 git clone git@github.com:BisonRobotics/NRMC2019.git
 ```
