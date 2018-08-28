@@ -6,7 +6,7 @@ You should have Ubuntu 16.04
 ```
 # Go to NRMC2019/src/utilities/ansible
 sudo apt install ansible
-ansible-playbook -i "localhost," -c local dev_computer_playbook.yml
+sudo ansible-playbook -i "localhost," -c local dev_computer_playbook.yml
 
 # Go to NRMC2019
 catkin_make
