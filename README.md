@@ -2,6 +2,7 @@
 Repository for the Bison Robotics NASA Robotic Mining Competition 2019 Entry
 
 # Getting Started
+
 ## Setup your ssh keys
 Follow these instructions https://help.github.com/articles/connecting-to-github-with-ssh/
 
@@ -36,6 +37,9 @@ echo "alias clion='~/clion/bin/clion.sh'"             >> ~/.bashrc
 echo "alias ws='cd ~/NRMC2019'"                       >> ~/.bashrc
 echo "alias wss='source ~/NRMC2019/devel/setup.bash'" >> ~/.bashrc
 ```
+
+## Understand how ROS works
+Do the beginner tutorials: http://wiki.ros.org/ROS/Tutorials.
 
 # Useful unit test commands for debugging
 ## Build and run single test suite
