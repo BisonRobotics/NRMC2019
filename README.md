@@ -8,6 +8,7 @@ Follow these instructions https://help.github.com/articles/connecting-to-github-
 ## Clone the repo
 There are certain scripts that assume that you have the NRMC2019 repo installed in your home directory. It is recommended you don't try to clone the repo anywhere else.
 ```
+cd ~
 git clone git@github.com:BisonRobotics/NRMC2019.git
 ```
 
