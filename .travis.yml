@@ -1,4 +1,5 @@
-sudo: required
+sudo: false
+dist: trusty
 
 language: python
 
@@ -9,10 +10,26 @@ before_install:
   - docker pull ubuntu:xenial
   - docker run -d --name NRMC2019-CI -v $(pwd):/NRMC2019 ubuntu:xenial tail -f /dev/null
   - docker ps
+  - docker exec -t NRMC2019-CI bash -c "
+      useradd -ms /bin/bash travis;
+      apt-get update;
+      apt-get install sudo"
+  - 'docker exec -t NRMC2019-CI bash -c "echo travis ALL=\(ALL\) NOPASSWD: ALL >> /etc/sudoers"'
+  - docker exec -t NRMC2019-CI bash -c "chown -R travis /NRMC2019"
 
 install:
-  - docker exec -t NRMC2019-CI bash -c "
-    apt-get update;
-    apt-get install -y ansible;
-    cd /NRMC2019;
-    ansible-playbook -i "localhost," -c local src/utilities/ansible/dev_computer_playbook.yml"
+  - docker exec -u travis -t NRMC2019-CI bash -c "
+      sudo apt-get update;
+      sudo apt-get install -y ansible;
+      sudo ansible-playbook -v -i "localhost," -c local /NRMC2019/src/utilities/ansible/dev_computer_playbook.yml"
+
+script:
+  - docker exec -u travis -t NRMC2019-CI bash -c "
+      cd /NRMC2019;
+      source /opt/ros/kinetic/setup.bash;
+      catkin_make"
+  - docker exec -u travis -t NRMC2019-CI bash -c "cd /NRMC2019; rm -rf build devel"
+  - docker exec -u travis -t NRMC2019-CI bash -c "
+      cd /NRMC2019;
+      source /opt/ros/kinetic/setup.bash;
+      catkin_make run_tests"

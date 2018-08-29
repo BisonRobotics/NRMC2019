@@ -37,6 +37,7 @@
     - python-pip
     - libmraa1 
     - libmraa-dev
+    - git
 
 - name: add imutils
   become: yes
