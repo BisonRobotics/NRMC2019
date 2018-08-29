@@ -43,9 +43,11 @@ git clone git@github.com:BisonRobotics/NRMC2019.git
 ## Configure your OS
 Much of the setup process was automated last year. Assuming you are running Ubuntu 16.04, you should be able to just run the following lines of code.
 ```
-# Install ansible
+# Install ansible, restart your computer afterwards
 sudo apt update
 sudo apt install ansible
+sudo ansible-playbook -i "localhost," -c local dev_computer_playbook.yml
+
 
 # Install dependencies
 cd ~/NRMC2019
@@ -75,6 +77,10 @@ echo "alias clion='~/clion/bin/clion.sh'"             >> ~/.bashrc
 echo "alias ws='cd ~/NRMC2019'"                       >> ~/.bashrc
 echo "alias wss='source ~/NRMC2019/devel/setup.bash'" >> ~/.bashrc
 ```
+
+## Permissions issue
+If you are having a permissions issue with git follow these [instructions](https://askubuntu.com/questions/858569/git-permissions-issue) 
+
 
 ## Understand how ROS works
 Do the beginner tutorials: http://wiki.ros.org/ROS/Tutorials.
