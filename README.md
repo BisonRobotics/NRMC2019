@@ -20,6 +20,8 @@ Much of the setup process was automated last year. Assuming you are running Ubun
 sudo apt update
 sudo apt install ansible
 sudo ansible-playbook -i "localhost," -c local dev_computer_playbook.yml
+Restart your computer 
+
 
 # Go to NRMC2019
 catkin_make
@@ -38,6 +40,11 @@ echo "alias clion='~/clion/bin/clion.sh'"             >> ~/.bashrc
 echo "alias ws='cd ~/NRMC2019'"                       >> ~/.bashrc
 echo "alias wss='source ~/NRMC2019/devel/setup.bash'" >> ~/.bashrc
 ```
+
+
+## Permissions issues 
+If you are having permissions issue with git follow these [instructions](https://askubuntu.com/questions/858569/git-permissions-issue) 
+
 
 ## Understand how ROS works
 Do the beginner tutorials: http://wiki.ros.org/ROS/Tutorials.
