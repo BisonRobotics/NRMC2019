@@ -1,6 +1,14 @@
 sudo: required
 dist: trusty
 
+notifications:
+  slack: brnrmc:tDkpCoUAtEUt8BdnVf7J2evz
+  email:
+    recipients:
+      - jacob.huesman@ndsu.edu
+    on_success: never
+    on_failure: always
+
 language: python
 
 services:
