@@ -15,6 +15,7 @@ before_install:
       apt-get update;
       apt-get install sudo"
   - 'docker exec -t NRMC2019-CI bash -c "echo travis ALL=\(ALL\) NOPASSWD: ALL >> /etc/sudoers"'
+  - docker exec -t NRMC2019-CI bash -c "chown -R travis /NRMC2019"
 
 install:
   - docker exec -u travis -t NRMC2019-CI bash -c "
