@@ -26,6 +26,6 @@ install:
     echo 'source /opt/ros/kinetic/setup.bash' >> ~/.bashrc"
 
 script:
-  - docker exec -u travis -t NRMC2019-CI bash -c "catkin_make"
-  - docker exec -u travis -t NRMC2019-CI bash -c "rm -rf build devel"
-  - docker exec -u travis -t NRMC2019-CI bash -c "catkin_make run_tests"
+  - docker exec -u travis -t NRMC2019-CI bash -c "cd /NRMC2019; catkin_make"
+  - docker exec -u travis -t NRMC2019-CI bash -c "cd /NRMC2019; rm -rf build devel"
+  - docker exec -u travis -t NRMC2019-CI bash -c "cd /NRMC2019; catkin_make run_tests"
