@@ -21,77 +21,15 @@ uint32_t height;
 uint32_t row_step;
 uint32_t point_step;
 bool new_points_here;
-bool first_point;
-
-/**
-   STOLEN FROM THE INTERNET
-   Function to convert 2D pixel point to 3D point by extracting point
-   from PointCloud2 corresponding to input pixel coordinate. This function
-   can be used to get the X,Y,Z coordinates of a feature using an
-   RGBD camera, e.g., Kinect.
-   */
-   void pixelTo3DPoint(const sensor_msgs::PointCloud2 pCloud, const int u, const int v, geometry_msgs::Point &p)
-   {
-     // get width and height of 2D point cloud data
-     int width = pCloud.width;
-     int height = pCloud.height;
-
-     // Convert from u (column / width), v (row/height) to position in array
-     // where X,Y,Z data starts
-     int arrayPosition = u*pCloud.row_step + v*pCloud.point_step;
-
-     // compute position in array where x,y,z data start
-     int arrayPosX = arrayPosition + pCloud.fields[0].offset; // X has an offset of 0
-     int arrayPosY = arrayPosition + pCloud.fields[1].offset; // Y has an offset of 4
-     int arrayPosZ = arrayPosition + pCloud.fields[2].offset; // Z has an offset of 8
-
-     float X = 0.0;
-     float Y = 0.0;
-     float Z = 0.0;
-
-     memcpy(&X, &pCloud.data[arrayPosX], sizeof(float));
-     memcpy(&Y, &pCloud.data[arrayPosY], sizeof(float));
-     memcpy(&Z, &pCloud.data[arrayPosZ], sizeof(float));
-
-     ROS_INFO("%f, %f, %f", X, Y, Z);
-
-    // put data into the point p
-     p.x = X;
-     p.y = -Y;
-     p.z = Z;
-
-   }
 
 void newPointsCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg)
 {
     ROS_INFO("start callback");
     if (!new_points_here)
     {
-      //float* point_data = (float*)(void*)(cloud_msg->data.data());
-      if (first_point)
-      {
-         first_point = false;
-      }
-      else 
-      {
-          //copied_points.clear();
-      }
       copied_points.clear();
       ROS_INFO("cleared points");
     
-//might be bad
-    //for (long unsigned int index=0; index<cloud_msg->fields.at(0).count ; index++) //up to cloud_msg->fields.at(0).count?
-    //{
-        //ROS_INFO("going to call function");
-        //pixelTo3DPoint(*cloud_msg, (index/(cloud_msg->row_step/cloud_msg->point_step)), (index % (cloud_msg->row_step/cloud_msg->point_step)), p);
-        //ROS_INFO("pushing back %d", index);
-        //if (!(p.x ==0 && p.y ==0 && p.z ==0))
-        //{
-        //   copied_points.push_back(p);
-         //  new_points_here = true;
-        //}
-
-   // }
     for (const pcl::PointXYZ& pt : cloud_msg->points)
     {
        //ROS_INFO("%f, %f, %f", pt.x, pt.y, pt.z);
@@ -104,24 +42,12 @@ void newPointsCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg
 
 
     ROS_INFO("PCL: %d, %d\n", (int)copied_points.size(), 0);
-/*
-    ROS_INFO("FIELDS: %d, name1: %s, offset: %d, datatype: %d, count: %d", cloud_msg->fields.size(), 
-              cloud_msg->fields.at(0).name, cloud_msg->fields.at(0).offset,
-              cloud_msg->fields.at(0).datatype, cloud_msg->fields.at(0).count);
-    ROS_INFO("FIELDS: %d, name1: %s, offset: %d, datatype: %d, count: %d", cloud_msg->fields.size(), 
-              cloud_msg->fields.at(1).name, cloud_msg->fields.at(1).offset,
-              cloud_msg->fields.at(1).datatype, cloud_msg->fields.at(1).count);
-    ROS_INFO("FIELDS: %d, name1: %s, offset: %d, datatype: %d, count: %d", cloud_msg->fields.size(), 
-              cloud_msg->fields.at(2).name, cloud_msg->fields.at(2).offset,
-              cloud_msg->fields.at(2).datatype, cloud_msg->fields.at(2).count);
-*/
     }
 }
 
 int main(int argc, char** argv)
 {
   new_points_here = false;
-  first_point = true;
   ros::init(argc, argv, "pc2cm_master");
   ros::NodeHandle node;
 
@@ -165,22 +91,20 @@ int main(int argc, char** argv)
   {
     if (new_points_here)
     {
-       new_points_here = false;
        int dim =0;
-       //float* point_el = curr_points->data();
        for (int i=0; i < copied_points.size();i++)
        {
           //point (0,0) should map to index[0][.5*MAP_WIDTH]
           //point (1,0) should map to index[1/CELL_WIDTH][.5*MAP_WIDTH/CELL_WIDTH]
           // point (1,1) should map to index(1/CELL_WIDTH][1/CELL_WIDTH + .5*MAP_WIDTH/CELL_WIDTH
-          int x_index = (int)(copied_points.at(i).x/CELL_WIDTH );
+          int x_index = (int)((MAP_LENGTH - copied_points.at(i).z)/CELL_WIDTH );
           x_index = CLAMP(x_index, 0, MAP_LENGTH/CELL_WIDTH);
 
-          int y_index = (int)(copied_points.at(i).y/CELL_WIDTH + (.5*MAP_WIDTH/CELL_WIDTH));
+          int y_index = (int)((-copied_points.at(i).y)/CELL_WIDTH + (.5*MAP_WIDTH/CELL_WIDTH));
           y_index = CLAMP(y_index, 0, MAP_WIDTH/CELL_WIDTH);
 
-          gridTotal[x_index][y_index] = (.98)*gridTotal[x_index][y_index] 
-                                      + .02*(copied_points.at(i).z - gridTotal[x_index][y_index]);
+          gridTotal[x_index][y_index] = (.90)*gridTotal[x_index][y_index] 
+                                      + .1*(-copied_points.at(i).x - gridTotal[x_index][y_index]);
 
           ROS_INFO("NEW Point: %.4f, %.4f, %.4f", copied_points.at(i).x,copied_points.at(i).y, copied_points.at(i).z);
           ROS_INFO("Mapped to: %d, %d, %.4f\n", x_index, y_index, gridTotal[x_index][y_index]);
@@ -210,6 +134,7 @@ int main(int argc, char** argv)
        //project bins onto costmap
 
        pub.publish(goal_markers);
+       new_points_here = false;
        ros::spinOnce();
        rate.sleep();
        
