@@ -4,7 +4,7 @@
 
 pc2cmProcessor::pc2cmProcessor(int one)
 {
-    isOne = one = 1;
+    isOne = one == 1;
 }
 
 bool pc2cmProcessor::getOne()

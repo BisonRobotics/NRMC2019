@@ -5,38 +5,52 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-//struct for input parameters like
-//grid_width, min number of elements for a grid cell
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_ros/point_cloud.h>
+#include <pcl/point_types.h>
 
-
-//
+/*========
+pc2cmProcessor
+class that takes incoming point cloud data and converts it to a costmap
+operation is 2 phase:
+1. Exposure: call addPoints() for incoming pc data for as long as desired
+2. Compute: call computeCostmap() to crunch input'd data into costmap data
+*/
 
 class pc2cmProcessor
 {
 public:
-    pc2cmProcessor(int one /*double grid_width, double grid_min_elements*/); //struct
+    pc2cmProcessor(int one /*double grid_width*/); 
+    //constructor, should take grid_width (square side of grid element) and 
     bool getOne();
 /*
-    bool addPoints(uint8_t* points_3d, uint32_t height, uint32_t row_step,
-                   uint32_t point_step); 
-    //adds points to internal grid (with smooting), returns true if good
-
-    bool takeDoG(uint8_t* grid_2d, uint32_t height, uint32_t row_step,
-                 uint32_t point_step, uint8_t* out_grid, float big, float small);
-    //takes difference of gaussian on given data
-
+    bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg); 
+    // Adds points to internal point grid data
+*/
+/*  costmap computeCostmap();
+    //computes costmap from data by calling protected member functions correctly
+*/
+//protected: //these members should be treated as protected, 
+             //but for unit testing are actually public
+/*  void averagePoints();
+    //computes heights of grid elements by averaging all added points in that cell's range
+*/
+/*  void takeDoG(double radius_1, double radius_2);
+    //takes difference of gaussian of internal height grid
 */
     
-     //add points to grid
-     //calculate new costmap
-     //->median filter on grid?
-     //->do DoG on height map
-     //->project height map onto global costmap
+
 private:
     bool isOne;
-    //array containing average heights projected onto ground plane estimate
-      //ground plane shoud be known from tf of camera to base_link 
-        //(might get revised with time and data)
+    
+/*  float heights[width][height]
+    //internal grid of heights
+*/
+/*  float costmap[width][height]
+    //internal costmap representation computed with takeDoG()
+*/
+
+
 }; 
 
 #endif

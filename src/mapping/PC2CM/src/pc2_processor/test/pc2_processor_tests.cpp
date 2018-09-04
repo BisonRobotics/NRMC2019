@@ -5,16 +5,16 @@
 
 TEST(pc2_processor_tests, oneAndDone)
 {
-  //pc2cmProcessor pcp(1);
+  pc2cmProcessor pcp(1);
 
-  EXPECT_TRUE(true /*|| pcp.getOne()*/);
+  EXPECT_TRUE(pcp.getOne());
 }
 
 TEST(WaypointControllerTests, overAndOut)
 {
-  //pc2cmProcessor pcp(0);
+  pc2cmProcessor pcp(0);
 
-  EXPECT_TRUE(true /*|| pcp.getOne()*/);
+  EXPECT_TRUE( pcp.getOne());
 }
 
 // Run all the tests that were declared with TEST()
