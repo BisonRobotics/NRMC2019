@@ -1,0 +1,11 @@
+%updates the simulated massive arm given the previous state vector (theta,
+%theta', theta'') the torque on the motor, dt, and the length and mass of
+%the arm
+
+function [x] = armSim(x_prev, torque, dt, length, mass)
+fg = length * cos(x_prev(1))
+
+
+
+
+end

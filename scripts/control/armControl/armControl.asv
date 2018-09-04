@@ -1,0 +1,27 @@
+%attempt to control arm using tight feed forward model  with small feedback
+%gains
+
+figure();
+x = zeros(3,1);
+x(1) = pi/6 + pi/12;
+x_prev = x;
+dt = .02;
+time = 0:dt:15;
+
+arm_length = .5;
+arm_mass = 5;
+
+U = 0;
+
+Uplot = z
+
+for t = time
+    clf
+    x = armSim(x, U, dt, arm_length, arm_mass);
+    armDraw(x, arm_length);
+    
+    U = (x(1) - pi/6) + -arm_length * cos(x_prev(1));
+    
+    
+    
+end
