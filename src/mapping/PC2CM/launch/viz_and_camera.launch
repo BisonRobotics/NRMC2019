@@ -1,3 +1,6 @@
 <launch>
   <node name="pc2cm_master" pkg="pc2cm" type="pc2cm_master"/>
+
+<node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 -1.5708 0 -1.5708 camera_link camera_depth_optical_frame" />.
+<node pkg="tf2_ros" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 map camera_link" />
 </launch>
