@@ -4,7 +4,6 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pc2_processor.h>
 
 
 #define CELL_WIDTH .25f
@@ -22,8 +21,6 @@ uint32_t height;
 uint32_t row_step;
 uint32_t point_step;
 bool new_points_here;
-pc2cmProcessor processor;
-double defualtGridWidth = 1.0;
 
 void newPointsCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg)
 {
@@ -59,34 +56,36 @@ int main(int argc, char** argv)
   ros::Subscriber sub = node.subscribe("camera/points", 2, newPointsCallback);
   ros::Publisher pub = node.advertise<visualization_msgs::Marker>("heights", 10000);
 
-  visualization_msgs::Marker goal_markers;
-  goal_markers.action = visualization_msgs::Marker::ADD;
-  goal_markers.pose.orientation.w = 1;
-  goal_markers.type = visualization_msgs::Marker::CUBE_LIST;
-  goal_markers.scale.x = CELL_WIDTH;
-  goal_markers.scale.y = CELL_WIDTH;
-  goal_markers.scale.z = CELL_WIDTH;
-  goal_markers.color.b = .71;
-  goal_markers.color.g = 1;
-  goal_markers.color.a = .5;
+    visualization_msgs::Marker goal_markers;
+    goal_markers.action = visualization_msgs::Marker::ADD;
+    goal_markers.pose.orientation.w = 1;
+    goal_markers.type = visualization_msgs::Marker::CUBE_LIST;
+    goal_markers.scale.x = CELL_WIDTH;
+    goal_markers.scale.y = CELL_WIDTH;
+    goal_markers.scale.z = CELL_WIDTH;
+    goal_markers.color.b = .71;
+    goal_markers.color.g = 1;
+    goal_markers.color.a = .5;
 
-  goal_markers.header.frame_id = "/camera_link";
+    goal_markers.header.frame_id = "/camera_link";
 
-  geometry_msgs::Point my_point;
-  my_point.x = 2;
-  my_point.y = 1;
-  my_point.z = 2;
-  goal_markers.points.push_back(my_point);
-  my_point.x = 3;
-  my_point.y = 1;
-  my_point.z = 2;
-  goal_markers.points.push_back(my_point);
-  my_point.x = 3;
-  my_point.y = 1;
-  my_point.z = 4;
-  goal_markers.points.push_back(my_point);
+    geometry_msgs::Point my_point;
+    my_point.x = 2;
+    my_point.y = 1;
+    my_point.z = 2;
+    goal_markers.points.push_back(my_point);
+    my_point.x = 3;
+    my_point.y = 1;
+    my_point.z = 2;
+    goal_markers.points.push_back(my_point);
+    my_point.x = 3;
+    my_point.y = 1;
+    my_point.z = 4;
+    goal_markers.points.push_back(my_point);
 
-  processor = pc2cmProcessor(defualtGridWidth);
+    //grid is from +/- 2m on y and +3m on X
+    float gridTotal[(int)(MAP_LENGTH/CELL_WIDTH)][(int) (MAP_WIDTH/CELL_WIDTH)] = {0};
+    float gridNew[(int)(MAP_LENGTH/CELL_WIDTH)][(int) (MAP_WIDTH/CELL_WIDTH)] = {0};
 
   while (ros::ok())
   {
@@ -95,9 +94,17 @@ int main(int argc, char** argv)
       int dim =0;
       for (int i=0; i < copied_points.size();i++)
       {
+          //point (0,0) should map to index[0][.5*MAP_WIDTH]
+          //point (1,0) should map to index[1/CELL_WIDTH][.5*MAP_WIDTH/CELL_WIDTH]
+          // point (1,1) should map to index(1/CELL_WIDTH][1/CELL_WIDTH + .5*MAP_WIDTH/CELL_WIDTH
+          int x_index = (int)((MAP_LENGTH - copied_points.at(i).z)/CELL_WIDTH );
+          x_index = CLAMP(x_index, 0, MAP_LENGTH/CELL_WIDTH);
 
+          int y_index = (int)((-copied_points.at(i).y)/CELL_WIDTH + (.5*MAP_WIDTH/CELL_WIDTH));
+          y_index = CLAMP(y_index, 0, MAP_WIDTH/CELL_WIDTH);
 
-
+          gridTotal[x_index][y_index] = (.90)*gridTotal[x_index][y_index]
+                                      + .1*(-copied_points.at(i).x - gridTotal[x_index][y_index]);
 
           ROS_INFO("NEW Point: %.4f, %.4f, %.4f", copied_points.at(i).x,copied_points.at(i).y, copied_points.at(i).z);
           ROS_INFO("Mapped to: %d, %d, %.4f\n", x_index, y_index, gridTotal[x_index][y_index]);

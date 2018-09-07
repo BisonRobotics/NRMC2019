@@ -20,29 +20,32 @@ operation is 2 phase:
 class pc2cmProcessor
 {
 public:
-    pc2cmProcessor(int one /*double grid_width*/); 
-    //constructor, should take grid_width (square side of grid element) and 
+    pc2cmProcessor(double grid_width);
+    //constructor, should take grid_width (square side of grid element) and
+
     bool getOne();
-/*
-    bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg); 
+
+    bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg);
     // Adds points to internal point grid data
-*/
+
 /*  costmap computeCostmap();
     //computes costmap from data by calling protected member functions correctly
 */
-//protected: //these members should be treated as protected, 
-             //but for unit testing are actually public
+//protected:    //these members should be treated as protected,
+                //but for unit testing are actually public
 /*  void averagePoints();
     //computes heights of grid elements by averaging all added points in that cell's range
 */
 /*  void takeDoG(double radius_1, double radius_2);
     //takes difference of gaussian of internal height grid
 */
-    
+
 
 private:
     bool isOne;
-    
+    float gridTotal[][];
+    float gridNew[][];
+
 /*  float heights[width][height]
     //internal grid of heights
 */
@@ -51,6 +54,6 @@ private:
 */
 
 
-}; 
+};
 
 #endif
