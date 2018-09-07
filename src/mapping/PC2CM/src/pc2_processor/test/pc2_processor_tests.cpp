@@ -27,9 +27,10 @@ TEST(pc2_processor_points, oneAndDone)
   std::cerr << "Cloud before filtering: " << std::endl;
   for (size_t i = 0; i < cloud.points.size (); ++i)
     std::cerr << "    " << cloud.points[i].x << " " << cloud.points[i].y << " " << cloud.points[i].z << std::endl;
+
     pc2cmProcessor pcp(.25, 3.0, 3.0);
 
-    pcp.addPoints(cloud)
+    pcp.addPoints( &cloud);
     EXPECT_TRUE(pcp.getOne());
 }
 

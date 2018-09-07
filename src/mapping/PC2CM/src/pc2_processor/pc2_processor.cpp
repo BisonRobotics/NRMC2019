@@ -11,7 +11,7 @@
 // #define GRID_LENGTH 3.0f
 #define CLAMP(A, B, C) ((A < B) ? B : ((A>C) ? C : A))
 
-std::vector<std::vector<pcl::PointXYZ>> masterGrid; // a grid of heights defined by Cell_width, Grid_Width, Grid_length
+std::vector<std::vector<float>> masterGrid; // a grid of heights defined by Cell_width, Grid_Width, Grid_length
 
 bool isOne;
 double GRID_WIDTH;
@@ -25,9 +25,15 @@ pc2cmProcessor::pc2cmProcessor(double cell_width, double grid_width, double grid
     GRID_WIDTH = grid_width;
 
     //grid is from +/- 2m on y and +3m on X
-    float temp[(int)(GRID_LENGTH/CELL_WIDTH)][(int)(GRID_WIDTH/CELL_WIDTH)] = {0};
-    grid =temp;
-    isOne = true;
+    for(int i =0; i <(int)(GRID_LENGTH/CELL_WIDTH); i++){
+        std::vector<float> col;
+        for(int i =0; i <(int)(GRID_WIDTH/CELL_WIDTH); i++){
+            col.push_back(0.0);
+        }
+        masterGrid.push_back(col);
+    }
+
+    // isOne = true;
 }
 
 bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg){
@@ -46,8 +52,8 @@ bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg){
             int y_index = (int)((-pt.y)/CELL_WIDTH + (.5*GRID_WIDTH/CELL_WIDTH));
             y_index = CLAMP(y_index, 0, GRID_WIDTH/CELL_WIDTH);
 
-            grid[x_index][y_index] = (.90)*grid[x_index][y_index]
-                                            + .10*(-pt.x - grid[x_index][y_index]); // simple filter
+            masterGrid.at(x_index).at(y_index) = (.90)*masterGrid.at(x_index).at(y_index)
+                                            + .10*(-pt.x - masterGrid.at(x_index).at(y_index)); // simple filter
         }
     }
 }
@@ -55,5 +61,5 @@ bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg){
 
 bool pc2cmProcessor::getOne()
 {
-    return this->isOne;
+    return true;
 }
