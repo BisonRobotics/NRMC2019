@@ -4,17 +4,9 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pc2_processor.h>
+#include <pc2_processor/pc2_processor.h>
 
 
-#define CELL_WIDTH .25f
-#define Z_LOWER -8.0f
-#define Z_UPPER 8.0f
-
-#define MAP_WIDTH 3.0f
-#define MAP_LENGTH 3.0f
-
-#define CLAMP(A, B, C) ((A < B) ? B : ((A>C) ? C : A))
 
 std::vector<float> *curr_points;
 std::vector<pcl::PointXYZ> copied_points;
@@ -56,7 +48,7 @@ int main(int argc, char** argv)
 
   ros::Rate rate(10);
 
-  ros::Subscriber sub = node.subscribe("camera/points", 2, newPointsCallback);
+  ros::Subscriber sub = node.subscribe("camera/points", 2, processor.addPoints);
   ros::Publisher pub = node.advertise<visualization_msgs::Marker>("heights", 10000);
 
   visualization_msgs::Marker goal_markers;
@@ -88,7 +80,7 @@ int main(int argc, char** argv)
 
   processor = pc2cmProcessor(defualtGridWidth);
 
-  while (ros::ok())
+  whi7le (ros::ok())
   {
     if (new_points_here)
     {
@@ -98,15 +90,15 @@ int main(int argc, char** argv)
 
 
 
-
-          ROS_INFO("NEW Point: %.4f, %.4f, %.4f", copied_points.at(i).x,copied_points.at(i).y, copied_points.at(i).z);
-          ROS_INFO("Mapped to: %d, %d, %.4f\n", x_index, y_index, gridTotal[x_index][y_index]);
-          for (int j=0; j<6; j++)
-          {
-          ROS_INFO("%.4f, %.4f, %.4f, %.4f, %.4f, %.4f",
-                    gridTotal[j][0],  gridTotal[j][1],  gridTotal[j][2],
-                    gridTotal[j][3],  gridTotal[j][4],  gridTotal[j][5]);
-          }
+        processor.addPoints(copied_points.at(i))
+        ROS_INFO("NEW Point: %.4f, %.4f, %.4f", copied_points.at(i).x,copied_points.at(i).y, copied_points.at(i).z);
+        ROS_INFO("Mapped to: %d, %d, %.4f\n", x_index, y_index, gridTotal[x_index][y_index]);
+        for (int j=0; j<6; j++)
+        {
+        ROS_INFO("%.4f, %.4f, %.4f, %.4f, %.4f, %.4f",
+                gridTotal[j][0],  gridTotal[j][1],  gridTotal[j][2],
+                gridTotal[j][3],  gridTotal[j][4],  gridTotal[j][5]);
+        }
       }
       //bin new points
       //average new bins
