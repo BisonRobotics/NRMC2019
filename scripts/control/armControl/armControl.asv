@@ -1,27 +1,69 @@
 %attempt to control arm using tight feed forward model  with small feedback
 %gains
 
+starting_pos = -1*pi/4;
+setpoint = starting_pos + pi/2;
+
 figure();
-x = zeros(3,1);
-x(1) = pi/6 + pi/12;
+x = zeros(2,1);
+x(1) = starting_pos
 x_prev = x;
 dt = .02;
-time = 0:dt:15;
+time = 0:dt:4;
 
+x_est = x;
+x_mea = zeros(2,1);
 arm_length = .5;
 arm_mass = 5;
 
 U = 0;
 
-Uplot = z
+UPlot = zeros(1,length(time));
+XPlot = zeros(2,length(time));
+MeaPlot = zeros(2,length(time));
+EstPlot = zeros(2,length(time));
+plotIndex = 1;
+
+H = eye(2);
+Q = zeros(2,2);
+Q(1,1) = pi * .5/180; %capacitive sensor has accuracy/noise of about .5 deg
+Q(2,2) = 400/545; %motor rpm feedback has noise of about 400 rpm, 545:1 gear box
+
+P = zeros(2,2); %covariance matrix of error of initial estimate
+K = P*H' * inv(H*P*H' + R);
+
+A = [0, 1; 0, 0];
 
 for t = time
-    clf
+    subplot(4,1,1);
+    cla;
     x = armSim(x, U, dt, arm_length, arm_mass);
     armDraw(x, arm_length);
     
-    U = (x(1) - pi/6) + -arm_length * cos(x_prev(1));
+    x_mea(1) = x(1) + normrnd(0,pi * .5/180); %capacitive sensor has accuracy/noise of about .5 deg
+    x_mea(2) = x(2) + normrnd(0, 400/545 ); %motor rpm feedback has noise of about 400 rpm, 545:1 gear box
     
+    x_est = x_est + K * (x_mea - x_est);
+    P = A * P * A' + Q; %new covariance of new estimate
+    K = (P*H') / (H*P*H' + R);
+
+    gravity_torque_est = arm_mass * arm_length * cos(x_est(1));
     
+    U = 24*(x_est(1) - setpoint)  + 20*x_est(2) - gravity_torque_est;
     
+    UPlot(1,plotIndex) = U;
+    XPlot(:,plotIndex) = x;
+    EstPlot(:,plotIndex) = x_est;
+    MeaPlot(:,plotIndex) = x_mea;
+    subplot(4,1,2);
+    plot(0:dt:t, UPlot(1,1:plotIndex));
+    legend('U');
+    subplot(4,1,3);
+    plot(0:dt:t, XPlot(1,1:plotIndex), 0:dt:t, zeros(1,plotIndex) + setpoint, '--');
+    legend('X', 'Setpoint');
+    subplot(4,1,4);
+    plot(0:dt:t, XPlot(:,1:plotIndex),'-',0:dt:t, MeaPlot(:,1:plotIndex),'*',0:dt:t, EstPlot(:,1:plotIndex),'--');
+    legend('X1','X2', 'mX1', 'mX2', 'eX1', 'eX2');
+    plotIndex = plotIndex +1;
+
 end
