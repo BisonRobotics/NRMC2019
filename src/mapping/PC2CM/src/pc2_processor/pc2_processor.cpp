@@ -1,15 +1,13 @@
-
+/**
+ * Helpful link on point clouds see slide 48: http://ais.informatik.uni-freiburg.de/teaching/ws10/robotics2/pdfs/rob2-12-ros-pcl.pdf
+ *
+ * */
 
 #include <pc2_processor/pc2_processor.h>
 
 
 #define CLAMP(A, B, C) ((A < B) ? B : ((A>C) ? C : A))
-// #define Z_LOWER -8.0f
-// #define Z_UPPER 8.0f
 
-// #define GRID_WIDTH 3.0f
-// #define GRID_LENGTH 3.0f
-// #define CLAMP(A, B, C) ((A < B) ? B : ((A>C) ? C : A))
 
 std::vector<std::vector<float>> masterGrid; // a grid of heights defined by Cell_width, Grid_Width, Grid_length
 
@@ -72,11 +70,12 @@ double pc2cmProcessor::get_Height(int xindex, int yindex){
 }
 
 void pc2cmProcessor::print_grid(void){
-    // double[][] grid = {0};
+    std::cout << "printing grid" << std::endl;
+
     for ( auto &col : masterGrid ) {
-        // std::cout << *i << std::endl;
+        // std::cout << "col: "<< col.size() << std::endl;
         for (auto &row : col ) {
-            std::cout << row << std::endl;
+            std::cerr << row << std::endl;
         }
     }
 

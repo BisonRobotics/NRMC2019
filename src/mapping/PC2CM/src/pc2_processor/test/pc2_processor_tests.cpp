@@ -14,8 +14,8 @@ TEST(pc2_processor_points, oneAndDone)
 {
     pcl::PointCloud<pcl::PointXYZ> cloud;
     // Fill in the cloud data
-    cloud.width  = 3;
-    cloud.height = 3;
+    cloud.width  = 2;
+    cloud.height = 2;
     cloud.points.resize(cloud.width * cloud.height);
     // for (size_t i = 0; i < cloud.points.size (); ++i)
     // {
@@ -36,18 +36,22 @@ TEST(pc2_processor_points, oneAndDone)
     cloud.points[2].y = 0;
     cloud.points[2].z = 1;
 
+    cloud.points[3].x = 7;
+    cloud.points[3].y = 1;
+    cloud.points[3].z = 1;
 
     std::cerr << "Cloud before filtering: " << std::endl;
     for (size_t i = 0; i < cloud.points.size (); ++i)
         std::cerr << "    " << cloud.points[i].x << " " << cloud.points[i].y << " " << cloud.points[i].z << std::endl;
 
-    pc2cmProcessor pcp(.25, 3.0, 3.0);
+    pc2cmProcessor pcp(.25, 1, 1); // create a 4x4 grid
 
     pcp.addPoints(cloud);
 
-    std::cerr << pcp.get_Height(1, 1) << std::endl;
+    std::cout << "height at (0, 0): " << pcp.get_Height(0,0) << std::endl;
+    pcp.print_grid();
 
-    EXPECT_TRUE(pcp.getOne());
+    EXPECT_TRUE((pcp.get_Height(0,0) == -1.1));
 }
 
 
