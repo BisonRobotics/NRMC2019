@@ -48,10 +48,9 @@ TEST(pc2_processor_points, oneAndDone)
 
     pcp.addPoints(cloud);
 
-    std::cout << "height at (0, 0): " << pcp.get_Height(0,0) << std::endl;
     pcp.print_grid();
 
-    EXPECT_TRUE((pcp.get_Height(0,0) == -1.1));
+    EXPECT_TRUE((abs(pcp.get_Height(0,0)  +1.1) < .001 ));
 }
 
 
