@@ -12,7 +12,7 @@
 
 TEST(pc2_processor_points, oneAndDone)
 {
-    pcl::PointCloud<pcl::PointXYZ> cloud, cloud_filtered;
+    pcl::PointCloud<pcl::PointXYZ> cloud;
     // Fill in the cloud data
     cloud.width  = 5;
     cloud.height = 1;
@@ -24,13 +24,13 @@ TEST(pc2_processor_points, oneAndDone)
         cloud.points[i].z = 1024 * rand () / (RAND_MAX + 1.0);
     }
 
-  std::cerr << "Cloud before filtering: " << std::endl;
-  for (size_t i = 0; i < cloud.points.size (); ++i)
-    std::cerr << "    " << cloud.points[i].x << " " << cloud.points[i].y << " " << cloud.points[i].z << std::endl;
+    std::cerr << "Cloud before filtering: " << std::endl;
+    for (size_t i = 0; i < cloud.points.size (); ++i)
+        std::cerr << "    " << cloud.points[i].x << " " << cloud.points[i].y << " " << cloud.points[i].z << std::endl;
 
     pc2cmProcessor pcp(.25, 3.0, 3.0);
 
-    pcp.addPoints( &cloud);
+    pcp.addPoints(cloud);
     EXPECT_TRUE(pcp.getOne());
 }
 

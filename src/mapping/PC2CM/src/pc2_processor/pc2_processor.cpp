@@ -9,7 +9,7 @@
 
 // #define GRID_WIDTH 3.0f
 // #define GRID_LENGTH 3.0f
-#define CLAMP(A, B, C) ((A < B) ? B : ((A>C) ? C : A))
+// #define CLAMP(A, B, C) ((A < B) ? B : ((A>C) ? C : A))
 
 std::vector<std::vector<float>> masterGrid; // a grid of heights defined by Cell_width, Grid_Width, Grid_length
 
@@ -33,14 +33,19 @@ pc2cmProcessor::pc2cmProcessor(double cell_width, double grid_width, double grid
         masterGrid.push_back(col);
     }
 
+    std::cerr << "created pc2mProccessor!!" << std::endl;
+
     // isOne = true;
 }
 
-bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg){
+// bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg){
+bool pc2cmProcessor::addPoints(pcl::PointCloud<pcl::PointXYZ> cloud_msg){
 
-    for (const pcl::PointXYZ& pt : cloud_msg->points)
+    // for (const pcl::PointXYZ& pt : cloud_msg->points)
+    for (size_t i = 0; i < cloud_msg.points.size(); ++i)
     {
-        //ROS_INFO("%f, %f, %f", pt.x, pt.y, pt.z);
+        pcl::PointXYZ pt = cloud_msg.points[i];
+        // ROS_INFO("%f, %f, %f", pt.x, pt.y, pt.z);
         if (!(pt.x ==0 && pt.y ==0 && pt.z ==0))
         {
             //point (0,0) should map to index[0][.5*GRID_WIDTH]
@@ -56,6 +61,7 @@ bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg){
                                             + .10*(-pt.x - masterGrid.at(x_index).at(y_index)); // simple filter
         }
     }
+    return true;
 }
 
 

@@ -24,7 +24,9 @@ public:
 
     bool getOne();
 
-    bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg); // Adds points to internal point grid data
+    //bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg); // Adds points to internal point grid data
+    bool addPoints(pcl::PointCloud<pcl::PointXYZ> cloud_msg);
+
 
 /*  costmap computeCostmap();
     //computes costmap from data by calling protected member functions correctly
