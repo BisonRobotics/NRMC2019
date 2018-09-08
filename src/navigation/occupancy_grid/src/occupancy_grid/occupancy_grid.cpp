@@ -39,8 +39,8 @@ void OccupancyGrid::draw(Point const &a)
 void OccupancyGrid::draw(Line const &a, int thickness=1)
 {
   const cv::Scalar_<double> fill = cv::Scalar_<double>(1.0);
-  std::cout << "P1:[" << a.p0.imgTf().x << " " << a.p0.imgTf().y << "] ";
-  std::cout << "P2:[" << a.p1.imgTf().x << " " << a.p1.imgTf().y << "]" << std::endl;
+  //std::cout << "P1:[" << a.p0.imgTf().x << " " << a.p0.imgTf().y << "] ";
+  //std::cout << "P2:[" << a.p1.imgTf().x << " " << a.p1.imgTf().y << "]" << std::endl;
   cv::line((*this), a.p0.imgTf(), a.p1.imgTf(), fill, thickness);
 }
 
@@ -48,6 +48,21 @@ void OccupancyGrid::draw(Circle const &a)
 {
   const cv::Scalar_<double> fill = cv::Scalar_<double>(1.0);
   cv::circle((*this), a.imgTfP(), a.imgTfR(), fill, -1);
+}
+
+void OccupancyGrid::draw(Bezier const &a)
+{
+  const cv::Scalar_<double> fill = cv::Scalar_<double>(1.0);
+  this->draw(a.p0);
+  this->draw(a.p1);
+  this->draw(a.p2);
+  this->draw(a.p3);
+  cv::line((*this), a.p0.imgTf(), a.p1.imgTf(), fill);
+  cv::line((*this), a.p2.imgTf(), a.p3.imgTf(), fill);
+  for (double i = 0; i < 0.99; i = i + 0.01)
+  {
+    cv::line((*this), a(i).imgTf(), a(i+0.01).imgTf(), fill);
+  }
 }
 
 void OccupancyGrid::inflate(OccupancyGrid const &in, OccupancyGrid *out,

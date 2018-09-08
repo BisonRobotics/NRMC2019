@@ -3,11 +3,12 @@
 #include <occupancy_grid/point.h>
 #include <occupancy_grid/line.h>
 #include <occupancy_grid/circle.h>
+#include <occupancy_grid/bezier.h>
 
 using namespace occupancy_grid;
 using namespace testing;
 
-TEST(GeometryTests, Point)
+TEST(GeometryTests, PointConstructor)
 {
   Point a(1.0, 2.0);
 
@@ -25,6 +26,19 @@ TEST(GeometryTests, Point)
   Point c = b;
   ASSERT_DOUBLE_EQ(1.0, c[0]);
   ASSERT_DOUBLE_EQ(2.0, c[1]);
+}
+
+TEST(GeometryTests, PointMath)
+{
+  Point a(1.0, 2.0);
+  Point b(3.0, 4.0);
+  Point c = a + b;
+  ASSERT_DOUBLE_EQ(c.x, 4.0);
+  ASSERT_DOUBLE_EQ(c.y, 6.0);
+
+  Point d = 2.0 * a;
+  ASSERT_DOUBLE_EQ(d.x, 2.0);
+  ASSERT_DOUBLE_EQ(d.y, 4.0);
 }
 
 TEST(GeometryTests, Line)
@@ -79,6 +93,46 @@ TEST(GeometryTests, Circle)
   ASSERT_DOUBLE_EQ(4.0, e.p[0]);
   ASSERT_DOUBLE_EQ(5.0, e.p[1]);
   ASSERT_DOUBLE_EQ(6.0, e.r);
+}
+
+TEST(GeometryTests, Bezier)
+{
+  Bezier a(0,1,2,3,4,5,6,7);
+  ASSERT_DOUBLE_EQ(0.0, a.p0.x);
+  ASSERT_DOUBLE_EQ(1.0, a.p0.y);
+  ASSERT_DOUBLE_EQ(2.0, a.p1.x);
+  ASSERT_DOUBLE_EQ(3.0, a.p1.y);
+  ASSERT_DOUBLE_EQ(4.0, a.p2.x);
+  ASSERT_DOUBLE_EQ(5.0, a.p2.y);
+  ASSERT_DOUBLE_EQ(6.0, a.p3.x);
+  ASSERT_DOUBLE_EQ(7.0, a.p3.y);
+
+  Bezier b(a);
+  ASSERT_DOUBLE_EQ(0.0, b.p0.x);
+  ASSERT_DOUBLE_EQ(1.0, b.p0.y);
+  ASSERT_DOUBLE_EQ(2.0, b.p1.x);
+  ASSERT_DOUBLE_EQ(3.0, b.p1.y);
+  ASSERT_DOUBLE_EQ(4.0, b.p2.x);
+  ASSERT_DOUBLE_EQ(5.0, b.p2.y);
+  ASSERT_DOUBLE_EQ(6.0, b.p3.x);
+  ASSERT_DOUBLE_EQ(7.0, b.p3.y);
+
+  Bezier c(a);
+  ASSERT_DOUBLE_EQ(0.0, c.p0.x);
+  ASSERT_DOUBLE_EQ(1.0, c.p0.y);
+  ASSERT_DOUBLE_EQ(2.0, c.p1.x);
+  ASSERT_DOUBLE_EQ(3.0, c.p1.y);
+  ASSERT_DOUBLE_EQ(4.0, c.p2.x);
+  ASSERT_DOUBLE_EQ(5.0, c.p2.y);
+  ASSERT_DOUBLE_EQ(6.0, c.p3.x);
+  ASSERT_DOUBLE_EQ(7.0, c.p3.y);
+
+  ASSERT_NO_THROW(a(0.5));
+  ASSERT_NO_THROW(a(0.0));
+  ASSERT_NO_THROW(a(1.0));
+
+  ASSERT_THROW(a(-0.1), std::out_of_range);
+  ASSERT_THROW(a( 1.1), std::out_of_range);
 }
 
 int main(int argc, char **argv)

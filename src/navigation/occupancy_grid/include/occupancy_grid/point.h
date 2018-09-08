@@ -7,15 +7,15 @@
 
 namespace occupancy_grid
 {
-  class Point
+  class Point : public cv::Point2d
   {
     public:
-      const double x, y;
+      //TODO overload math operators
 
-      Point()                   : x(0.0), y(0.0) {};
-      Point(double x, double y) : x(x),   y(y)   {};
-      Point(Point const &p)     : x(p.x), y(p.y) {};
-      Point(Point const &&p)    : x(p.x), y(p.y) {};
+      Point()                     : cv::Point2d(0.0, 0.0) {};
+      Point(double x, double y)   : cv::Point2d(  x,   y) {};
+      Point(Point const &p)       : cv::Point2d(p) {};
+      Point(cv::Point2d const &p) : cv::Point2d(p) {};
 
       cv::Point2i imgTf() const
       {
