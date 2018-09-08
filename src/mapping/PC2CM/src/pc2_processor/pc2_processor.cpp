@@ -25,7 +25,7 @@ pc2cmProcessor::pc2cmProcessor(double cell_width, double grid_width, double grid
     GRID_WIDTH = grid_width;
 
     //grid is from +/- 2m on y and +3m on X
-    for(int i =0; i <(int)(GRID_LENGTH/CELL_WIDTH); i++){
+    for(int i =0; i <(int)(GRID_LENGTH/CELL_WIDTH)+1; i++){
         std::vector<float> col;
         for(int i =0; i <(int)(GRID_WIDTH/CELL_WIDTH); i++){
             col.push_back(0.0);
@@ -40,6 +40,8 @@ pc2cmProcessor::pc2cmProcessor(double cell_width, double grid_width, double grid
 
 // bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg){
 bool pc2cmProcessor::addPoints(pcl::PointCloud<pcl::PointXYZ> cloud_msg){
+
+    std::cerr << " adding points. Size of cloud = "<< cloud_msg.points.size() << std::endl;
 
     // for (const pcl::PointXYZ& pt : cloud_msg->points)
     for (size_t i = 0; i < cloud_msg.points.size(); ++i)
