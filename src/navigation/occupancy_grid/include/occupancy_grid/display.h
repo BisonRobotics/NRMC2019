@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/viz/types.hpp>
+#include <occupancy_grid/arena_dimensions.h>
 
 #ifndef OCCUPANCY_GRID_DISPLAY_H
 #define OCCUPANCY_GRID_DISPLAY_H
@@ -26,6 +27,14 @@ static void write(cv::Mat3b const &mat)
   cv::Mat3b image;
   mat.copyTo(image);
   imwrite("occupancy_grid.png", image);
+}
+
+static void convert(Image *out, OccupancyGrid const &in)
+{
+  cv::Mat image(ArenaDimensions::width_cm, ArenaDimensions::height_cm, CV_8UC1);
+  image = 255 - 255 * in;
+  image.convertTo(image, CV_8UC1);
+  cvtColor(image, (*out), cv::COLOR_GRAY2BGR);
 }
 
 // Overlay a onto b

@@ -20,24 +20,16 @@ int main( int argc, char** argv )
   rocks.emplace_back(1.8,  0.5, 0.3);
   Arena arena(rocks);
 
-  //Image obstacles(AD::height_cm, AD::width_cm);
-  cv::Mat image(AD::width_cm, AD::height_cm, CV_8UC1);
-  image = 255 - 255 * arena.inflated_obstacles;
-  image.convertTo(image, CV_8UC1);
-  cvtColor(image, image, cv::COLOR_GRAY2BGR);
-  //write((cv::Mat3b)image);
-  //std::cout << arena.walls(AD::height_cm - 1, AD::width_cm / 2 - 1) << std::endl;
-  //write(arena.inflated_obstacles);
+  Image obstacles_layer(AD::height_cm, AD::width_cm, Color::white());
+  convert(&obstacles_layer, arena.inflated_obstacles);
 
-  Image grid(AD::height_cm, AD::width_cm, Color::white());
-  Bezier a(1.0,0.5,1.5,1.0, 3.5,-1.0,4.0,-0.5);
-  draw(&grid, a, Color::orange_red());
+  Image path_layer(AD::height_cm, AD::width_cm, Color::white());
+  Bezier a(1.0,0.5, 2.0,1.5, 3.5,-1.0, 4.0,-0.5);
+  draw(&path_layer, a, Color::orange_red());
 
   Image final(AD::height_cm, AD::width_cm);
-  overlay(&final, grid, image);
+  overlay(&final, path_layer, obstacles_layer);
   write(final);
 
-  //blurred.write();
-  // Wait for a keystroke in the window
   return 0;
 }

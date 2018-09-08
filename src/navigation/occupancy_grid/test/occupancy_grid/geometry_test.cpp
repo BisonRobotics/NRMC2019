@@ -127,6 +127,16 @@ TEST(GeometryTests, Bezier)
   ASSERT_DOUBLE_EQ(6.0, c.p3.x);
   ASSERT_DOUBLE_EQ(7.0, c.p3.y);
 
+  Bezier d(Point(0,1), Point(1,2), Point(2,3), Point(3,4));
+  ASSERT_DOUBLE_EQ(0.0, d.p0.x);
+  ASSERT_DOUBLE_EQ(1.0, d.p0.y);
+  ASSERT_DOUBLE_EQ(1.0, d.p1.x);
+  ASSERT_DOUBLE_EQ(2.0, d.p1.y);
+  ASSERT_DOUBLE_EQ(2.0, d.p2.x);
+  ASSERT_DOUBLE_EQ(3.0, d.p2.y);
+  ASSERT_DOUBLE_EQ(3.0, d.p3.x);
+  ASSERT_DOUBLE_EQ(4.0, d.p3.y);
+
   ASSERT_NO_THROW(a(0.5));
   ASSERT_NO_THROW(a(0.0));
   ASSERT_NO_THROW(a(1.0));
