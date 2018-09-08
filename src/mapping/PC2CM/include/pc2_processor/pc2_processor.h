@@ -17,6 +17,11 @@ operation is 2 phase:
 2. Compute: call computeCostmap() to crunch input'd data into costmap data
 */
 
+struct mapPoint {
+    float height = 0; // the height of the point
+    int totalPoints = 0; //total amount of points that have gone into this point
+} ;
+
 class pc2cmProcessor
 {
 public:

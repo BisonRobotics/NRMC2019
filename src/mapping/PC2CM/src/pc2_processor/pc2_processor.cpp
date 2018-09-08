@@ -9,7 +9,7 @@
 #define CLAMP(A, B, C) ((A < B) ? B : ((A>C) ? C : A))
 
 
-std::vector<std::vector<float>> map; // a grid of heights defined by Cell_width, Grid_Width, Grid_length
+std::vector<std::vector<mapPoint>> map; // a grid of heights defined by Cell_width, Grid_Width, Grid_length
 
 double GRID_WIDTH;
 double GRID_LENGTH;
@@ -23,9 +23,10 @@ pc2cmProcessor::pc2cmProcessor(double cell_width, double grid_width, double grid
 
     //grid is from +/- 2m on y and +3m on X
     for(int i =0; i <(int)(GRID_LENGTH/CELL_WIDTH)+1; i++){
-        std::vector<float> col;
+        std::vector<mapPoint> col;
         for(int i =0; i <(int)(GRID_WIDTH/CELL_WIDTH); i++){
-            col.push_back(0.0);
+            mapPoint mp;
+            col.push_back(mp);
         }
         map.push_back(col);
     }
@@ -53,8 +54,9 @@ bool pc2cmProcessor::addPoints(pcl::PointCloud<pcl::PointXYZ> cloud_msg){
             int y_index = (int)((-pt.y)/CELL_WIDTH + (.5*GRID_WIDTH/CELL_WIDTH));
             y_index = CLAMP(y_index, 0, GRID_WIDTH/CELL_WIDTH);
 
-            map.at(x_index).at(y_index) = (.90)*map.at(x_index).at(y_index)
-                                            + .10*(-pt.x - map.at(x_index).at(y_index)); // simple filter
+            map.at(x_index).at(y_index).height = map.at(x_index).at(y_index).height +
+                                                (pt.x - map.at(x_index).at(y_index).height)
+                                                / (++map.at(x_index).at(y_index).totalPoints);
         }
     }
     return true;
@@ -77,8 +79,9 @@ bool pc2cmProcessor::addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& c
             int y_index = (int)((-pt.y)/CELL_WIDTH + (.5*GRID_WIDTH/CELL_WIDTH));
             y_index = CLAMP(y_index, 0, GRID_WIDTH/CELL_WIDTH);
 
-            map.at(x_index).at(y_index) = (.90)*map.at(x_index).at(y_index)
-                                            + .10*(-pt.x - map.at(x_index).at(y_index)); // simple filter
+            map.at(x_index).at(y_index).height = map.at(x_index).at(y_index).height +
+                                                (pt.x - map.at(x_index).at(y_index).height)
+                                                / (++map.at(x_index).at(y_index).totalPoints);
         }
     }
     return true;
@@ -87,15 +90,15 @@ bool pc2cmProcessor::addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& c
 
 
 double pc2cmProcessor::get_Height(int xindex, int yindex){
-    return map.at(xindex).at(yindex);
+    return map.at(xindex).at(yindex).height;
 }
 
 void pc2cmProcessor::print_grid(void){
-    std::cout << "printing grid: " << std::endl;
+    std::cout << "printing grid:\n x, y, height, total points" << std::endl;
 
-    for ( auto &col : map ) {
-        for (auto &row : col ) {
-            std::cerr << row << std::endl;
+    for ( std::vector<int>::size_type i = 0; i != map.size(); i++) {
+        for (std::vector<int>::size_type j = 0; j != map[i].size(); j++) {
+            std::cerr << " "<< i << "  "<< j << "     "<< map[i][j].height << "     "<<  map[i][j].totalPoints <<std::endl;
         }
     }
 

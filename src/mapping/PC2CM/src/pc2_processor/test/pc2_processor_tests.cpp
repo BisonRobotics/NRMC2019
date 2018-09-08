@@ -49,8 +49,8 @@ TEST(pc2_processor_points, oneAndDone)
     pcp.addPoints(cloud);
 
     pcp.print_grid();
-
-    EXPECT_TRUE((abs(pcp.get_Height(0,0)  +1.1) < .001 ));
+    float avg = (cloud.points[3].x + cloud.points[0].x)/2;
+    EXPECT_TRUE((abs(pcp.get_Height(0,0) - avg) < .001));
 }
 
 
