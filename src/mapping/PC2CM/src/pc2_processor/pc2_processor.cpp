@@ -67,6 +67,21 @@ bool pc2cmProcessor::addPoints(pcl::PointCloud<pcl::PointXYZ> cloud_msg){
 }
 
 
+double pc2cmProcessor::get_Height(int xindex, int yindex){
+    return masterGrid.at(xindex).at(yindex);
+}
+
+void pc2cmProcessor::print_grid(void){
+    // double[][] grid = {0};
+    for ( auto &col : masterGrid ) {
+        // std::cout << *i << std::endl;
+        for (auto &row : col ) {
+            std::cout << row << std::endl;
+        }
+    }
+
+}
+
 bool pc2cmProcessor::getOne()
 {
     return true;
