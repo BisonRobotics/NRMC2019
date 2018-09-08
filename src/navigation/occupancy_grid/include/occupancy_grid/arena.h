@@ -1,13 +1,17 @@
 #include <vector>
 
+
 #include <occupancy_grid/occupancy_grid.h>
 #include <occupancy_grid/arena_dimensions.h>
+#include <occupancy_grid/draw.h>
 
 #ifndef OCCUPANCY_GRID_ARENA_H
 #define OCCUPANCY_GRID_ARENA_H
 
 namespace occupancy_grid
 {
+
+static const cv::Scalar_<double> occupied(100);
 
 class Arena
 {
@@ -28,28 +32,27 @@ class Arena
       // Populate rocks layer
       for (auto it = rock_locations.begin(); it != rock_locations.end(); it++)
       {
-        rocks.draw((*it));
+        draw(&rocks, (*it), occupied);
       }
-      OccupancyGrid::inflate(rocks, &inflated_rocks, cutoff);
+      OccupancyGrid::inflate(&inflated_rocks, rocks, cutoff);
 
       // Populate wall layer
       double w = AD::width, h = AD::height;
       int thickness = 1;
-      walls.draw(Line(     0.0,       -w/2,      0.0, w/2 - 0.01), thickness);
-      walls.draw(Line(h - 0.01,       -w/2, h - 0.01, w/2 - 0.01), thickness);
-      walls.draw(Line(     0.0,       -w/2, h - 0.01,       -w/2), thickness);
-      walls.draw(Line(     0.0, w/2 - 0.01, h - 0.01, w/2 - 0.01), thickness);
+      draw(&walls, Line(     0.0,       -w/2,      0.0, w/2 - 0.01), occupied, thickness);
+      draw(&walls, Line(h - 0.01,       -w/2, h - 0.01, w/2 - 0.01), occupied, thickness);
+      draw(&walls, Line(     0.0,       -w/2, h - 0.01,       -w/2), occupied, thickness);
+      draw(&walls, Line(     0.0, w/2 - 0.01, h - 0.01, w/2 - 0.01), occupied, thickness);
       thickness = 75;
-      inflated_walls.draw(Line(     0.0,       -w/2,      0.0, w/2 - 0.01), thickness);
-      inflated_walls.draw(Line(h - 0.01,       -w/2, h - 0.01, w/2 - 0.01), thickness);
-      inflated_walls.draw(Line(     0.0,       -w/2, h - 0.01,       -w/2), thickness);
-      inflated_walls.draw(Line(     0.0, w/2 - 0.01, h - 0.01, w/2 - 0.01), thickness);
-      OccupancyGrid::inflate(inflated_walls, &inflated_walls, 0.9, 20, 1);
-
+      draw(&inflated_walls, Line(     0.0,       -w/2,      0.0, w/2 - 0.01), occupied, thickness);
+      draw(&inflated_walls, Line(h - 0.01,       -w/2, h - 0.01, w/2 - 0.01), occupied, thickness);
+      draw(&inflated_walls, Line(     0.0,       -w/2, h - 0.01,       -w/2), occupied, thickness);
+      draw(&inflated_walls, Line(     0.0, w/2 - 0.01, h - 0.01, w/2 - 0.01), occupied, thickness);
+      OccupancyGrid::inflate(&inflated_walls, inflated_walls, 0.9, 20, 1);
 
       // Merge wall and rock layers
-      OccupancyGrid::max(rocks, walls, &obstacles);
-      OccupancyGrid::max(inflated_rocks, inflated_walls, &inflated_obstacles);
+      OccupancyGrid::max(&obstacles, rocks, walls);
+      OccupancyGrid::max(&inflated_obstacles, inflated_rocks, inflated_walls);
     }
 };
 

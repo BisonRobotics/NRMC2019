@@ -18,17 +18,8 @@ class OccupancyGrid : public cv::Mat_<double>
     OccupancyGrid(int rows, int cols) : cv::Mat_<double>(rows, cols, 0.0) {};
     OccupancyGrid(int rows, int cols, double value) : cv::Mat_<double>(rows, cols, value) {};
 
-    static void max(OccupancyGrid const &a, OccupancyGrid const &b, OccupancyGrid *out);
-
-    void show();
-    void write();
-
-    void draw(Point  const &a);
-    void draw(Line   const &a, int thickness);
-    void draw(Circle const &a);
-    void draw(Bezier const &a);
-
-    static void inflate(OccupancyGrid const &in, OccupancyGrid *out,
+    static void max(OccupancyGrid *out, OccupancyGrid const &a, OccupancyGrid const &b);
+    static void inflate(OccupancyGrid *out, OccupancyGrid const &in,
                         double cutoff=0.7, int kernel_size=100, int passes=2);
 };
 
