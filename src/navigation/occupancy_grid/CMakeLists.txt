@@ -4,10 +4,11 @@ project(occupancy_grid)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
-## Boost
+## Non ROS packages
 find_package(Boost REQUIRED COMPONENTS thread)
+find_package(OpenCV 3.3.0)
 
-## ROS Stuff
+## ROS packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -17,15 +18,15 @@ find_package(catkin REQUIRED COMPONENTS
 link_directories(/usr/src/gmock/build)
 set(gtest_LIBRARIES gmock_main)
 
+## Define package
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES julia_test
-#  CATKIN_DEPENDS roscpp std_msgs
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES occupancy_grid
+  CATKIN_DEPENDS roscpp std_msgs
+  DEPENDS OpenCV Boost
 )
 
-find_package(OpenCV 3.3.0)
-
+## Includes
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
@@ -36,17 +37,13 @@ add_library(occupancy_grid src/occupancy_grid/occupancy_grid.cpp)
 target_link_libraries(occupancy_grid ${OpenCV_LIBS})
 target_link_libraries(occupancy_grid ${catkin_LIBRARIES})
 
-## Build executable
-add_executable(drawing_test src/drawing_test.cpp)
+## Build executables
+add_executable(drawing_test src/visual_test.cpp)
 target_link_libraries(drawing_test ${OpenCV_LIBS})
 target_link_libraries(drawing_test ${catkin_LIBRARIES})
 target_link_libraries(drawing_test occupancy_grid)
 
-
-#target_link_libraries(path_planner_node julia.so.0.7.0)
-#add_dependencies(julia_test julia_test_generate_messages_cpp)
-
-## Tests
+## Build tests
 catkin_add_gtest(occupancy_grid_test test/occupancy_grid/occupancy_grid_test.cpp)
 if(TARGET occupancy_grid_test)
     target_link_libraries(occupancy_grid_test ${OpenCV_LIBS})

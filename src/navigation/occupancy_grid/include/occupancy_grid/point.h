@@ -1,42 +1,44 @@
 #include <opencv2/opencv.hpp>
 
-#include <arena.h>
+#include <occupancy_grid/arena_dimensions.h>
 
 #ifndef OCCUPANCY_GRID_POINT_H
 #define OCCUPANCY_GRID_POINT_H
 
 namespace occupancy_grid
 {
-  class Point : public cv::Point2d
+  class Point
   {
     public:
-      Point() : Point_<double_t>(0.0, 0.0){};
-      Point(double x, double y) : Point_<double_t>(x, y){};
-      Point(Point &a) : Point_<double_t>(a){};
+      const double x, y;
 
-      cv::Point2i imgTf()
+      Point()                   : x(0.0), y(0.0) {};
+      Point(double x, double y) : x(x),   y(y)   {};
+      Point(Point const &p)     : x(p.x), y(p.y) {};
+      Point(Point const &&p)    : x(p.x), y(p.y) {};
+
+      cv::Point2i imgTf() const
       {
-        double x = (Arena::height      - this->x + 0.01) / Arena::resolution;
-        double y = (Arena::width / 2.0 - this->y + 0.01) / Arena::resolution;
+        double x = round((ArenaDimensions::height        - 0.01 - this->x) / ArenaDimensions::resolution);
+        double y = round((ArenaDimensions::width / 2.0   - 0.01 - this->y) / ArenaDimensions::resolution);
         return cv::Point2i((int)y, (int)x);
       }
 
-      double &operator[](int i)
+      const double &operator[](int i) const
       {
         if (i == 0)
         {
-          return this->x;
+          return x;
         }
         else if (i == 1)
         {
-          return this->y;
+          return y;
         }
         else
         {
           throw std::out_of_range("[point.h] out of range 0:1");
         }
       }
-
   };
 }
 

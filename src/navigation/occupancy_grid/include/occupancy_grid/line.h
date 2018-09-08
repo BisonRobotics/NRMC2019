@@ -1,6 +1,6 @@
 #include <opencv2/opencv.hpp>
 
-#include <arena.h>
+#include <occupancy_grid/arena_dimensions.h>
 #include <occupancy_grid/point.h>
 
 #ifndef OCCUPANCY_GRID_LINE_H
@@ -11,30 +11,28 @@ namespace occupancy_grid
   class Line
   {
     public:
-      Line(Point &p0, Point &p1)
-      {
-        this->p0 = p0;
-        this->p1 = p1;
-      };
+      const Point p0, p1;
 
-      Point &operator[](int i)
+      Line(Point p0, Point p1) : p0(p0.x, p0.y), p1(p1.x, p1.y) {};
+      Line(Line const &line)   : p0(line.p0),    p1(line.p1)    {};
+      Line(Line const &&line)  : p0(line.p0),    p1(line.p1)    {};
+      Line(double x0, double y0, double x1, double y1) : p0(x0,y0), p1(x1,y1) {};
+
+      const Point &operator[](int i) const
       {
         if (i == 0)
         {
-          return this->p0;
+          return p0;
         }
         else if (i == 1)
         {
-          return this->p1;
+          return p1;
         }
         else
         {
           throw std::out_of_range("[line.h] out of range 0:1");
         }
       }
-
-      Point p0;
-      Point p1;
   };
 }
 
