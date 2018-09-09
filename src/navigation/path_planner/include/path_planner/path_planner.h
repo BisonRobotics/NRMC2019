@@ -40,7 +40,6 @@ class PathPlanner
     Bezier findSegment(OccupancyGrid const &obstacles, Line  const &start, Point const &finish);
     Bezier findSegment(OccupancyGrid const &obstacles, Point const &start, Line  const &finish);
     Bezier findSegment(OccupancyGrid const &obstacles, Line  const &start, Line  const &finish);
-
 };
 
 }
