@@ -12,6 +12,9 @@ find_package(OpenCV 3.3.0)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  nav_msgs
+  tf2
+  tf2_geometry_msgs
 )
 
 ## GMock
@@ -43,6 +46,12 @@ target_link_libraries(drawing_test ${OpenCV_LIBS})
 target_link_libraries(drawing_test ${Boost_LIBRARIES})
 target_link_libraries(drawing_test ${catkin_LIBRARIES})
 target_link_libraries(drawing_test occupancy_grid)
+
+add_executable(map_server src/map_server.cpp)
+target_link_libraries(map_server ${OpenCV_LIBS})
+target_link_libraries(map_server ${Boost_LIBRARIES})
+target_link_libraries(map_server ${catkin_LIBRARIES})
+target_link_libraries(map_server occupancy_grid)
 
 ## Build tests
 catkin_add_gtest(occupancy_grid_test test/occupancy_grid/occupancy_grid_test.cpp)
