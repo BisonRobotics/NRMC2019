@@ -137,12 +137,12 @@ TEST(GeometryTests, Bezier)
   ASSERT_DOUBLE_EQ(3.0, d.p3.x);
   ASSERT_DOUBLE_EQ(4.0, d.p3.y);
 
-  ASSERT_NO_THROW(a(0.5));
-  ASSERT_NO_THROW(a(0.0));
-  ASSERT_NO_THROW(a(1.0));
+  ASSERT_NO_THROW(a(0,0.5));
+  ASSERT_NO_THROW(a(0,0.0));
+  ASSERT_NO_THROW(a(0,1.0));
 
-  ASSERT_THROW(a(-0.1), std::out_of_range);
-  ASSERT_THROW(a( 1.1), std::out_of_range);
+  ASSERT_THROW(a(0,-0.1), std::out_of_range);
+  ASSERT_THROW(a(0, 1.1), std::out_of_range);
 }
 
 int main(int argc, char **argv)
