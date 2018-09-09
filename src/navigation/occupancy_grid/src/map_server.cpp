@@ -40,6 +40,7 @@ int main(int argc, char **argv)
   {
     updateHeader(&test, count, ros::Time::now(), generated_at);
     map_publisher.publish(test);
+
     ros::spinOnce();
     loop_rate.sleep();
     count++;

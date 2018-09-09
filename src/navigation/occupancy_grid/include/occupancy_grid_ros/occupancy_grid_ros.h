@@ -1,3 +1,4 @@
+#include <nav_msgs/Path.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <tf2/transform_datatypes.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -44,7 +45,33 @@ void convert(OccupancyGrid const &a, nav_msgs::OccupancyGrid *b)
 
 void convert(nav_msgs::OccupancyGrid const &a, OccupancyGrid *b)
 {
+  //TODO
+}
 
+void updateHeader(nav_msgs::Path *b, unsigned int seq, ros::Time stamp)
+{
+  b->header.seq = seq;
+  b->header.stamp = stamp;
+  b->header.frame_id = "map";
+
+}
+
+void convert(Bezier const &a, nav_msgs::Path *b, int steps)
+{
+  double step = 1.0 / steps;
+  for (int i = 0; i < steps; i++)
+  {
+    Point point = a(0, step*i);
+    Point d_point = a(1, step*i);
+    geometry_msgs::PoseStamped pose;
+    pose.header.frame_id = "map";
+    pose.pose.position.x = point.x;
+    pose.pose.position.y = point.y;
+    pose.pose.position.z = 0.0;
+    tf2::Quaternion rotation(tf2::Vector3(0.0, 0.0, 1.0), atan2(d_point.y, d_point.x));
+    tf2::convert(rotation, pose.pose.orientation);
+    b->poses.emplace_back(pose);
+  }
 }
 
 }
