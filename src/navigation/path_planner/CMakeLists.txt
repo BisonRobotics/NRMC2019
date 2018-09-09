@@ -4,8 +4,11 @@ project(path_planner)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pg")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+
 ## Non ROS packages
-find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Boost REQUIRED COMPONENTS thread timer)
 find_package(OpenCV 3.3.0)
 
 ## ROS packages
@@ -15,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   occupancy_grid
 )
 include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
 
 ## GMock
 link_directories(/usr/src/gmock/build)
@@ -28,8 +32,15 @@ catkin_package(
   DEPENDS OpenCV Boost
 )
 
+## Build libraries
+add_library(path_planner src/path_planner/path_planner.cpp)
+target_link_libraries(path_planner ${OpenCV_LIBS})
+target_link_libraries(path_planner ${catkin_LIBRARIES})
+target_link_libraries(path_planner ${Boost_LIBRARIES})
+
 ## Build executables
-add_executable(path_planner_test src/visual_test.cpp)
+add_executable(path_planner_test src/path_planner_test.cpp)
 add_dependencies(path_planner_test ${catkin_EXPORTED_TARGETS})
 target_link_libraries(path_planner_test ${OpenCV_LIBS})
 target_link_libraries(path_planner_test ${catkin_LIBRARIES})
+target_link_libraries(path_planner_test path_planner)

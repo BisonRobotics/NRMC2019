@@ -27,11 +27,14 @@ static void draw(cv::Mat *mat, Circle const &a, cv::Scalar fill)
 static void draw(cv::Mat *mat, Bezier const &a, cv::Scalar fill)
 {
   using cv::viz::Color;
-  std::cout << mat->type() << " " << CV_8UC3 << std::endl;
+
+  // Draw curve
   for (double i = 0; i < 0.99; i = i + 0.01)
   {
-    cv::line((*mat), a(i).imgTf(), a(i + 0.01).imgTf(), Color::green(), 2);
+    cv::line((*mat), a(0,i).imgTf(), a(0,i+0.01).imgTf(), Color::green(), 2);
   }
+
+  // Draw control points if this is an image
   if (mat->type() == CV_8UC3)
   {
     cv::line((*mat), a.p0.imgTf(), a.p1.imgTf(), Color::bluberry(), 2);

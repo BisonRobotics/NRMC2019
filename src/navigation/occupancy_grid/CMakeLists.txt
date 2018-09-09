@@ -5,7 +5,7 @@ project(occupancy_grid)
 add_compile_options(-std=c++11)
 
 ## Non ROS packages
-find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Boost REQUIRED COMPONENTS thread timer)
 find_package(OpenCV 3.3.0)
 
 ## ROS packages
@@ -40,6 +40,7 @@ target_link_libraries(occupancy_grid ${catkin_LIBRARIES})
 ## Build executables
 add_executable(drawing_test src/visual_test.cpp)
 target_link_libraries(drawing_test ${OpenCV_LIBS})
+target_link_libraries(drawing_test ${Boost_LIBRARIES})
 target_link_libraries(drawing_test ${catkin_LIBRARIES})
 target_link_libraries(drawing_test occupancy_grid)
 

@@ -16,14 +16,14 @@ class OccupancyGrid : public cv::Mat_<double>
 {
   public:
     OccupancyGrid(int rows, int cols) : cv::Mat_<double>(rows, cols, 0.0) {};
+
     OccupancyGrid(int rows, int cols, double value) : cv::Mat_<double>(rows, cols, value) {};
 
     static void max(OccupancyGrid *out, OccupancyGrid const &a, OccupancyGrid const &b);
+
     static void inflate(OccupancyGrid *out, OccupancyGrid const &in,
-                        double cutoff=0.7, int kernel_size=100, int passes=2);
+                        double cutoff = 0.7, int kernel_size = 100, int passes = 1);
 };
-
-
 
 }
 

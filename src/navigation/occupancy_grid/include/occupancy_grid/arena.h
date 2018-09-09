@@ -34,7 +34,7 @@ class Arena
       {
         draw(&rocks, (*it), occupied);
       }
-      OccupancyGrid::inflate(&inflated_rocks, rocks, cutoff);
+      OccupancyGrid::inflate(&inflated_rocks, rocks, cutoff, 100, 2);
 
       // Populate wall layer
       double w = AD::width, h = AD::height;
