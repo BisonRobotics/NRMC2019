@@ -1,0 +1,12 @@
+#
+# simInt spawnRobot(const simChar* modelFile, double xPos, double yPos, double rotationFromXAxis)
+#
+
+string  modelFile
+float32 xPos
+float32 yPos
+float32 rotFromXAxis
+---
+bool   success
+string response
+
