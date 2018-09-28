@@ -7,7 +7,9 @@
 
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_ros/point_cloud.h>
+#include <costmap_2d/costmap_2d_ros.h>
 #include <pcl/point_types.h>
+#include <fftw3.h>
 
 /*========
 pc2cmProcessor
@@ -34,17 +36,16 @@ public:
     double get_Height(int xindex, int yindex); // get a height from the map at the cordiates from the xindex, yindex (robot relative)
     void print_grid(void);
 
-/*  costmap computeCostmap();
-    //computes costmap from data by calling protected member functions correctly
-*/
+    costmap_2d::Costmap2DROS computeCostmap(); //computes costmap from data by calling protected member functions correctly
+
 //protected:    //these members should be treated as protected,
                 //but for unit testing are actually public
 
 //    void averagePoints();//computes heights of grid elements by averaging all added points in that cell's range
 
-/*  void takeDoG(double radius_1, double radius_2);
+    // void takeDoG(double radius_1, double radius_2);
     //takes difference of gaussian of internal height grid
-*/
+
 
 
 private:

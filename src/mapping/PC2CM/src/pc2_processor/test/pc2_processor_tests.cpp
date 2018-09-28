@@ -3,13 +3,6 @@
 #include <gmock/gmock.h>
 
 
-// TEST(pc2_processor_tests, oneAndDone)
-// {
-//     pc2cmProcessor pcp(1);
-
-//     EXPECT_TRUE(pcp.getOne());
-// }
-
 TEST(pc2_processor_points, oneAndDone)
 {
     pcl::PointCloud<pcl::PointXYZ> cloud;
