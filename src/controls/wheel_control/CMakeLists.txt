@@ -6,8 +6,7 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  pluginlib
-  genmsg 
+  genmsg
   actionlib_msgs 
   actionlib
   std_msgs
@@ -37,7 +36,7 @@ generate_messages(DEPENDENCIES
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES Wheels velocity_plugins
-    CATKIN_DEPENDS roscpp pluginlib message_runtime
+    CATKIN_DEPENDS roscpp message_runtime
     #DEPENDS EIGEN3
 )
 

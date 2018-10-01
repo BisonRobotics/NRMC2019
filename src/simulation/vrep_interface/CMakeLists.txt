@@ -4,6 +4,7 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  roslib
   tf
   dynamic_reconfigure
   vrep_msg_and_srv
@@ -25,7 +26,6 @@ catkin_package(CATKIN_DEPENDS
   roscpp_serialization
   tf
   vrep_msg_and_srv
-  pluginlib
   velocity_plugins
   dynamic_reconfigure
   wheel_control
@@ -40,7 +40,8 @@ add_library(v_repExtRosInterface
   src/ros_interface_server/ros_interface_server.cpp
   src/obstacle_field/obstacle_field.cpp
   src/vrep_robot/vrep_robot.cpp
-  src/vrep_wheels/vrep_wheels.cpp include/camera/camera.h src/camera/camera.cpp include/vrep_exceptions/vrep_exceptions.h)
+  src/vrep_wheels/vrep_wheels.cpp
+  src/camera/camera.cpp)
 
 add_dependencies(v_repExtRosInterface
   ${catkin_EXPORTED_TARGETS}

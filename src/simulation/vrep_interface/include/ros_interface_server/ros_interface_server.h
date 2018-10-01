@@ -3,6 +3,7 @@
 
 
 #include <ros/ros.h>
+#include <ros/package.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 #include <std_srvs/Trigger.h>

@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 
 #include <vrep_robot/vrep_robot.h>
+#include <wheel_control/differential_drive_controller/differential_drive_controller.h>
 
 
 using namespace vrep_interface;
@@ -19,9 +20,7 @@ VREPRobot::VREPRobot()
 
 
   // Load plugins
-  drive_loader = new pluginlib::ClassLoader<wheel_control::VelocityInterface>
-                    ("wheel_control", "wheel_control::VelocityInterface");
-  wheel_controller = drive_loader->createInstance("wheel_control::DifferentialDriveController");
+  wheel_controller = new wheel_control::DifferentialDriveController;
   wheel_controller->load(&wheels);
   scan_seq = 0;
 }

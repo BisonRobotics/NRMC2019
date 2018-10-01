@@ -74,8 +74,7 @@ private:
   simInt loadModelHelper();
 
   // Plugins
-  pluginlib::ClassLoader<wheel_control::VelocityInterface> *drive_loader;
-  boost::shared_ptr<wheel_control::VelocityInterface> wheel_controller;
+  wheel_control::VelocityInterface *wheel_controller;
 };
 
 
