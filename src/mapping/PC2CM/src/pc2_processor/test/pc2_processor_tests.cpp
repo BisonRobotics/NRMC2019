@@ -40,8 +40,9 @@ TEST(pc2_processor_points, oneAndDone)
 
     pc2cmProcessor pcp(.25, 1, 1); // create a 4x4 grid
 
-    cv::Mat dog = pcp.takeDoG(5, .2, .8);
+    cv::Mat dog = pcp.takeDoG(9, .2, .8);
 
+    std::cout << "M = "<< std::endl << " "  << dog << std::endl << std::endl;
     // pcp.print_grid();
     float avg = 1 ; //(cloud.points[3].x + cloud.points[0].x)/2;
     EXPECT_TRUE((abs(pcp.get_Height(0,0) - avg) < .001));

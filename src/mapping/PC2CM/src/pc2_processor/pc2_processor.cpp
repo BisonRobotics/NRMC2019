@@ -31,7 +31,7 @@ pc2cmProcessor::pc2cmProcessor(double cell_width, double grid_width, double GRID
         map.push_back(col);
     }
 
-    std::cerr << "created pc2mProccessor!!" << std::endl;
+    std::cerr << "created pc2mProccessor" << std::endl;
 
 }
 
