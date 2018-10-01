@@ -38,7 +38,9 @@ catkin_add_gtest(pc2_processor_tests include/pc2_processor/pc2_processor.h src/p
 if(TARGET pc2_processor_tests)
   target_link_libraries(pc2_processor_tests
     ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
     gmock_main
     pc2_processor
+
   )
 endif()

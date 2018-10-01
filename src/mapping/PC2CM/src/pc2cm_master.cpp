@@ -80,7 +80,7 @@ int main(int argc, char** argv)
 
 //     processor = pc2cmProcessor(defualtGridWidth);
 
-//     whi7le (ros::ok())
+//     while (ros::ok())
 //     {
 //         if (new_points_here)
 //         {

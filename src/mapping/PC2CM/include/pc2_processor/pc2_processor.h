@@ -9,8 +9,14 @@
 #include <pcl_ros/point_cloud.h>
 #include <costmap_2d/costmap_2d_ros.h>
 #include <pcl/point_types.h>
-#include <fftw3.h>
+#include "opencv2/core/mat.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/features2d/features2d.hpp"
+// #include "opencv/cv.h"
+#include "opencv2/opencv.hpp"
 
+using namespace cv;
 /*========
 pc2cmProcessor
 class that takes incoming point cloud data and converts it to a costmap
@@ -43,7 +49,7 @@ public:
 
 //    void averagePoints();//computes heights of grid elements by averaging all added points in that cell's range
 
-    // void takeDoG(double radius_1, double radius_2);
+    cv::Mat takeDoG(int kernel_size, double sigma1, double sigma2);
     //takes difference of gaussian of internal height grid
 
 

@@ -87,29 +87,14 @@ bool pc2cmProcessor::addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& c
     return true;
 }
 
-// double[][] pc2cmProcessor::takeDoG(double radius_1, double radius_2, double sigma){ // https://www.geeksforgeeks.org/gaussian-filter-generation-c/
+cv::Mat pc2cmProcessor::takeDoG(int kernel_size, double sigma1, double sigma2){ // https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#getgaussiankernel
+    Mat first =(getGaussianKernel(kernel_size, sigma1, CV_64F));
+    Mat second = (  getGaussianKernel(kernel_size, sigma2, CV_64F));
+    Mat result = Mat(first.size(), first.type());
 
-//     // intialising standard deviation to 1.0
-
-//     // sum is for normalization
-//     double sum = 0.0;
-
-//     // generating 5x5 kernel
-//     for (int x = -2; x <= 2; x++) {
-//         for (int y = -2; y <= 2; y++) {
-//             // r = sqrt(x * x + y * y);
-//             GKernel[x + 2][y + 2] = (exp(-(radius_1 * radius_1) / sigma)) / (M_PI * sigma);
-//             sum += GKernel[x + 2][y + 2];
-//         }
-//     }
-
-//     // normalising the Kernel
-//     for (int i = 0; i < 5; ++i){
-//         for (int j = 0; j < 5; ++j){
-//             GKernel[i][j] /= sum;
-//         }
-//     }
-// }
+    subtract(first, second, result);
+    return result ;
+}
 
 double pc2cmProcessor::get_Height(int xindex, int yindex){
     return map.at(xindex).at(yindex).height;
@@ -127,7 +112,7 @@ void pc2cmProcessor::print_grid(void){
 
 
 costmap_2d::Costmap2DROS pc2cmProcessor::computeCostmap(){
-//1. Take the FFT, which will yield another 512x512 matrix
 
+    //https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#filter2d
 
 }
