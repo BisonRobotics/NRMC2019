@@ -47,8 +47,6 @@ public:
 //protected:    //these members should be treated as protected,
                 //but for unit testing are actually public
 
-//    void averagePoints();//computes heights of grid elements by averaging all added points in that cell's range
-
     cv::Mat takeDoG(int kernel_size, double sigma1, double sigma2);
     //takes difference of gaussian of internal height grid
 

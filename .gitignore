@@ -266,3 +266,5 @@ TSWLatexianTemp*
 
 # auto generated bmp files
 #*.bmp
+
+*.vscode*

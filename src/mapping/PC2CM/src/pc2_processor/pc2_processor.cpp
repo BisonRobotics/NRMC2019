@@ -9,7 +9,8 @@
 #define CLAMP(A, B, C) ((A < B) ? B : ((A>C) ? C : A))
 
 
-std::vector<std::vector<mapPoint>> map; // a grid of heights defined by Cell_width, Grid_Width, GRID_HEIGHT
+Mat map; // a grid of heights defined by Cell_width, Grid_Width, GRID_HEIGHT
+Mat pointCount;
 
 double GRID_WIDTH;
 double GRID_HEIGHT;
@@ -21,17 +22,13 @@ pc2cmProcessor::pc2cmProcessor(double cell_width, double grid_width, double GRID
     GRID_HEIGHT = GRID_HEIGHT;
     GRID_WIDTH = grid_width;
 
-    //grid is from +/- 2m on y and +3m on X
-    for(int i =0; i <(int)(GRID_HEIGHT/CELL_WIDTH)+1; i++){
-        std::vector<mapPoint> col;
-        for(int j =0; j <(int)(GRID_WIDTH/CELL_WIDTH); j++){
-            mapPoint mp;
-            col.push_back(mp);
-        }
-        map.push_back(col);
-    }
+    map = Mat((int)(GRID_HEIGHT/CELL_WIDTH)+1, (int)(GRID_WIDTH/CELL_WIDTH),CV_64F );
+    pointCount = Mat((int)(GRID_HEIGHT/CELL_WIDTH)+1, (int)(GRID_WIDTH/CELL_WIDTH),CV_16U );
 
-    std::cerr << "created pc2mProccessor" << std::endl;
+    map.setTo(0);
+    pointCount.setTo(0);
+
+    // std::cerr << "created pc2mProccessor" << std::endl;
 
 }
 
@@ -54,17 +51,15 @@ bool pc2cmProcessor::addPoints(pcl::PointCloud<pcl::PointXYZ> cloud_msg){
             int y_index = (int)((-pt.y)/CELL_WIDTH + (.5*GRID_WIDTH/CELL_WIDTH));
             y_index = CLAMP(y_index, 0, GRID_WIDTH/CELL_WIDTH);
 
-            map.at(x_index).at(y_index).height = map.at(x_index).at(y_index).height +
-                                                (pt.x - map.at(x_index).at(y_index).height)
-                                                / (++map.at(x_index).at(y_index).totalPoints);
+            map.at<double>(x_index, y_index) = map.at<double>(x_index, y_index) +
+                                                (pt.x - map.at<double>(x_index, y_index))
+                                                / (++pointCount.at<int>(x_index, y_index));
         }
     }
     return true;
 }
 
 bool pc2cmProcessor::addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg){
-
-    // std::cerr << " adding points. Size of cloud = "<< cloud_msg.points.size() << std::endl;
 
     for (const pcl::PointXYZ& pt : cloud_msg->points)
     {
@@ -79,17 +74,17 @@ bool pc2cmProcessor::addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& c
             int y_index = (int)((-pt.y)/CELL_WIDTH + (.5*GRID_WIDTH/CELL_WIDTH));
             y_index = CLAMP(y_index, 0, GRID_WIDTH/CELL_WIDTH);
 
-            map.at(x_index).at(y_index).height = map.at(x_index).at(y_index).height +
-                                                (pt.x - map.at(x_index).at(y_index).height)
-                                                / (++map.at(x_index).at(y_index).totalPoints);
+            map.at<double>(x_index, y_index) = map.at<double>(x_index, y_index) +
+                                                (pt.x - map.at<double>(x_index, y_index))
+                                                / (++pointCount.at<int>(x_index, y_index));
         }
     }
     return true;
 }
 
 cv::Mat pc2cmProcessor::takeDoG(int kernel_size, double sigma1, double sigma2){ // https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#getgaussiankernel
-    Mat first =(getGaussianKernel(kernel_size, sigma1, CV_64F));
-    Mat second = (  getGaussianKernel(kernel_size, sigma2, CV_64F));
+    Mat first = getGaussianKernel(kernel_size, sigma1, CV_64F);
+    Mat second = getGaussianKernel(kernel_size, sigma2, CV_64F);
     Mat result = Mat(first.size(), first.type());
 
     subtract(first, second, result);
@@ -97,17 +92,13 @@ cv::Mat pc2cmProcessor::takeDoG(int kernel_size, double sigma1, double sigma2){ 
 }
 
 double pc2cmProcessor::get_Height(int xindex, int yindex){
-    return map.at(xindex).at(yindex).height;
+    return map.at<double>(xindex, yindex);
 }
 
 void pc2cmProcessor::print_grid(void){
-    std::cout << "printing grid:\n x, y, height, total points" << std::endl;
-    for ( std::vector<int>::size_type i = 0; i != map.size(); i++) {
-        for (std::vector<int>::size_type j = 0; j != map[i].size(); j++) {
-            std::cerr << " "<< i << "  "<< j << "     "<< map[i][j].height << "     "<<  map[i][j].totalPoints <<std::endl;
-        }
-    }
 
+    std::cout << "map = "<< std::endl << " "  << map << std::endl << std::endl;
+    std::cout << "pointcount = "<< std::endl << " "  << pointCount << std::endl << std::endl;
 }
 
 
