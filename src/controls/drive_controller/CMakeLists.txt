@@ -69,6 +69,16 @@ target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access)
 ## Testing ##
 #############
 
+catkin_add_gtest(test_drive_controller include/drive_controller/drive_controller.h src/drive_controller/test/drive_controller_tests.cpp)
+if(TARGET test_drive_controller)
+  target_link_libraries(test_drive_controller
+    ${catkin_LIBRARIES}
+    drive_controller
+    gmock_main
+  )
+  add_dependencies(test_drive_controller vesc_access)
+endif()
+
 ## Add gtest based cpp test target and link libraries
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_robot_control.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
