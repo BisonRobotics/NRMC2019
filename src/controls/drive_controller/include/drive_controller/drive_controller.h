@@ -23,9 +23,9 @@ class DriveController
 {
 public:
    DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *bl, iVescAccess *br);
-   //void addPath(DriveController_ns::bezier_path path);
-   //void haltAndAbort();
-   //bool update(double robotX, double robotY, double robotTheta);
+   void addPath(DriveController_ns::bezier_path path);
+   void haltAndAbort();
+   bool update(double robotX, double robotY, double robotTheta);
 //protected:
    double angleDiff(double angle1,double angle2);
    std::pair<double, double> speedSteeringControl(double speed, double steering, 

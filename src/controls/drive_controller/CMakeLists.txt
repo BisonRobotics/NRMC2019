@@ -41,7 +41,7 @@ set(GTEST_LIBRARIES gmock_main)
 
 catkin_package(
         INCLUDE_DIRS include
-        LIBRARIES robot_control
+        #LIBRARIES robot_control
         CATKIN_DEPENDS roscpp std_msgs
 )
 
@@ -52,6 +52,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(${vesc_access_INCLUDE_DIRS})
+include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/include)
 
 ## Build libraries

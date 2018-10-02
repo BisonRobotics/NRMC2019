@@ -8,33 +8,33 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
 
 }
 
-void addPath(DriveController_ns::bezier_path path)
+void DriveController::addPath(DriveController_ns::bezier_path path)
 {
  
 
 
 }
 
-void haltAndAbort()
+void DriveController::haltAndAbort()
 {
 
 
 }
 
 
-bool update(double robotX, double robotY, double robotTheta)
+bool DriveController::update(double robotX, double robotY, double robotTheta)
 {
   return false;
 }
 
-double angleDiff(double angle1, double angle2) //TODO Unit test
+double DriveController::angleDiff(double angle1, double angle2) //TODO Unit test
 {
   double diff = std::atan2(std::sin(angle1 - angle2), std::cos(angle1 - angle2));
   return diff;
 }
 
 //TODO test
-std::pair<double, double> speedSteeringControl(double speed,   double steering, 
+std::pair<double, double> DriveController::speedSteeringControl(double speed,   double steering, 
                                                double AxelLen, double MaxSpeed)
 {
   double maxabs;
@@ -75,7 +75,7 @@ std::pair<double, double> speedSteeringControl(double speed,   double steering,
    return UlUr;
 }
 
-bool getAngleAndLengthInfo(DriveController_ns::bezier_path path, 
+bool DriveController::getAngleAndLengthInfo(DriveController_ns::bezier_path path, 
                            std::vector<double>  &theta, std::vector<double>  &omega, 
                            std::vector<double>  &alpha, std::vector<double>  &lengths, 
                            std::vector<double>  &x, std::vector<double>  &y, double &length, 
@@ -118,7 +118,7 @@ bool getAngleAndLengthInfo(DriveController_ns::bezier_path path,
         //TODO: should probably use estimate from at that point
     }  
     //repeat final values
-    omega.at(chopsize) = omega.at(chopsize-1);
+    omega.at(chopsize-1) = omega.at(chopsize-2);
     
     for (int index = 0; index <(chopsize-3);index++)
     { 
