@@ -10,6 +10,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  vesc_access
 )
 
 link_directories(/usr/src/gmock/build)
@@ -50,13 +51,14 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+include_directories(${vesc_access_INCLUDE_DIRS})
 include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/include)
 
 ## Build libraries
 add_library(drive_controller
         src/drive_controller/drive_controller.cpp)
-add_dependencies(drive_controller ${catkin_EXPORTED_TARGETS})
-target_link_libraries(drive_controller ${catkin_LIBRARIES})
+add_dependencies(drive_controller vesc_access ${catkin_EXPORTED_TARGETS})
+target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access)
 
 #############
 ## Install ##
@@ -70,7 +72,7 @@ target_link_libraries(drive_controller ${catkin_LIBRARIES})
 ## Add gtest based cpp test target and link libraries
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_robot_control.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME} vesc_access)
 # endif()
 
 ## Add folders to be run by python nosetests
