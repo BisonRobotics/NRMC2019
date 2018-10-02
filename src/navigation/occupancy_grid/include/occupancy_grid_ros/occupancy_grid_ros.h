@@ -45,7 +45,11 @@ void convert(OccupancyGrid const &a, nav_msgs::OccupancyGrid *b)
 
 void convert(nav_msgs::OccupancyGrid const &a, OccupancyGrid *b)
 {
-  //TODO
+  cv::Mat_<double> image_f(ArenaDimensions::height_cm, ArenaDimensions::width_cm, CV_64FC1);
+  cv::Mat_<int8_t> image_i(ArenaDimensions::height_cm, ArenaDimensions::width_cm, (int8_t*)a.data.data());
+  image_i.convertTo(image_f, CV_64FC1);
+  image_f = image_f / 100.0;
+  image_f.copyTo(*b);
 }
 
 void updateHeader(nav_msgs::Path *b, unsigned int seq, ros::Time stamp)

@@ -1,0 +1,4 @@
+navigation_msgs/BezierGoal[] goals
+---
+navigation_msgs/BezierSegment[] path
+int8 status # -1 = failure
