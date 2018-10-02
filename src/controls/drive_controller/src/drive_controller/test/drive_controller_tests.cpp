@@ -75,6 +75,39 @@ TEST(DriveControllerTests, gaaliWorks_1)
   EXPECT_NEAR(length, 2.0913, .001);
 }
 
+TEST(DriveControllerTests, findCPP2019works_1)
+{
+
+  NiceMock<MockVescAccess> br;
+  NiceMock<MockVescAccess> bl;
+  NiceMock<MockVescAccess> fr;
+  NiceMock<MockVescAccess> fl;
+
+  DriveController dc(&fr, &fl, &bl, &br);
+
+  DriveController_ns::bezier_path path = {.x1 = 1, .y1 =1, .x2 = 2, .y2 = 1,
+                                          .x3 = 2.5, .y3 = .3, .x4 = 2, .y4 = -.3};
+
+  int chopsize = 100;
+  std::vector<double>  theta(chopsize);
+  std::vector<double>  omega(chopsize);
+  std::vector<double>  alpha(chopsize);
+  std::vector<double>  lengths(chopsize);
+  std::vector<double>  x(chopsize);
+  std::vector<double>  y(chopsize);
+  double length;
+  
+  dc.getAngleAndLengthInfo(path, 
+                           theta, omega, 
+                           alpha, lengths, 
+                           x,  y, length,
+                           chopsize);
+  std::pair<double, double> par_and_err =
+  dc.findCPP2019(2, .5, x, y, theta, chopsize);
+
+  EXPECT_NEAR(par_and_err.first, .5200, .001);
+  EXPECT_NEAR(par_and_err.second, -.0946, .001);
+}
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv)

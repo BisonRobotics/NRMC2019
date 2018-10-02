@@ -2,7 +2,9 @@
 
 
 DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *bl, iVescAccess *br)
-: front_left_wheel(fl), front_right_wheel (fr), back_left_wheel(bl), back_right_wheel(br)
+: front_left_wheel(fl), front_right_wheel (fr), back_left_wheel(bl), back_right_wheel(br),
+  p_theta(Gchopsize), p_omega(Gchopsize), p_alpha(Gchopsize), p_lengths(Gchopsize),
+  p_x(Gchopsize), p_y(Gchopsize), p_length(0), p_paths(0), p_last_closest_t(0), p_closest_t(0)
 {
 
 
@@ -10,9 +12,14 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
 
 void DriveController::addPath(DriveController_ns::bezier_path path)
 {
- 
+ if (p_paths ==0) //no current paths
+ {
+    getAngleAndLengthInfo(path, p_theta, p_omega, p_alpha, p_lengths,
+                          p_x, p_y, p_length, this->Gchopsize);
+ }
+ else return; //one path at a time for now
 
-
+ return;
 }
 
 void DriveController::haltAndAbort()
@@ -22,8 +29,11 @@ void DriveController::haltAndAbort()
 }
 
 
-bool DriveController::update(double robotX, double robotY, double robotTheta)
+bool DriveController::update(DriveController_ns::robot_state_vector sv, double dt)
 {
+  //double 
+
+
   return false;
 }
 
@@ -130,4 +140,31 @@ bool DriveController::getAngleAndLengthInfo(DriveController_ns::bezier_path path
 
 
     return true;
+}
+
+std::pair<double, double> DriveController::findCPP2019(double rx, double ry, 
+                                                       std::vector<double>  &x, 
+                                                       std::vector<double>  &y,
+                                                       std::vector<double> &theta, int chopsize)
+{
+  double curr_dist;
+  double smallest_dist = 1000000;
+  int smallest_index = chopsize -1;
+  for (int index=0; index < chopsize; index++)
+  {
+    curr_dist = (x.at(index) -rx)*(x.at(index) -rx) + (y.at(index) - ry)*(y.at(index) - ry);
+    if (curr_dist < smallest_dist)
+    {
+       smallest_dist = curr_dist;
+       smallest_index = index;
+    }
+  }
+
+  double pos_and_cpp_angle = std::atan2(ry - y.at(smallest_index), rx - x.at(smallest_index));
+  double error_angle_for_sign = DriveController::angleDiff(pos_and_cpp_angle, theta.at(smallest_index));
+  std::pair<double, double> par_and_err;
+  par_and_err.first =((double)(smallest_index+1)) /((double) (chopsize));
+  par_and_err.second = (error_angle_for_sign > 0 ? 1.0 : -1.0)*std::sqrt(smallest_dist);
+
+  return par_and_err;
 }
