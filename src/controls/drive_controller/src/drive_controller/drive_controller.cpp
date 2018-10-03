@@ -4,7 +4,8 @@
 DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *bl, iVescAccess *br)
 : front_left_wheel(fl), front_right_wheel (fr), back_left_wheel(bl), back_right_wheel(br),
   p_theta(Gchopsize), p_omega(Gchopsize), p_alpha(Gchopsize), p_lengths(Gchopsize),
-  p_x(Gchopsize), p_y(Gchopsize), p_length(0), p_paths(0), p_last_closest_t(0), p_closest_t(0)
+  p_x(Gchopsize), p_y(Gchopsize), p_length(0), p_paths(0), p_last_closest_t(0), p_closest_t(0),
+  p_speed_cmd(0)
 {
 
 
@@ -16,6 +17,7 @@ void DriveController::addPath(DriveController_ns::bezier_path path)
  {
     getAngleAndLengthInfo(path, p_theta, p_omega, p_alpha, p_lengths,
                           p_x, p_y, p_length, this->Gchopsize);
+    p_paths +=1;
  }
  else return; //one path at a time for now
 
@@ -24,17 +26,73 @@ void DriveController::addPath(DriveController_ns::bezier_path path)
 
 void DriveController::haltAndAbort()
 {
+  front_right_wheel->setLinearVelocity(0);
+  front_left_wheel->setLinearVelocity(0);
+  back_left_wheel->setLinearVelocity(0);
+  back_right_wheel->setLinearVelocity(0);
 
+  p_paths = 0;
 
 }
 
 
 bool DriveController::update(DriveController_ns::robot_state_vector sv, double dt)
 {
-  //double 
+  if (p_paths > 0)
+  {
+  double right_speed = .5*(front_right_wheel->getLinearVelocity() 
+                           + back_right_wheel->getLinearVelocity());
+  double left_speed  = .5*(front_left_wheel->getLinearVelocity()  
+                           + back_left_wheel->getLinearVelocity());
+  double speedMes = .25 * (right_speed + left_speed);
 
+  double speed_gain = 3.0; /*DNFW*/
+  double set_speed = .4;   /*DNFW*/
+  double angle_gain = 20;  /*DNFW*/ 
+  double path_gain = 100;  /*DNFW*/
+  
 
-  return false;
+  double steering = 0;
+  //limit denominator for steering
+    if (std::abs(left_speed + right_speed) < .01)
+        {steering =  (2/Axelsize) * (right_speed - left_speed)/.01;}
+    else
+        {steering = (2/Axelsize) * (right_speed - left_speed)/(left_speed + right_speed);}
+  //find closest index and path error
+    p_last_closest_t = p_closest_t;
+    std::pair<double, double> par_and_err = findCPP2019(sv.x, sv.y, p_x, p_y, p_theta, Gchopsize);
+    p_closest_t = par_and_err.first;
+    double path_error = par_and_err.second;
+    if (p_closest_t < p_last_closest_t)
+        {p_closest_t = p_last_closest_t;}
+
+    double angle_error = angleDiff(sv.theta,p_theta.at((int)(p_closest_t*Gchopsize)));
+    
+    double speed_cmd = speed_cmd - speed_gain*(speed_cmd - set_speed)*dt;
+
+  //interpolate point to take steering from slightly ahead
+    double meters_to_jump = speed_cmd * dt;
+    double jumped_meters =0;
+    int t_jumps = 0;
+    while (jumped_meters < meters_to_jump && ((int)(p_closest_t*Gchopsize) + t_jumps) < Gchopsize)
+    {
+        jumped_meters = jumped_meters + p_lengths.at((int)(p_closest_t*Gchopsize) + t_jumps);
+        t_jumps = t_jumps+1;
+    }
+  //Get wheel velocities
+  std::pair<double, double> UlUr = speedSteeringControl(speed_cmd, 
+                                     p_theta.at((int)(p_closest_t*Gchopsize) + t_jumps)
+                                     - angle_gain*angle_error - path_gain*path_error,
+                                     Axelsize, 2.0);
+
+  front_right_wheel->setLinearVelocity(UlUr.second);
+  front_left_wheel->setLinearVelocity(UlUr.first);
+  back_left_wheel->setLinearVelocity(UlUr.first);
+  back_right_wheel->setLinearVelocity(UlUr.second);
+
+  return true;
+  }
+  else return false;
 }
 
 double DriveController::angleDiff(double angle1, double angle2) //TODO Unit test

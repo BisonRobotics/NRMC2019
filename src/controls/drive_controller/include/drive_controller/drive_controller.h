@@ -23,11 +23,11 @@ typedef struct robot_state_s
    double x;
    double y;
    double theta;
-   double dx;
+   /*double dx;
    double dy;
    double omega;
    double dx2;
-   double dy2;
+   double dy2;*/
    //double l_wheel; //gets these from the VESC layer
    //double r_wheel;
 } robot_state_vector;
@@ -58,6 +58,7 @@ public:
    
 private:
   static const int Gchopsize = 100;
+  static constexpr double Axelsize = .5;
   iVescAccess *front_left_wheel, *front_right_wheel, *back_right_wheel, *back_left_wheel;
   std::vector<double>  p_theta;
   std::vector<double>  p_omega;
@@ -70,4 +71,6 @@ private:
 
   double p_last_closest_t;
   double p_closest_t;
+
+  double p_speed_cmd;
 };
