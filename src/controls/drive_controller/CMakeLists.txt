@@ -11,6 +11,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   vesc_access
+  localization
+  new_sim
+  geometry_msgs
+  visualization_msgs
+  tf2
 )
 
 link_directories(/usr/src/gmock/build)
@@ -41,7 +46,7 @@ set(GTEST_LIBRARIES gmock_main)
 
 catkin_package(
         INCLUDE_DIRS include
-        #LIBRARIES robot_control
+
         CATKIN_DEPENDS roscpp std_msgs
 )
 
@@ -52,6 +57,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(${vesc_access_INCLUDE_DIRS})
+include_directories(${localization_INCLUDE_DIRS})
+include_directories(${new_sim_INCLUDE_DIRS})
 include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/include)
 
@@ -64,6 +71,11 @@ target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access)
 #############
 ## Install ##
 #############
+
+add_executable(drive_controller_master src/drive_controller_master.cpp)
+add_dependencies(drive_controller_master drive_controller sim_robot)
+target_link_libraries (drive_controller_master drive_controller ${new_sim_LIBRARIES} ${localization_INCLUDE_DIRS} ${catkin_LIBRARIES} )
+
 
 
 #############
