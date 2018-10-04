@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   navigation_msgs
   occupancy_grid
+  actionlib
 )
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
@@ -61,3 +62,8 @@ add_dependencies(path_planner_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(path_planner_node ${OpenCV_LIBS})
 target_link_libraries(path_planner_node ${catkin_LIBRARIES})
 target_link_libraries(path_planner_node path_planner)
+
+add_executable(action_server_example src/path_planner_node/action_server_example.cpp)
+add_dependencies(action_server_example ${catkin_EXPORTED_TARGETS})
+target_link_libraries(action_server_example ${catkin_LIBRARIES})
+target_link_libraries(action_server_example path_planner)
