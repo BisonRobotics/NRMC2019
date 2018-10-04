@@ -38,14 +38,19 @@ void convert(OccupancyGrid const &a, nav_msgs::OccupancyGrid *b)
   cv::Mat_<int8_t> image_i(ArenaDimensions::width_cm, ArenaDimensions::height_cm, CV_8SC1);
   image_f = 100.0 * a;
   image_f.convertTo(image_i, CV_8SC1);
-  cv::flip(image_i, image_i, 1);
+  //cv::flip(image_i, image_i, 1);
   image_i = image_i.reshape(1,1);
   b->data.insert(b->data.begin(), image_i.begin(), image_i.end());
 }
 
 void convert(nav_msgs::OccupancyGrid const &a, OccupancyGrid *b)
 {
-  //TODO
+  cv::Mat_<double> image_f(ArenaDimensions::height_cm, ArenaDimensions::width_cm, CV_64FC1);
+  cv::Mat_<int8_t> image_i(ArenaDimensions::height_cm, ArenaDimensions::width_cm, (int8_t*)a.data.data());
+  cv::flip(image_i, image_i, 1);
+  image_i.convertTo(image_f, CV_64FC1);
+  image_f = image_f / 100.0;
+  image_f.copyTo(*b);
 }
 
 void updateHeader(nav_msgs::Path *b, unsigned int seq, ros::Time stamp)
