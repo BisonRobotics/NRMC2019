@@ -40,6 +40,8 @@ public:
    void addPath(DriveController_ns::bezier_path path);
    void haltAndAbort();
    bool update(DriveController_ns::robot_state_vector sv, double dt);
+   double getPClosestT();
+   double getPPaths();
 //protected:
    double angleDiff(double angle1,double angle2);
    std::pair<double, double> speedSteeringControl(double speed, double steering, 

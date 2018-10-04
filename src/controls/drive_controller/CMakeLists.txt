@@ -16,38 +16,27 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   visualization_msgs
   tf2
+  nav_msgs
+  navigation_msgs
+  occupancy_grid
+  actionlib
+  cv_bridge
+  #path_planner
 )
 
 link_directories(/usr/src/gmock/build)
 set(GTEST_LIBRARIES gmock_main)
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(OpenCV REQUIRED)
+find_package(catkin REQUIRED genmsg actionlib_msgs actionlib)
+add_action_files(DIRECTORY ../../navigation/navigation_msgs/action FILES FollowPath.action)
+generate_messages(DEPENDENCIES actionlib_msgs navigation_msgs)
 
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
-
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
-
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
-
-
-###################################
-## catkin specific configuration ##
-###################################
 
 catkin_package(
         INCLUDE_DIRS include
 
-        CATKIN_DEPENDS roscpp std_msgs
+        CATKIN_DEPENDS roscpp std_msgs navigation_msgs localization cv_bridge
 )
 
 ###########
@@ -59,6 +48,7 @@ catkin_package(
 include_directories(${vesc_access_INCLUDE_DIRS})
 include_directories(${localization_INCLUDE_DIRS})
 include_directories(${new_sim_INCLUDE_DIRS})
+include_directories(${occupancy_grid_INCLUDE_DIRS})
 include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/include)
 
@@ -73,8 +63,8 @@ target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access)
 #############
 
 add_executable(drive_controller_master src/drive_controller_master.cpp)
-add_dependencies(drive_controller_master drive_controller sim_robot)
-target_link_libraries (drive_controller_master drive_controller ${new_sim_LIBRARIES} ${localization_INCLUDE_DIRS} ${catkin_LIBRARIES} )
+add_dependencies(drive_controller_master drive_controller sim_robot navigation_msgs localization ${catkin_EXPORTED_TARGETS})
+target_link_libraries (drive_controller_master drive_controller ${OpenCV_LIBS} ${new_sim_LIBRARIES} ${localization_LIBRARIES} ${navigation_msgs_LIBRARIES} ${catkin_LIBRARIES} )
 
 
 

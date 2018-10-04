@@ -96,6 +96,16 @@ bool DriveController::update(DriveController_ns::robot_state_vector sv, double d
   else return false;
 }
 
+double DriveController::getPClosestT()
+{
+  return p_closest_t;
+}
+
+double DriveController::getPPaths()
+{
+  return p_paths;
+}
+
 double DriveController::angleDiff(double angle1, double angle2) //TODO Unit test
 {
   double diff = std::atan2(std::sin(angle1 - angle2), std::cos(angle1 - angle2));
@@ -215,7 +225,7 @@ std::pair<double, double> DriveController::findCPP2019(double rx, double ry,
   double curr_dist;
   double smallest_dist = 1000000;
   int smallest_index = chopsize -1;
-  for (int index=0; index < chopsize; index++)
+  for (int index=0; index < chopsize; index++) //This could be algebra instead
   {
     curr_dist = (x.at(index) -rx)*(x.at(index) -rx) + (y.at(index) - ry)*(y.at(index) - ry);
     if (curr_dist < smallest_dist)
@@ -233,3 +243,4 @@ std::pair<double, double> DriveController::findCPP2019(double rx, double ry,
 
   return par_and_err;
 }
+

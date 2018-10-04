@@ -4,13 +4,17 @@
 #include <tf2_ros/transform_broadcaster.h>
 
 #include <drive_controller/drive_controller.h>
+#include <actionlib/server/simple_action_server.h>
+#include <navigation_msgs/FollowPathAction.h>
+#include <navigation_msgs/Point2D.h>
+#include <occupancy_grid/bezier.h>
 
 #include <geometry_msgs/Pose2D.h>
 //#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Empty.h>
-#include <std_msgs/String.h>
-#include <std_msgs/Float64.h>
+//#include <std_msgs/String.h>
+//#include <std_msgs/Float64.h>
 
 #include <vesc_access/ivesc_access.h>
 #include <vesc_access/vesc_access.h>
@@ -34,21 +38,23 @@
 bool newWaypointHere = false;
 bool firstWaypointHere = true;
 bool halt = false;
-/*
-bool newWaypointHere = false;
-pose newWaypoint;
-bool halt = false;
-bool do_the_south_check = false;
+bool doing_path = false;
 
-double topicTheta = 0;
-bool thetaHere = false;
-bool firstWaypointHere = true;
-bool scoot_back = false;
-*/
+using navigation_msgs::FollowPathAction;
+using navigation_msgs::FollowPathGoalConstPtr;
+using navigation_msgs::FollowPathFeedback;
+using navigation_msgs::FollowPathResult;
+using navigation_msgs::BezierSegment;
+using actionlib::SimpleActionServer;
+using occupancy_grid::Bezier;
+
 DriveController_ns::bezier_path curr_path; //eventually will be a vector of these.
 
-void newGoalCallback(const std_msgs::Empty::ConstPtr &msg)
+SimpleActionServer<FollowPathAction> *server;
+
+void newGoalCallback(const FollowPathGoalConstPtr &goal) //technically called in another thread
 {
+/*
   curr_path.x1 = 1;
   curr_path.y1 = 1;
   curr_path.x2 = 2; 
@@ -58,13 +64,46 @@ void newGoalCallback(const std_msgs::Empty::ConstPtr &msg)
   curr_path.x4 = 2;
   curr_path.y4 = -.3;
   newWaypointHere = true;
-}
-/*
-void scootBackCallback(const std_msgs::Empty::ConstPtr &msg)
-{
-    scoot_back = true;
-}
 */
+ ROS_INFO("[action_server] Moving toward goal");
+  //ros::Rate rate(1.0);
+
+  // Get path
+  BezierSegment segment = goal->path[0];
+  curr_path.x1 = segment.p0.x;
+  curr_path.y1 = segment.p0.y;
+  curr_path.x2 = segment.p1.x;
+  curr_path.y2 = segment.p1.y;
+  curr_path.x3 = segment.p2.x;
+  curr_path.y3 = segment.p2.y;
+  curr_path.x4 = segment.p3.x;
+  curr_path.y4 = segment.p3.y;
+
+  newWaypointHere = true;
+
+/* Done after dc.update
+  // Provide feedback
+  FollowPathFeedback feedback;
+  feedback.deviation = 0.01;
+  for (int i = 0; i < 10; i++)
+  {
+    feedback.progress = 0.1 * (i + 1);
+    server->publishFeedback(feedback);
+    rate.sleep();
+  }
+*/
+/* Done after dc.update
+  // Publish result
+  FollowPathResult result;
+  result.pose.position.x = segment.p3.x;
+  result.pose.position.y = segment.p3.y;
+  result.pose.position.z = 0.0;
+  // TODO add orientation
+  result.status = 0;
+  server->setSucceeded(result);
+*/
+}
+
 geometry_msgs::TransformStamped create_tf(double x, double y, double theta, tf2::Quaternion imu_orientation, double z)
 {
   geometry_msgs::TransformStamped transform;
@@ -121,26 +160,7 @@ void haltCallback(const std_msgs::Empty::ConstPtr &msg)
 {
   halt = true;
 }
-/*
-void faceSouthCheckCallback (const std_msgs::Empty::ConstPtr &msg)
-{
-  do_the_south_check =true;
-}
 
-void initialThetaCallback(const std_msgs::Float64::ConstPtr &msg)
-{
-  topicTheta = msg->data;
-  thetaHere = true;
-}
-
-bool areTheseEqual(imperio::DriveStatus status1, imperio::DriveStatus status2)
-{
-  return (status1.is_stuck.data == status2.is_stuck.data &&
-          status1.cannot_plan_path.data == status2.cannot_plan_path.data &&
-          status1.in_motion.data == status2.in_motion.data &&
-          status1.has_reached_goal.data == status2.has_reached_goal.data);
-}
-*/
 int main(int argc, char **argv)
 {
   // read ros param for simulating
@@ -173,43 +193,16 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   }
 
   ros::Subscriber sub = node.subscribe("additional_path", 100, newGoalCallback);
-  //ros::Subscriber sub_south = node.subscribe ("south_check", 100, faceSouthCheckCallback);
-  //ros::Subscriber sub_scoot = globalNode.subscribe("scoot_back", 100, scootBackCallback);
 
   ros::Publisher jspub = globalNode.advertise<sensor_msgs::JointState>("joint_states", 500);
 
-/*
-  ros::Publisher angleErrorPub = node.advertise<std_msgs::Float64>("angle_error", 30);
-  ros::Publisher angleDerivErrorPub = node.advertise<std_msgs::Float64>("angle_d_error", 30);
-  ros::Publisher pathErrorPub = node.advertise<std_msgs::Float64>("path_error", 30);
-  ros::Publisher pathDerivErrorPub = node.advertise<std_msgs::Float64>("path_d_error", 30);
-  ros::Publisher dist2EndAbsPub = node.advertise<std_msgs::Float64>("dist_to_end_abs", 30);
-  ros::Publisher dist2EndPub = node.advertise<std_msgs::Float64>("dist_to_end", 30);
-  ros::Publisher stuckMetricPub = node.advertise<std_msgs::Float64>("stuck_metric", 30);
-  ros::Publisher simAnglePub = node.advertise<std_msgs::Float64>("sim_angle", 30);
-  ros::Publisher baseAnglePub = node.advertise<std_msgs::Float64>("base_angle", 30);
-  ros::Publisher lWheelVelPub = node.advertise<std_msgs::Float64>("lWheelVelCmd", 30);
-  ros::Publisher rWheelVelPub = node.advertise<std_msgs::Float64>("rWheelVelCmd", 30);
-*/
   double settle_time;
   if(!node.getParam("localization_settling_time", settle_time))
   {
     settle_time = 5;
     ROS_INFO_STREAM ("localization settling time " << settle_time);
   }
-  /*
-  std_msgs::Float64 angleErrorMsg;
-  std_msgs::Float64 angleDerivErrorMsg;
-  std_msgs::Float64 pathErrorMsg;
-  std_msgs::Float64 pathDerivErrorMsg;
-  std_msgs::Float64 dist2EndAbsMsg;
-  std_msgs::Float64 dist2EndMsg;
-  std_msgs::Float64 stuckMetricMsg;
-  std_msgs::Float64 simAngleMsg;
-  std_msgs::Float64 baseAngleMsg;
-  std_msgs::Float64 lWheelVel;
-  std_msgs::Float64 rWheelVel;
-*/
+
   tf2_ros::Buffer tfBuffer;
   geometry_msgs::TransformStamped transformStamped;
 
@@ -266,21 +259,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   
   LocalizerInterface::stateVector stateVector;
   ros::Subscriber haltsub = node.subscribe("halt", 100, haltCallback);
-  //ros::Publisher mode_pub = node.advertise<imperio::DriveStatus>("drive_controller_status", 1000, true);
-  ros::Publisher path_marker_pub = node.advertise<visualization_msgs::Marker>("waypoint_path", 10000);
-  //ros::Publisher wholeQueue_pub = node.advertise<visualization_msgs::Marker>("whole_queue", 100);
-
-  //imperio::DriveStatus status_msg;
-  //imperio::DriveStatus last_msg;
-
-  visualization_msgs::Marker line_strip2;
-  line_strip2.action = visualization_msgs::Marker::ADD;
-  line_strip2.pose.orientation.w = 1;
-  line_strip2.type = visualization_msgs::Marker::LINE_STRIP;
-  line_strip2.scale.x = .1;
-  line_strip2.color.b = 1;
-  line_strip2.color.a = 1;
-  line_strip2.header.frame_id = "/map";
 
   double wheel_positions[4] = { 0 };
 
@@ -288,10 +266,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   // hang here until someone knows where we are
   ROS_INFO("Going into wait loop for localizer and initial theta...");
 
-
   ros::Duration idealLoopTime(1.0 / UPDATE_RATE_HZ);
-
-  //ros::Subscriber initialThetaSub = node.subscribe("initialTheta", 100, initialThetaCallback);
 
   while ((!superLocalizer.getIsDataGood() && ros::ok()))
   {
@@ -338,92 +313,9 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   ROS_INFO ("Localization Settled!");
   ros::spinOnce ();
 
-/*
-  double range_of_bad_theta;
-  if (!node.getParam("theta_range",range_of_bad_theta))
-  {
-    ROS_ERROR ("~/theta_range is not defined!! This is an error");
-    ros::shutdown ();
-  }
-  double time_for_zero_point;
-  if (!node.getParam("time_for_blind_zero",time_for_zero_point))
-  {
-    ROS_ERROR ("~/time_for_blind_zero is not defined!! This is an error");
-    ros::shutdown ();
-  }
-*/
   double init_angle = pos->getTheta();
   int init_y = (pos->getY() > 0) ? 1 : -1;
-/*
-  bool should_zero_point = std::abs(WaypointControllerHelper::anglediff(std::abs(init_angle),M_PI)) < range_of_bad_theta
-                            || std::abs(WaypointControllerHelper::anglediff(std::abs(init_angle),0)) < range_of_bad_theta;
 
-  if (should_zero_point)
-  {
-    ROS_INFO ("Zero point turning");
-  }
-  else {
-    ROS_INFO ("Not zero point turning %.4f Theta", init_angle);
-  }
-
-
-
-  double zeroPointTurnGain;
-  if (node.hasParam("initial_theta_gain"))
-  {
-    node.getParam("initial_theta_gain", zeroPointTurnGain);
-  }
-  else
-  {
-    ROS_ERROR("\n\ninitial_theta_gain param not defined! aborting.\n\n");
-    return -1;
-  }
-
-  ROS_INFO ("time for zero point: %f", time_for_zero_point);
-
-  firstTime=true;
-
-  ROS_INFO ("Waiting for the OK to do the south check!");
-
-  while(ros::ok() && !do_the_south_check){
-    rate.sleep();
-    ros::spinOnce();
-  }
-
-  ros::Time initialTime=ros::Time::now();
-  while (should_zero_point && ros::ok() && (ros::Time::now()-initialTime).toSec() < time_for_zero_point)
-  {
-    double speed = init_y *zeroPointTurnGain;
-    fl->setLinearVelocity(-speed);
-    fr->setLinearVelocity(speed);
-    bl->setLinearVelocity(-speed);
-    br->setLinearVelocity(speed);
-
-    if (firstTime)
-    {
-      firstTime = false;
-      currTime = ros::Time::now();
-      lastTime = currTime - idealLoopTime;
-      loopTime = (currTime - lastTime);
-    }
-    else
-    {
-      lastTime = currTime;
-      currTime = ros::Time::now();
-      loopTime = (currTime - lastTime);
-    }
-    if (simulating)
-    {
-      sim->update((loopTime).toSec());
-      tfBroad.sendTransform(create_sim_tf(sim->getX(), sim->getY(), sim->getTheta()));
-    }
-
-    superLocalizer.updateStateVector(loopTime.toSec());
-
-    ros::spinOnce();
-    rate.sleep();
-  }
-*/
   fl->setLinearVelocity(0);
   fr->setLinearVelocity(0);
   bl->setLinearVelocity(0);
@@ -432,75 +324,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
 
   ros::spinOnce();
-/*
-  // zero point turn vescs here before waypoint controller is initialized
-  // get number from topic
-  double topicthetatol = .1;
-  if (node.hasParam("initial_theta_tolerance"))
-  {
-    node.getParam("initial_theta_tolerance", topicthetatol);
-  }
-  else
-  {
-    ROS_ERROR("\n\ninitial_theta_tolerance param not defined! aborting.\n\n");
-    return -1;
-  }
 
-  ROS_INFO ("Waiting for theta");
-
-  while (ros::ok() && !thetaHere)
-  {
-    rate.sleep();
-    ros::spinOnce();
-  }
-
-  status_msg.is_stuck.data = 0;
-  status_msg.cannot_plan_path.data = 0;
-  status_msg.in_motion.data = 1;
-  status_msg.has_reached_goal.data = 0;
-  mode_pub.publish(status_msg);
-  ROS_INFO("Theta received, going into initial turn.");
-  firstTime = true;
-  ROS_INFO("statevector theta before turn: %.4f", stateVector.theta);
-  int direction = WaypointControllerHelper::sign(stateVector.theta);
-  while (ros::ok() && std::abs(WaypointControllerHelper::anglediff(stateVector.theta, topicTheta)) > topicthetatol)
-  {
-    ROS_INFO("going for %.4f within %.4f, currently at %.4f\n", topicTheta, topicthetatol, stateVector.theta);
-    double speed = direction * .1;//zeroPointTurnGain * WaypointControllerHelper::anglediff(stateVector.theta, topicTheta);
-
-    fr->setLinearVelocity(-speed);
-    br->setLinearVelocity(-speed);
-    fl->setLinearVelocity(speed);
-    bl->setLinearVelocity(speed);
-
-    if (firstTime)
-    {
-      firstTime = false;
-      currTime = ros::Time::now();
-      lastTime = currTime - idealLoopTime;
-      loopTime = (currTime - lastTime);
-    }
-    else
-    {
-      lastTime = currTime;
-      currTime = ros::Time::now();
-      loopTime = (currTime - lastTime);
-    }
-    if (simulating)
-    {
-      sim->update((loopTime).toSec());
-      tfBroad.sendTransform(create_sim_tf(sim->getX(), sim->getY(), sim->getTheta()));
-    }
-
-    superLocalizer.updateStateVector(loopTime.toSec());
-    stateVector = superLocalizer.getStateVector();
-
-
-    ros::spinOnce();
-    rate.sleep();
-  }
-
-*/
   fr->setLinearVelocity(0);
   br->setLinearVelocity(0);
   bl->setLinearVelocity(0);
@@ -513,14 +337,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
  // }
     tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
   ros::spinOnce ();
-/*
-  status_msg.in_motion.data = 0;
-  status_msg.has_reached_goal.data = 1;
-  status_msg.cannot_plan_path.data = 0;
-  status_msg.is_stuck.data = 0;
-  mode_pub.publish(status_msg);
-*/
-  ros::spinOnce();
 
   // initialize waypoint controller
   //WaypointController wc = WaypointController(ROBOT_AXLE_LENGTH, ROBOT_MAX_SPEED, currPose, fl, fr, br, bl,
@@ -528,30 +344,12 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   DriveController dc = DriveController(fr, fl, bl, br);
   ROS_INFO("DC Init");
-/*
-  ROS_INFO("Top");
-  ROS_INFO("Xposgain : %.4f", SuperLocalizer_default_gains.x_pos);
-  ROS_INFO("Yposgain : %.4f", SuperLocalizer_default_gains.y_pos);
-  ROS_INFO("Thetagain : %.4f", SuperLocalizer_default_gains.theta);
-  ROS_INFO("Xvelgain : %.4f", SuperLocalizer_default_gains.x_vel);
-  ROS_INFO("Yvelgain : %.4f", SuperLocalizer_default_gains.y_vel);
-  ROS_INFO("Omegagain : %.4f", SuperLocalizer_default_gains.omega);
-  ROS_INFO("Xaccelgain : %.4f", SuperLocalizer_default_gains.x_accel);
-  ROS_INFO("Yaccelgain : %.4f", SuperLocalizer_default_gains.y_accel);
-  ROS_INFO("Alphagain : %.4f", SuperLocalizer_default_gains.alpha);
 
-  ROS_INFO("eppgain : %.4f", waypoint_default_gains.eppgain);
-  ROS_INFO("epdgain : %.4f", waypoint_default_gains.epdgain);
-  ROS_INFO("etpgain : %.4f", waypoint_default_gains.etpgain);
-  ROS_INFO("etdgain : %.4f", waypoint_default_gains.etdgain);
-  ROS_INFO("epplpgain : %.4f", waypoint_default_gains.epplpgain);
-  ROS_INFO("etplpgain : %.4f", waypoint_default_gains.etplpgain);
-  ROS_INFO("wheelalpha : %.4f", waypoint_default_gains.wheelalpha);
-*/
-  //WaypointController::Status wcStat;
-  //std_msgs::String msg;
-  //std::stringstream ss;
-  // geometry_msgs::PoseStamped poser;
+  server = new SimpleActionServer<FollowPathAction>(globalNode, "follow_path", &newGoalCallback, false);
+  server->start();
+  ROS_INFO("[action_server] Started");
+
+
   firstTime = true;
   while (ros::ok())
   {
@@ -577,7 +375,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       sim->update(loopTime.toSec());
 
       tfBroad.sendTransform(create_sim_tf(sim->getX(), sim->getY(), sim->getTheta()));
-      // also publish marker
     }
 
     superLocalizer.updateStateVector(loopTime.toSec());
@@ -588,11 +385,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     sv.theta = stateVector.theta;
 
     tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
-    // also publish marker
 
-    //currPose.x = stateVector.x_pos;
-    //currPose.y = stateVector.y_pos;
-    //currPose.theta = stateVector.theta;
     sensor_msgs::JointState jsMessage;
 
     jsMessage.name.push_back("frame_to_front_left_wheel");
@@ -626,36 +419,43 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     ROS_DEBUG("FrontRightVel : %.4f", jsMessage.velocity[1]);
     ROS_DEBUG("BackRightVel : %.4f", jsMessage.velocity[2]);
     ROS_DEBUG("BackLeftVel : %.4f", jsMessage.velocity[3]);
-   //TODO plot path
+
    if (newWaypointHere)
    {
        dc.addPath(curr_path);
        newWaypointHere = false;
    }
-/*
-    if (newWaypointHere)
-    {
-      waypoint_set = wc.addWaypoint(newWaypoint, currPose);
-      line_strip.points.clear();
-      for (auto const &waypoint : waypoint_set)
-      {
-        vis_point.x = waypoint.first;
-        vis_point.y = waypoint.second;
-        vis_point.z = .4;
-        line_strip.points.push_back(vis_point);
-      }
-      path_marker_pub.publish(line_strip);
-      newWaypointHere = false;
-      ROS_DEBUG("NewWaypoint : 1");
-    }
-    else
-    {
-      ROS_DEBUG("NewWaypoint : 0");
-    }
-*/
     // update controller
      dc.update(sv, loopTime.toSec());
 
+  if (dc.getPPaths() >=1)
+  {
+    // Provide feedback
+    FollowPathFeedback feedback;
+    feedback.deviation = 0.01;
+    feedback.progress = dc.getPClosestT();; //eventually will grab t parameter from dc
+    server->publishFeedback(feedback);
+    doing_path = true;
+   }
+   else if (doing_path && dc.getPPaths() ==0/*last PPaths was >1 but this one is zero*/)
+  {
+
+    // Publish result
+    FollowPathResult result;
+    result.pose.position.x = sv.x;
+    result.pose.position.y = sv.y;
+    result.pose.position.z = 0.0;
+    // TODO add orientation
+    result.pose.orientation.w = std::cos(.5*sv.theta);
+    result.pose.orientation.x = 0;
+    result.pose.orientation.y = 0;
+    result.pose.orientation.z = std::sin(.5*sv.theta);
+    result.status = 0;
+    server->setSucceeded(result);
+    doing_path = false;
+  }
+
+  // The Way We Used To Do Things (TWWUTDT)
   /*  wcStat = wc.update(stateVector, loopTime.toSec());
 
     status_msg.has_reached_goal.data = 0;
@@ -691,154 +491,9 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       status_msg.has_reached_goal.data = 1;
     }
 */
-/*
-    if (!firstTime)
-    {
-      if (!areTheseEqual(status_msg, last_msg))
-      {
-        mode_pub.publish(status_msg);
-      }
-    }
-    else
-    {
-      mode_pub.publish(status_msg);
-    }
-*/
-  //  last_msg = status_msg;
-    // print some info
-/*
-    navigationQueue = wc.getNavigationQueue();
-    theCPP = wc.getCPP();
-    // iterate through navigationqueue elements
-    line_strip2.points.clear();
-    line_strip2.color.r = 0;
-    line_strip2.color.b = 1;
-    for (auto const &myMan : navigationQueue)
-    {
-      waypoint_set = WaypointControllerHelper::waypointWithManeuvers2points(myMan);
-      for (auto const &waypoint : waypoint_set)
-      {
-        vis_point.x = waypoint.first;
-        vis_point.y = waypoint.second;
-        vis_point.z = .2;
-        line_strip2.points.push_back(vis_point);
-      }
-      line_strip2.color.b -= (line_strip2.color.b <= 0.0) ? -1 : .1;
-      line_strip2.color.r += (line_strip2.color.r >= 1.0) ? 0 : .1;
-    }
-    wholeQueue_pub.publish(line_strip2);
-*/
-/*
-    // publish wc.getEPpEstimate() as topic
-    // publish sim theta sim->getTheta()
-    // publish base link theta stateVector.theta
-    angleErrorMsg.data = wc.getETpEstimate();
-    angleDerivErrorMsg.data = wc.getETdEstimate();
-    pathErrorMsg.data = wc.getEPpEstimate();
-    pathDerivErrorMsg.data = wc.getEPdEstimate();
-    dist2EndMsg.data = wc.getDist2endOnPath();
-    dist2EndAbsMsg.data = wc.getDist2endAbs();
-    stuckMetricMsg.data = wc.getStuckMetric();
-    baseAngleMsg.data = stateVector.theta;
-    
-    angleErrorPub.publish(angleErrorMsg);
-    angleDerivErrorPub.publish(angleDerivErrorMsg);
-    pathErrorPub.publish(pathErrorMsg);
-    pathDerivErrorPub.publish(pathDerivErrorMsg);
-    dist2EndAbsPub.publish(dist2EndAbsMsg);
-    stuckMetricPub.publish(stuckMetricMsg);
-    dist2EndPub.publish(dist2EndMsg);
-    
-    baseAnglePub.publish(baseAngleMsg);
-    
-    if (simulating)
-    {
-      simAngleMsg.data = sim->getTheta();
-      simAnglePub.publish(simAngleMsg);
-    }
 
-    ROS_DEBUG("CPPx : %.4f", theCPP.x);
-    ROS_DEBUG("CPPy : %.4f", theCPP.y);
-    ROS_DEBUG("CPPth : %.4f", theCPP.theta);
+/*Insert >100 lines of debug statements here*/
 
-    ROS_DEBUG("CurPx : %.4f", currPose.x);
-    ROS_DEBUG("CurPy : %.4f", currPose.y);
-    ROS_DEBUG("CurPth : %.4f", currPose.theta);
-
-    ROS_DEBUG("Dist2endOnPath : %.4f", wc.getDist2endOnPath());
-    ROS_DEBUG("Dist2endAbs : %.4f", wc.getDist2endAbs());
-
-    ROS_DEBUG("EtpEstimate : %.4f", wc.getETpEstimate());
-    ROS_DEBUG("EppEstimate : %.4f", wc.getEPpEstimate());
-
-    ROS_DEBUG("SetSpeed1 : %.4f", wc.getSetSpeeds().first);
-    ROS_DEBUG("SetSpeed2 : %.4f", wc.getSetSpeeds().second);
-    ROS_DEBUG("CmdSpeed1 : %.4f", wc.getCmdSpeeds().first);
-    ROS_DEBUG("CmdSpeed2 : %.4f", wc.getCmdSpeeds().second);
-
-    ROS_DEBUG("currMan Index : %d", wc.getCurrManeuverIndex());
-
-    if (navigationQueue.size() > 0)
-    {
-      ROS_DEBUG("NavManSize : %d", (int)navigationQueue.at(0).mans.size());
-
-      ROS_DEBUG("NavMan0rad : %.4f", navigationQueue.at(0).mans.at(0).radius);
-      ROS_DEBUG("NavMan0nxc : %.4f", navigationQueue.at(0).mans.at(0).xc);
-      ROS_DEBUG("NavMan0yc : %.4f", navigationQueue.at(0).mans.at(0).yc);
-      ROS_DEBUG("NavMan0dist : %.4f", navigationQueue.at(0).mans.at(0).distance);
-      if (navigationQueue.at(0).mans.size() >= 2)
-      {
-        ROS_DEBUG("NavMan1rad : %.4f", navigationQueue.at(0).mans.at(1).radius);
-        ROS_DEBUG("NavMan1nxc : %.4f", navigationQueue.at(0).mans.at(1).xc);
-        ROS_DEBUG("NavMan1yc : %.4f", navigationQueue.at(0).mans.at(1).yc);
-        ROS_DEBUG("NavMan1dist : %.4f", navigationQueue.at(0).mans.at(1).distance);
-      }
-      else
-      {
-        ROS_DEBUG("NavMan1rad : %.4f", 0.0);
-        ROS_DEBUG("NavMan1nxc : %.4f", 0.0);
-        ROS_DEBUG("NavMan1yc : %.4f", 0.0);
-        ROS_DEBUG("NavMan1dist : %.4f", 0.0);
-      }
-      pose manEnd = wc.getManeuverEnd();
-      ROS_DEBUG("CurrManEndx : %.4f", manEnd.x);
-      ROS_DEBUG("CurrManEndy : %.4f", manEnd.y);
-      ROS_DEBUG("CurrManEndTh : %.4f", manEnd.theta);
-
-      ROS_DEBUG("NavInitPosex : %.4f", navigationQueue.at(0).initialPose.x);
-      ROS_DEBUG("NavInitPosey : %.4f", navigationQueue.at(0).initialPose.y);
-      ROS_DEBUG("NavInitPoseth : %.4f", navigationQueue.at(0).initialPose.theta);
-
-      ROS_DEBUG("NavTermPosex : %.4f", navigationQueue.at(0).terminalPose.x);
-      ROS_DEBUG("NavTermPosey : %.4f", navigationQueue.at(0).terminalPose.y);
-      ROS_DEBUG("NavTermPoseth : %.4f", navigationQueue.at(0).terminalPose.theta);
-    }
-    else
-    {
-      ROS_DEBUG("NavManSize : %d", 0);
-
-      ROS_DEBUG("NavMan0rad : %.4f", 0.0);
-      ROS_DEBUG("NavMan0nxc : %.4f", 0.0);
-      ROS_DEBUG("NavMan0yc : %.4f", 0.0);
-      ROS_DEBUG("NavMan0dist : %.4f", 0.0);
-      ROS_DEBUG("NavMan1rad : %.4f", 0.0);
-      ROS_DEBUG("NavMan1nxc : %.4f", 0.0);
-      ROS_DEBUG("NavMan1yc : %.4f", 0.0);
-      ROS_DEBUG("NavMan1dist : %.4f", 0.0);
-
-      ROS_DEBUG("CurrManEndx : %.4f", 0.0);
-      ROS_DEBUG("CurrManEndy : %.4f", 0.0);
-      ROS_DEBUG("CurrManEndTh : %.4f", 0.0);
-
-      ROS_DEBUG("NavInitPosex : %.4f", 0.0);
-      ROS_DEBUG("NavInitPosey : %.4f", 0.0);
-      ROS_DEBUG("NavInitPoseth : %.4f", 0.0);
-
-      ROS_DEBUG("NavTermPosex : %.4f", 0.0);
-      ROS_DEBUG("NavTermPosey : %.4f", 0.0);
-      ROS_DEBUG("NavTermPoseth : %.4f", 0.0);
-    }
-*/
     if (halt)
     {
       dc.haltAndAbort();
