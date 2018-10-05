@@ -15,13 +15,8 @@ VREPRobot::VREPRobot()
   handle = -1;
   std::string model_file = "";
   this->wheels.initialize();
-  desired_velocity[0] = 0.0;
-  desired_velocity[1] = 0.0;
-
 
   // Load plugins
-  wheel_controller = new wheel_control::DifferentialDriveController;
-  wheel_controller->load(&wheels);
   scan_seq = 0;
 }
 
@@ -42,12 +37,6 @@ simInt VREPRobot::setModelFile(std::string model_file)
   }
   this->model_file = model_file;
   return (simInt)true;
-}
-
-
-std::string VREPRobot::getModelFile()
-{
-  return model_file;
 }
 
 
@@ -94,14 +83,13 @@ simInt VREPRobot::spawnRobot(simFloat *position, simFloat rotation)
 
 simInt VREPRobot::checkState()
 {
-  // Reset model state if it's been deleted dynamically
+  // Reset model state if it's been deleted
   if (handle != -1)
   {
     if (simIsHandleValid(handle, -1) != 1)
     {
       handle = -1;
-      simAddStatusbarMessage("[method checkState] Looks like the model was deleted dynamically, "
-                                                  "resetting model state");
+      simAddStatusbarMessage("[method checkState] Looks like the model was deleted, resetting model state");
       return (simInt)false;
     }
   }
@@ -131,7 +119,7 @@ simInt VREPRobot::loadModelHelper()
         std::string name = std::string(name_c);
         if (name == "base_link")
         {
-          simAddStatusbarMessage(name.c_str());
+          simAddStatusbarMessage(("[method loadModel] Found: " + name).c_str());
           base_link_handle = tree_handles[i];
           simAddStatusbarMessage(("[method loadModel] Found an id of " + std::to_string(base_link_handle)
                                  + " for base_link_handle").c_str());
@@ -154,7 +142,6 @@ simInt VREPRobot::loadModelHelper()
 
 simInt VREPRobot::loadModel()
 {
-  // Load model
   if (handle == -1)
   {
     return loadModelHelper();
@@ -217,51 +204,13 @@ simInt VREPRobot::initializeWheels()
 
 void VREPRobot::spinOnce()
 {
-  wheel_controller->sendJointCommands();
+  //wheel_controller->sendJointCommands();
 }
 
 
 void VREPRobot::setVelocity(double linear, double angular)
 {
-  wheel_controller->setVelocity(linear, angular);
-}
-
-
-simInt VREPRobot::getLaserScan(sensor_msgs::LaserScan *scan)
-{
-  scan->header.seq = scan_seq++;
-  scan->header.stamp = ros::Time::now();
-  scan->header.frame_id = "emididae";
-  scan->time_increment = 0.0;
-  scan->angle_min = (float)(-60.0 * M_PI / 180.0);
-  scan->angle_max = (float)( 60.0 * M_PI / 180.0);
-  scan->scan_time = 0.05;
-  scan->range_min = 0.5;
-  scan->range_max = 2.8;
-
-  simChar *crater_signal_packed;
-  simInt *crater_signal_length = new simInt;
-  crater_signal_packed = simGetStringSignal("rock_sensor_data", crater_signal_length);
-  float crater_signal_length_f = ((float)(*crater_signal_length)) / 12.0f;
-
-  if (crater_signal_packed != NULL)
-  {
-    std::vector<float> crater_signal(crater_signal_length_f);
-    for (int i = 0; i < crater_signal_length_f; i++)
-    {
-      crater_signal[i] = (float)std::sqrt(pow(((float*)crater_signal_packed)[3 * i], 2)
-                                          + pow(((float*)crater_signal_packed)[3 * i + 1], 2));
-    }
-    scan->ranges = crater_signal;
-    scan->angle_increment = (scan->angle_max - scan->angle_min) / crater_signal_length_f;
-  }
-  else
-  {
-    std::vector<float> crater_signal(0,1);
-    scan->ranges = crater_signal;
-    scan->angle_increment = scan->angle_max - scan->angle_min;
-  }
-  //simGetStringSignal("crater_sensor_data",);
+  //wheel_controller->setVelocity(linear, angular);
 }
 
 
@@ -277,12 +226,6 @@ void VREPRobot::getPosition(tf::Transform *position)
 
   position->setOrigin(tf::Vector3(origin[0], origin[1], origin[2]));
   position->setRotation(rotation);
-}
-
-
-void VREPRobot::initialize(wheel_control::Wheels *wheels, wheel_control::VelocityInterface *controller)
-{
-
 }
 
 

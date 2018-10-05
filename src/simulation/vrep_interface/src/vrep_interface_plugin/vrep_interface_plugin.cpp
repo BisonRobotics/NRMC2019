@@ -17,7 +17,7 @@
 
 #include "vrep_lib/v_repLib.h"
 #include "vrep_interface_plugin/vrep_interface_plugin.h"
-#include "ros_interface_server/ros_interface_server.h"
+#include "ros_interface_server/ros_server.h"
 
 #include "ros/ros.h"
 #include <iostream>
@@ -93,7 +93,7 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
 // releasing this plugin):
 VREP_DLLEXPORT void v_repEnd()
 {
-  /*vrep_interface::ros_server::shutDown();      // shutdown the ros_server*/
+  vrep_interface::ros_server::shutDown();      // shutdown the ros_server
   unloadVrepLibrary(vrepLib);  // release the library
 }
 
@@ -118,7 +118,7 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // commands, then put some code here
   if (message == sim_message_eventcallback_instancepass)
   {
-    /*vrep_interface::ros_server::instancePass();*/
+    vrep_interface::ros_server::instancePass();
   }
 
   // Main script is about to be run (only called while a simulation is running
@@ -127,19 +127,19 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // This is a good location to execute simulation commands
   if (message == sim_message_eventcallback_mainscriptabouttobecalled)
   {
-    /*vrep_interface::ros_server::mainScriptAboutToBeCalled();*/
+    vrep_interface::ros_server::mainScriptAboutToBeCalled();
   }
 
   // Simulation is about to start
   if (message == sim_message_eventcallback_simulationabouttostart)
   {
-    /*vrep_interface::ros_server::simulationAboutToStart();*/
+    vrep_interface::ros_server::simulationAboutToStart();
   }
 
   // Simulation just ended
   if (message == sim_message_eventcallback_simulationended)
   {
-    /*vrep_interface::ros_server::simulationEnded();*/
+    vrep_interface::ros_server::simulationEnded();
   }
 
   // Keep following unchanged:

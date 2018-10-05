@@ -12,10 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   robot_control
 )
 
-generate_dynamic_reconfigure_options(
-  cfg/vrep_interface.cfg
-)
-
 catkin_package(CATKIN_DEPENDS
   roslib
   rosconsole
@@ -27,7 +23,6 @@ catkin_package(CATKIN_DEPENDS
   tf
   vrep_msg_and_srv
   velocity_plugins
-  dynamic_reconfigure
   wheel_control
   robot_control
 )
@@ -37,11 +32,10 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${robot_control_INCLUDE_DIRS}
 add_library(v_repExtRosInterface
   src/vrep_interface_plugin/vrep_interface_plugin.cpp
   src/vrep_lib/v_repLib.cpp
-  src/ros_interface_server/ros_interface_server.cpp
+  src/ros_interface_server/ros_server.cpp
   src/obstacle_field/obstacle_field.cpp
   src/vrep_robot/vrep_robot.cpp
-  src/vrep_wheels/vrep_wheels.cpp
-  src/camera/camera.cpp)
+  src/vrep_wheels/vrep_wheels.cpp)
 
 add_dependencies(v_repExtRosInterface
   ${catkin_EXPORTED_TARGETS}

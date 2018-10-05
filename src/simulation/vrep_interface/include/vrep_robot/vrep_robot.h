@@ -40,7 +40,7 @@ const simFloat mining_zone_rotations[6] =
 };
 
 
-class VREPRobot : public robot_control::Robot
+class VREPRobot
 {
 public:
   VREPRobot();
@@ -52,7 +52,6 @@ public:
   void getPosition(tf::Transform *position);
 
   simInt setModelFile(std::string model_file);
-  std::string getModelFile();
   simInt spawnRobot();
   simInt spawnRobot(simFloat *position, simFloat rotation);
   simInt checkState();
@@ -60,7 +59,6 @@ public:
   simInt move(simFloat position[2]);
   simInt rotate(simFloat rotation);
   simInt initializeWheels();
-  simInt getLaserScan(sensor_msgs::LaserScan *scan);
   //simInt get_joint_states(sensor_msgs::JointState *joint_states);
 
 private:
@@ -68,13 +66,10 @@ private:
   simInt base_link_handle;
   std::string model_file;
   VREPWheels wheels;
-  simFloat desired_velocity[2];
   uint32_t scan_seq;
 
   simInt loadModelHelper();
 
-  // Plugins
-  wheel_control::VelocityInterface *wheel_controller;
 };
 
 
