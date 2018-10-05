@@ -35,7 +35,7 @@ generate_messages(DEPENDENCIES
 
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES Wheels velocity_plugins
+    LIBRARIES Wheels
     CATKIN_DEPENDS roscpp message_runtime
     #DEPENDS EIGEN3
 )

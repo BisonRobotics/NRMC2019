@@ -13,7 +13,6 @@
 #include <sensor_msgs/JointState.h>
 
 #include <vrep_lib/v_repLib.h>
-#include <robot_control/robot/robot.h>
 #include <vrep_wheels/vrep_wheels.h>
 #include <wheel_control/wheels/wheels.h>
 #include <wheel_control/velocity_interface/velocity_interface.h>

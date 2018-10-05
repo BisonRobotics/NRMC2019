@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   vrep_msg_and_srv
   wheel_control
-  robot_control
 )
 
 catkin_package(CATKIN_DEPENDS
@@ -23,10 +22,9 @@ catkin_package(CATKIN_DEPENDS
   tf
   vrep_msg_and_srv
   wheel_control
-  robot_control
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${robot_control_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/include)
+include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/include)
 
 add_library(v_repExtRosInterface
   src/vrep_interface_plugin/vrep_interface_plugin.cpp
@@ -36,10 +34,7 @@ add_library(v_repExtRosInterface
   src/vrep_robot/vrep_robot.cpp
   src/vrep_wheels/vrep_wheels.cpp)
 
-add_dependencies(v_repExtRosInterface
-  ${catkin_EXPORTED_TARGETS}
-  robot_control
-)
+add_dependencies(v_repExtRosInterface ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(v_repExtRosInterface
   pthread
