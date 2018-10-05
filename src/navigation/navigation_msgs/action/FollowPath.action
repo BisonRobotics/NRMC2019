@@ -1,0 +1,10 @@
+# Goal definition
+navigation_msgs/BezierSegment[] path
+---
+# Result definition
+int8 status
+geometry_msgs/Pose pose
+---
+# Feedback
+float64 progress  # [0-1]
+float64 deviation

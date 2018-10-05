@@ -106,8 +106,15 @@ class Bezier
       {
         Point pointf = (*this)(0, step_size*i);
         cv::Point2i point = pointf.imgTf();
-        double current_value = obstacles(point.y, point.x);
-
+        double current_value;
+        if (point.y >= obstacles.rows || point.y < 0.0 || point.x >= obstacles.cols || point.x < 0)
+        {
+          current_value = 1e10; // TODO maybe throw an exception?
+        }
+        else
+        {
+          current_value = obstacles(point.y, point.x);
+        }
         this->path_cost = this->path_cost + current_value;
         this->max_cost = std::max(current_value, this->max_cost);
       }

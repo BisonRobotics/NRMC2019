@@ -8,44 +8,58 @@
 
 #include <occupancy_grid/arena.h>
 #include <occupancy_grid_ros/occupancy_grid_ros.h>
+#include <navigation_msgs/ObstacleLayout.h>
 
 using namespace occupancy_grid;
 using cv::viz::Color;
+
+std::vector<Circle> *rocks;
+Arena *arena;
+unsigned int count = 0;
+
+ros::Publisher *map_publisher;
+
+bool obstacleCallback(navigation_msgs::ObstacleLayout::Request &req,
+                     navigation_msgs::ObstacleLayout::Response &res)
+{
+  rocks->clear();
+  for (auto rock = req.obstacles.begin(); rock != req.obstacles.end(); rock++)
+  {
+    rocks->emplace_back(rock->p.x, rock->p.y, rock->r);
+  }
+  arena->~Arena();
+  arena = new Arena(*rocks);
+  nav_msgs::OccupancyGrid map;
+  convert(arena->inflated_obstacles, &map);
+  ros::Time generated_at = ros::Time::now();
+  updateHeader(&map, count++, ros::Time::now(), generated_at);
+  map_publisher->publish(map);
+}
 
 int main(int argc, char **argv)
 {
   using AD = ArenaDimensions;
 
   ros::init(argc, argv, "map_server");
-  ros::NodeHandle n;
-  ros::Publisher map_publisher = n.advertise<nav_msgs::OccupancyGrid>("inflated_obstacles", 10);
-  ros::Rate loop_rate(1);
+  ros::NodeHandle nh;
+  map_publisher = new ros::Publisher;
+  (*map_publisher) = nh.advertise<nav_msgs::OccupancyGrid>("inflated_obstacles", 1, true);
+  ros::ServiceServer obstacle_service = nh.advertiseService("obstacle_config", obstacleCallback);
+  ros::Rate loop_rate(10);
 
-  std::vector<Circle> rocks;
-  rocks.emplace_back(3.0,  1.0, 0.3);
-  rocks.emplace_back(4.0, -0.5, 0.3);
-  rocks.emplace_back(2.5, -0.9, 0.3);
-  Arena arena(rocks);
+  rocks = new std::vector<Circle>();
+  rocks->emplace_back(3.0,  1.0, 0.3);
+  rocks->emplace_back(4.0, -0.5, 0.3);
+  rocks->emplace_back(2.5, -0.9, 0.3);
+  arena = new Arena(*rocks);
 
-  Image obstacles_layer(AD::height_cm, AD::width_cm, Color::white());
-  convert(&obstacles_layer, arena.inflated_obstacles);
-
-  nav_msgs::OccupancyGrid test;
-  convert(arena.inflated_obstacles, &test);
+  nav_msgs::OccupancyGrid map;
+  convert(arena->inflated_obstacles, &map);
   ros::Time generated_at = ros::Time::now();
+  updateHeader(&map, count++, ros::Time::now(), generated_at);
+  map_publisher->publish(map);
 
-
-  int count = 0;
-  while (ros::ok())
-  {
-    updateHeader(&test, count, ros::Time::now(), generated_at);
-    map_publisher.publish(test);
-
-    ros::spinOnce();
-    loop_rate.sleep();
-    count++;
-  }
-
+  ros::spin();
 
   return 0;
 }

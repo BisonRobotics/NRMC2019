@@ -15,6 +15,7 @@ namespace occupancy_grid
 class OccupancyGrid : public cv::Mat_<double>
 {
   public:
+    OccupancyGrid() : cv::Mat_<double>(0, 0, 0.0) {};
     OccupancyGrid(int rows, int cols) : cv::Mat_<double>(rows, cols, 0.0) {};
 
     OccupancyGrid(int rows, int cols, double value) : cv::Mat_<double>(rows, cols, value) {};
