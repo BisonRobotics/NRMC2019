@@ -49,6 +49,8 @@
   <build_depend>message_generation</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>eigen3</build_depend>
+  <build_depend>pc2_proccesor</build_depend>
+  <run_depend>pc2_proccesor</run_depend>
   <run_depend>eigen3</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>

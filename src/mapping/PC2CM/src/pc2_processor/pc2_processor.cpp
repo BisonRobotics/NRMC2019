@@ -11,10 +11,18 @@
 
 Mat map; // a grid of heights defined by Cell_width, Grid_Width, GRID_HEIGHT
 Mat pointCount;
+Mat DoG; // the current DoG matrix to convulote throught the map
+
 
 double GRID_WIDTH;
 double GRID_HEIGHT;
 double CELL_WIDTH;
+
+pc2cmProcessor::pc2cmProcessor()
+{
+    ;
+}
+
 
 pc2cmProcessor::pc2cmProcessor(double cell_width, double grid_width, double GRID_HEIGHT)
 {
@@ -27,6 +35,7 @@ pc2cmProcessor::pc2cmProcessor(double cell_width, double grid_width, double GRID
 
     map.setTo(0);
     pointCount.setTo(0);
+    takeDoG(9, .8, .2);
 
     // std::cerr << "created pc2mProccessor" << std::endl;
 
@@ -83,12 +92,16 @@ bool pc2cmProcessor::addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& c
 }
 
 cv::Mat pc2cmProcessor::takeDoG(int kernel_size, double sigma1, double sigma2){ // https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#getgaussiankernel
-    Mat first = getGaussianKernel(kernel_size, sigma1, CV_64F);
-    Mat second = getGaussianKernel(kernel_size, sigma2, CV_64F);
-    Mat result = Mat(first.size(), first.type());
+    Mat first;
+    mulTransposed(getGaussianKernel(kernel_size, sigma1, CV_64F), first, false); // multiply the first Guassian kernal by the transpose of it's self and store in first
 
-    subtract(first, second, result);
-    return result ;
+    Mat second;
+    mulTransposed(getGaussianKernel(kernel_size, sigma2, CV_64F), second,  false);
+    DoG = Mat(first.size(), first.type());
+
+    subtract(first, second, DoG);
+
+    return DoG ;
 }
 
 double pc2cmProcessor::get_Height(int xindex, int yindex){
@@ -102,8 +115,14 @@ void pc2cmProcessor::print_grid(void){
 }
 
 
-costmap_2d::Costmap2DROS pc2cmProcessor::computeCostmap(){
 
+costmap_2d::Costmap2DROS pc2cmProcessor::computeCostmap(){
+    // costmap_2d costmap ;
+    Mat out;
+    filter2D(map, out, -1, DoG);
+    std::cout << "out = "<< std::endl << " "  << out << std::endl << std::endl;
+
+    //convert Mat to costmap_2d
     //https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#filter2d
 
 }

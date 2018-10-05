@@ -13,7 +13,6 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/features2d/features2d.hpp"
-// #include "opencv/cv.h"
 #include "opencv2/opencv.hpp"
 
 using namespace cv;
@@ -25,14 +24,12 @@ operation is 2 phase:
 2. Compute: call computeCostmap() to crunch input'd data into costmap data
 */
 
-struct mapPoint {
-    float height = 0; // the height of the point
-    int totalPoints = 0; //total amount of points that have gone into this point
-} ;
 
 class pc2cmProcessor
 {
 public:
+    pc2cmProcessor(); // empty contructor
+
     pc2cmProcessor(double cell_width, double grid_width, double grid_length);   //constructor, should take cell_width, Grid_width, grid_length  (Width of a cell in the grid)
 
 
@@ -44,15 +41,12 @@ public:
 
     costmap_2d::Costmap2DROS computeCostmap(); //computes costmap from data by calling protected member functions correctly
 
-//protected:    //these members should be treated as protected,
-                //but for unit testing are actually public
-
     cv::Mat takeDoG(int kernel_size, double sigma1, double sigma2);
     //takes difference of gaussian of internal height grid
 
 
 
-private:
+// private:
 
 /*  float heights[width][height]
     //internal grid of heights
