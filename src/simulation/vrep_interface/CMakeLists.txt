@@ -22,7 +22,6 @@ catkin_package(CATKIN_DEPENDS
   roscpp_serialization
   tf
   vrep_msg_and_srv
-  velocity_plugins
   wheel_control
   robot_control
 )
@@ -39,8 +38,6 @@ add_library(v_repExtRosInterface
 
 add_dependencies(v_repExtRosInterface
   ${catkin_EXPORTED_TARGETS}
-  ${PROJECT_NAME}_gencfg
-  velocity_plugins
   robot_control
 )
 

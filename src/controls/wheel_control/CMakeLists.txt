@@ -45,14 +45,6 @@ include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(${vesc_access_INCLUDE_DIRS})
 include_directories(${localization_INCLUDE_DIRS})
 include_directories(${new_sim_INCLUDE_DIRS})
-## Declare a C++ library
-
-add_library(velocity_plugins
-        src/differential_drive_controller/differential_drive_controller.cpp
-        src/wheels/wheels.cpp
-)
-
-target_link_libraries(velocity_plugins ${catkin_LIBRARIES})
 
 add_library(Wheels src/wheels/wheels.cpp)
 
@@ -139,15 +131,6 @@ if(TARGET test_Interface)
   target_link_libraries(test_Interface
     ${catkin_LIBRARIES}
   )
-endif()
-
-catkin_add_gtest(test_velocity_plugins src/differential_drive_controller/test/differential_drive_controller_tests.cpp)
-if(TARGET test_velocity_plugins)
-  target_link_libraries(test_velocity_plugins
-    ${catkin_LIBRARIES}
-    Wheels
-  )
-  add_dependencies(test_velocity_plugins velocity_plugins)
 endif()
 
 catkin_add_gtest(test_position_controller src/position_controller/test/position_controller_tests.cpp)
