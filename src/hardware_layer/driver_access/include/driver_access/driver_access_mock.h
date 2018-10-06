@@ -12,13 +12,13 @@ class DriverAccessMock : public DriverAccessBase
   public:
     DriverAccessMock(const Limits &limits) : DriverAccessBase(limits) {};
 
+    MOCK_METHOD1(setDriverPosition, void(double position));
     MOCK_METHOD1(setDriverVelocity, void(double velocity));
-    MOCK_METHOD1(setDriverTorque, void(double velocity));
-    MOCK_METHOD1(setDriverPosition, void(double velocity));
+    MOCK_METHOD1(setDriverEffort, void(double effort));
 
-    MOCK_METHOD0(getVelocity, double(void));
-    MOCK_METHOD0(getTorque, double(void));
     MOCK_METHOD0(getPosition, double(void));
+    MOCK_METHOD0(getVelocity, double(void));
+    MOCK_METHOD0(getEffort, double(void));
 };
 
 }

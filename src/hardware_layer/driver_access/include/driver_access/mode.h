@@ -7,7 +7,7 @@ namespace driver_access
 {
   namespace Mode
   {
-    enum : uint8_t {velocity, torque, position};
+    enum : uint8_t {position, velocity, effort};
   }
 }
 

@@ -13,74 +13,45 @@ VREPRobot::VREPRobot()
 {
   handle = -1;
   std::string model_file = "";
-  this->wheels.initialize();
 
-  // Load plugins
-  scan_seq = 0;
+  wheels.emplace_back(0, "wheel_front_left_joint");
+  wheels.emplace_back(1, "wheel_front_right_joint");
+  wheels.emplace_back(2, "wheel_back_left_joint");
+  wheels.emplace_back(3, "wheel_back_left_joint");
+  updateWheelHandles();
 }
-
 
 VREPRobot::VREPRobot(std::string model_file) : VREPRobot()
 {
   setModelFile(model_file);
 }
 
-
-simInt VREPRobot::setModelFile(std::string model_file)
+void VREPRobot::setModelFile(std::string model_file)
 {
-  // Check that file exists
   if (!boost::filesystem::exists(model_file))
   {
-    simAddStatusbarMessage("[method setModelFile] file doesn't exist, make sure you are specifying the full path");
-    return (simInt)false;
+    std::runtime_error("[method setModelFile] file doesn't exist, make sure you are specifying the full path");
   }
   this->model_file = model_file;
-  return (simInt)true;
 }
 
-
-// Random placement
-simInt VREPRobot::spawnRobot()
+void VREPRobot::spawnRobot()
 {
-  simFloat *position = (simFloat*) mining_zone_centers[rand() % 2];
+  simFloat y = mining_zone_centers[rand() % 2];
   simFloat rotation = mining_zone_rotations[rand() % 6];
-  return spawnRobot(position, rotation);
+  spawnRobot(0.75f, y, rotation);
 }
 
-
-// Selection placement
-simInt VREPRobot::spawnRobot(simFloat *position, simFloat rotation)
+void VREPRobot::spawnRobot(simFloat x, simFloat y, simFloat rotation)
 {
   checkState();
-
-  if (!loadModel())
-  {
-    simAddStatusbarMessage("[method spawnRobot] loadModel failed");
-    return (simInt)false;
-  }
-
-  if (!move(position))
-  {
-    simAddStatusbarMessage("[method spawnRobot] move failed");
-    return (simInt)false;
-  }
-
-  if (!rotate(rotation))
-  {
-    simAddStatusbarMessage("[method spawnRobot] rotate failed");
-    return (simInt)false;
-  }
-
-  if (!initializeWheels()){
-    simAddStatusbarMessage("[method spawnRobot] initializeWheels failed");
-    return (simInt)false;
-  }
-
-  return (simInt)true;
+  loadModel();
+  move(x, y);
+  rotate(rotation);
+  updateWheelHandles();
 }
 
-
-simInt VREPRobot::checkState()
+void VREPRobot::checkState()
 {
   // Reset model state if it's been deleted
   if (handle != -1)
@@ -88,22 +59,18 @@ simInt VREPRobot::checkState()
     if (simIsHandleValid(handle, -1) != 1)
     {
       handle = -1;
-      simAddStatusbarMessage("[method checkState] Looks like the model was deleted, resetting model state");
-      return (simInt)false;
+      throw std::runtime_error("[method checkState] Looks like the model was deleted, resetting model state");
     }
   }
-  return (simInt)true;
 }
 
-
-simInt VREPRobot::loadModelHelper()
+void VREPRobot::loadModelHelper()
 {
   base_link_handle = -1;
   handle = simLoadModel(model_file.c_str());
   if (handle == -1)
   {
-    simAddStatusbarMessage("[method loadModel] Unable to load model");
-    return (simInt)false;
+    throw std::runtime_error("[method loadModel] Unable to load model");
   }
   else
   {
@@ -129,89 +96,56 @@ simInt VREPRobot::loadModelHelper()
     simReleaseBuffer((simChar*)tree_handles);
     if (base_link_handle == -1)
     {
-      simAddStatusbarMessage("[method loadModel] Unable to load model (couldn't find base_link)");
       simRemoveModel(handle);
       handle = -1;
-      return (simInt)false;
+      throw std::runtime_error("[method loadModel] Unable to load model (couldn't find base_link)");
     }
   }
-  return (simInt)true;
 }
 
-
-simInt VREPRobot::loadModel()
+void VREPRobot::loadModel()
 {
   if (handle == -1)
   {
-    return loadModelHelper();
+    loadModelHelper();
   }
   else
   {
-    simInt success = simRemoveModel(handle);
-    if (success == -1)
+    if (simRemoveModel(handle) == -1)
     {
-      simAddStatusbarMessage("[method loadModel] Failed to remove previous model");
-      return false;
+      throw std::runtime_error("[method loadModel] Failed to remove previous model");
     }
     else
     {
-      return loadModelHelper();
+      loadModelHelper();
     }
   }
 }
 
-
-simInt VREPRobot::move(simFloat *position)
+void VREPRobot::move(simFloat x, simFloat y)
 {
-  simFloat xyz[3] = {position[0], position[1], 0.0};
+  simFloat xyz[3] = {x, y, 0.0};
   if (simSetObjectPosition(handle, -1, xyz) == -1) {
-    simAddStatusbarMessage("[method move] Unable to move model to position");
-    return (simInt)false;
+    throw std::runtime_error("[method move] Unable to move model to position");
   }
-  return (simInt)true;
 }
 
-
-simInt VREPRobot::rotate(simFloat rotation)
+void VREPRobot::rotate(simFloat rotation)
 {
   simFloat abg[3] = {0.0, 0.0, rotation}; // Rotation is degrees from x axis
   if (simSetObjectOrientation(handle, -1, abg) == -1)
   {
-    simAddStatusbarMessage("[method rotate] Unable to rotate model into orientation");
-    return (simInt)false;
+    throw std::runtime_error("[method rotate] Unable to rotate model into orientation");
   }
-  return true;
 }
 
-
-simInt VREPRobot::initializeWheels()
+void VREPRobot::updateWheelHandles()
 {
-  if (wheels.updateWheelIDs() == -1) {
-    simAddStatusbarMessage("[method initializeWheels] failed to initialize handles");
-    simInt removedModel = simRemoveModel(handle);
-    if (removedModel == -1) {
-      simAddStatusbarMessage("[method initializeWheels] Also failed to remove "
-                             "model, things aren't going well...");
-    } else {
-      handle = -1;
-    }
-    return (simInt)false;
+  for (int i = 0; i < wheels.size(); i++)
+  {
+    wheels[i].updateHandle();
   }
-  return (simInt)true;
 }
-
-
-void VREPRobot::spinOnce()
-{
-  //wheel_controller->sendJointCommands();
-}
-
-
-void VREPRobot::setVelocity(double linear, double angular)
-{
-  //wheel_controller->setVelocity(linear, angular);
-}
-
 
 void VREPRobot::getPosition(tf::Transform *position)
 {
@@ -225,6 +159,15 @@ void VREPRobot::getPosition(tf::Transform *position)
 
   position->setOrigin(tf::Vector3(origin[0], origin[1], origin[2]));
   position->setRotation(rotation);
+}
+
+void VREPRobot::spinOnce()
+{
+  for (int i = 0; i < wheels.size(); i++)
+  {
+    wheels[i].updateState();
+  }
+  // TODO update robot state too
 }
 
 

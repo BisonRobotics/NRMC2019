@@ -14,34 +14,41 @@ struct limits_error : public std::logic_error
 class Limits
 {
   public:
-    const double min_velocity;
-    const double max_velocity;
-    const double min_torque;
-    const double max_torque;
     const double min_position;
     const double max_position;
+    const double min_velocity;
+    const double max_velocity;
+    const double min_effort;
+    const double max_effort;
 
-    Limits(double min_velocity, double max_velocity,
-           double min_torque, double max_torque,
-           double min_position, double max_position) :
+    Limits(double min_position, double max_position,
+           double min_velocity, double max_velocity,
+           double min_effort, double max_effort) :
+        min_position(min_position), max_position(max_position),
         min_velocity(min_velocity), max_velocity(max_velocity),
-        min_torque(min_torque), max_torque(max_torque),
-        min_position(min_position), max_position(max_position)
+        min_effort(min_effort), max_effort(max_effort)
     {
       check();
     }
 
     Limits(const Limits &limits) :
+        min_position(limits.min_position), max_position(limits.max_position),
         min_velocity(limits.min_velocity), max_velocity(limits.max_velocity),
-        min_torque(limits.min_torque), max_torque(limits.max_torque),
-        min_position(limits.min_position), max_position(limits.max_position)
+        min_effort(limits.min_effort), max_effort(limits.max_effort)
     {};
 
 
   private:
     void check()
     {
-      if (max_velocity < min_velocity)
+      if (max_position < min_position)
+      {
+        throw limits_error("Invalid position limits: "
+                           + std::to_string(min_velocity)
+                           + " ≮ "
+                           + std::to_string(max_velocity));
+      }
+      else if (max_velocity < min_velocity)
       {
         throw limits_error("Invalid velocity limits: "
                           + std::to_string(min_velocity)
@@ -55,26 +62,19 @@ class Limits
                           + ", min = "
                           + std::to_string(min_velocity));
       }
-      else if (max_torque < min_torque)
+      else if (max_effort < min_effort)
       {
-        throw limits_error("Invalid torque limits: "
-                          + std::to_string(min_velocity)
+        throw limits_error("Invalid effort limits: "
+                          + std::to_string(min_effort)
                           + " ≮ "
-                          + std::to_string(max_velocity));
+                          + std::to_string(max_effort));
       }
-      else if (max_torque < 0 || min_torque < 0)
+      else if (max_effort < 0 || min_effort < 0)
       {
-        throw limits_error("Torque limits must be positive: max = "
-                          + std::to_string(max_torque)
+        throw limits_error("Effort limits must be positive: max = "
+                          + std::to_string(max_effort)
                           + ", min = "
-                          + std::to_string(min_torque));
-      }
-      else if (max_position < min_position)
-      {
-        throw limits_error("Invalid position limits: "
-                          + std::to_string(min_velocity)
-                          + " ≮ "
-                          + std::to_string(max_velocity));
+                          + std::to_string(min_effort));
       }
     }
 };

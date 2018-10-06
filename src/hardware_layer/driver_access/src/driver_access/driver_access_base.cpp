@@ -17,19 +17,19 @@ DriverAccessBase::DriverAccessBase(const Limits &limits, uint8_t id) :
 DriverAccessBase::DriverAccessBase(const Limits &limits) :
     DriverAccessBase(limits, 0) {};
 
+void DriverAccessBase::setPosition(double position)
+{
+  setDriverPosition(clamp(position, limits.min_position, limits.max_position));
+}
+
 void DriverAccessBase::setVelocity(double velocity)
 {
   setDriverVelocity(absClamp(velocity, limits.min_velocity, limits.max_velocity));
 }
 
-void DriverAccessBase::setTorque(double torque)
+void DriverAccessBase::setEffort(double effort)
 {
-  setDriverTorque(absClamp(torque, limits.min_torque, limits.max_torque));
-}
-
-void DriverAccessBase::setPosition(double position)
-{
-  setDriverPosition(clamp(position, limits.min_position, limits.max_position));
+  setDriverEffort(absClamp(effort, limits.min_effort, limits.max_effort));
 }
 
 

@@ -17,33 +17,33 @@ VREPDriverAccess::VREPDriverAccess(const Limits &limits, uint8_t id) :
   subscriber.reset(new ros::Subscriber);
   publisher.reset(new ros::Publisher);
 
-  (*subscriber) = nh->subscribe("status", 10, &VREPDriverAccess::callback, this);
+  (*subscriber) = nh->subscribe("state", 10, &VREPDriverAccess::callback, this);
   (*publisher) = nh->advertise<VREPDriverMessage>("command", 10, true);
 
   spinner.reset(new ros::AsyncSpinner(0, queue.get()));
   spinner->start();
 }
 
-double VREPDriverAccess::getVelocity()
-{
-  return current.velocity;
-}
-
-double VREPDriverAccess::getTorque()
-{
-  return current.torque;
-}
-
 double VREPDriverAccess::getPosition()
 {
-  return current.position;
+  return state.position;
+}
+
+double VREPDriverAccess::getVelocity()
+{
+  return state.velocity;
+}
+
+double VREPDriverAccess::getEffort()
+{
+  return state.effort;
 }
 
 void VREPDriverAccess::callback(const vrep_msgs::VREPDriverMessageConstPtr &message)
 {
-  if (message->header.stamp > current.header.stamp)
+  if (message->header.stamp > state.header.stamp)
   {
-    current = *message;
+    state = *message;
   }
 }
 
@@ -55,30 +55,6 @@ std_msgs::Header VREPDriverAccess::getHeader()
   header.frame_id = name;
 }
 
-void VREPDriverAccess::setDriverVelocity(double velocity)
-{
-  VREPDriverMessage command;
-  command.header = getHeader();
-  command.id = id;
-  command.mode = Mode::velocity;
-  command.velocity = velocity;
-  command.torque = 0;
-  command.position = 0;
-  publisher->publish(command);
-}
-
-void VREPDriverAccess::setDriverTorque(double torque)
-{
-  VREPDriverMessage command;
-  command.header = getHeader();
-  command.id = id;
-  command.mode = Mode::velocity;
-  command.velocity = 0;
-  command.torque = torque;
-  command.position = 0;
-  publisher->publish(command);
-}
-
 void VREPDriverAccess::setDriverPosition(double position)
 {
   VREPDriverMessage command;
@@ -86,8 +62,32 @@ void VREPDriverAccess::setDriverPosition(double position)
   command.id = id;
   command.mode = Mode::velocity;
   command.velocity = 0;
-  command.torque = 0;
+  command.effort = 0;
   command.position = position;
   publisher->publish(command);
-};
+}
+
+void VREPDriverAccess::setDriverVelocity(double velocity)
+{
+  VREPDriverMessage command;
+  command.header = getHeader();
+  command.id = id;
+  command.mode = Mode::velocity;
+  command.velocity = velocity;
+  command.effort = 0;
+  command.position = 0;
+  publisher->publish(command);
+}
+
+void VREPDriverAccess::setDriverEffort(double effort)
+{
+  VREPDriverMessage command;
+  command.header = getHeader();
+  command.id = id;
+  command.mode = Mode::velocity;
+  command.velocity = 0;
+  command.effort = effort;
+  command.position = 0;
+  publisher->publish(command);
+}
 

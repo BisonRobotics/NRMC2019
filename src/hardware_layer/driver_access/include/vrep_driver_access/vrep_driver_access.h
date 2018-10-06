@@ -16,19 +16,19 @@ class VREPDriverAccess : public DriverAccessBase
 
     std_msgs::Header getHeader();
 
-    double getVelocity() override;
-    double getTorque() override;
     double getPosition() override;
+    double getVelocity() override;
+    double getEffort() override;
 
   protected:
-    void setDriverVelocity(double velocity) override;
-    void setDriverTorque(double torque) override;
     void setDriverPosition(double position) override;
+    void setDriverVelocity(double velocity) override;
+    void setDriverEffort(double torque) override;
 
   private:
     void callback(const vrep_msgs::VREPDriverMessageConstPtr &message);
 
-    vrep_msgs::VREPDriverMessage current;
+    vrep_msgs::VREPDriverMessage state;
     uint32_t seq;
 
     ros::CallbackQueuePtr queue;

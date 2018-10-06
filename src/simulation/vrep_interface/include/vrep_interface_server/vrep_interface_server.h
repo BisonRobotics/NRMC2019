@@ -12,16 +12,15 @@
 #include <dynamic_reconfigure/server.h>
 #include <tf/transform_broadcaster.h>
 
-#include <vrep_lib/v_repLib.h>
+#include <vrep_library/v_repLib.h>
 
 #include <vrep_robot/vrep_robot.h>
-#include <obstacle_field/obstacle_field.h>
 #include <vrep_msgs/SpawnRobot.h>
 
 namespace vrep_interface
 {
 
-class ros_server
+class vrep_interface_server
 {
 public:
   static bool initialize();
@@ -34,7 +33,7 @@ public:
   static void simulationEnded();
 
 private:
-  ros_server(){};
+  vrep_interface_server(){};
 
   static ros::NodeHandle *nh;
 

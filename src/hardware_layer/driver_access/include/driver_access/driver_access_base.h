@@ -18,9 +18,9 @@ class DriverAccessBase : public DriverAccessInterface
     DriverAccessBase(const Limits &limits, uint8_t id);
     DriverAccessBase(const Limits &limits, uint8_t id, std::string name);
 
-    void setVelocity(double velocity) override; // m/s
-    void setTorque(double torque) override; // nm
     void setPosition(double position) override; // rad
+    void setVelocity(double velocity) override; // m/s
+    void setEffort(double effort) override;
 };
 
 }

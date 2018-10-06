@@ -30,7 +30,7 @@
 // This file was automatically created for V-REP release V3.4.0 rev. 1 on April
 // 5th 2017
 
-#include "vrep_lib/v_repLib.h"
+#include "vrep_library/v_repLib.h"
 #include <stdio.h>
 #if defined(__linux) || defined(__APPLE__)
 #include <dlfcn.h>
