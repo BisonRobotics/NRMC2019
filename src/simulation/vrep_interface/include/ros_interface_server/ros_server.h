@@ -16,7 +16,7 @@
 
 #include <vrep_robot/vrep_robot.h>
 #include <obstacle_field/obstacle_field.h>
-#include <vrep_msg_and_srv/spawnRobot.h>
+#include <vrep_msgs/SpawnRobot.h>
 
 namespace vrep_interface
 {
@@ -41,8 +41,8 @@ private:
   static void spinOnce();
 
   // Services:
-  static bool spawnRobotService(vrep_msg_and_srv::spawnRobot::Request &req,
-                                vrep_msg_and_srv::spawnRobot::Response &res);
+  static bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req,
+                                vrep_msgs::SpawnRobot::Response &res);
   static bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
   static bool shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
   static ros::ServiceServer spawn_robot_server;

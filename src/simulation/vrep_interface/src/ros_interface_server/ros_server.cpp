@@ -146,8 +146,8 @@ bool ros_server::spawnRobotRandomService(std_srvs::Trigger::Request &req, std_sr
   return res.success;
 }
 
-bool ros_server::spawnRobotService(vrep_msg_and_srv::spawnRobot::Request &req,
-                                   vrep_msg_and_srv::spawnRobot::Response &res)
+bool ros_server::spawnRobotService(vrep_msgs::SpawnRobot::Request &req,
+                                   vrep_msgs::SpawnRobot::Response &res)
 {
   simFloat position[2] = {req.xPos, req.yPos};
   if(!robot.spawnRobot(position, req.rotFromXAxis)){

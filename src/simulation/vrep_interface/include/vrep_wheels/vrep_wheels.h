@@ -4,13 +4,10 @@
 
 #include <vrep_lib/v_repLib.h>
 
-#include <wheel_control/wheels/wheels.h>
-
-
 namespace vrep_interface
 {
 
-class VREPWheels : public wheel_control::Wheels
+class VREPWheels
 {
 public:
   const char *joint_names[4] = {"wheel_front_left_joint", "wheel_front_right_joint",
@@ -23,13 +20,13 @@ public:
   simInt initialize();
   simInt updateWheelIDs();
 
-  void setPosition(int index, double position) override;
-  void setVelocity(int index, double velocity) override;
-  void setEffort(int index, double effort) override;
+  void setPosition(int index, double position);
+  void setVelocity(int index, double velocity);
+  void setEffort(int index, double effort);
 
-  double getPosition(int index) override;
-  double getVelocity(int index) override;
-  double getEffort(int index) override;
+  double getPosition(int index);
+  double getVelocity(int index);
+  double getEffort(int index);
 };
 
 }

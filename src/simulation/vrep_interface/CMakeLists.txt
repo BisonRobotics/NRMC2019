@@ -6,9 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
   tf
-  dynamic_reconfigure
-  vrep_msg_and_srv
-  wheel_control
+  vrep_msgs
 )
 
 catkin_package(CATKIN_DEPENDS
@@ -20,7 +18,7 @@ catkin_package(CATKIN_DEPENDS
   roscpp
   roscpp_serialization
   tf
-  vrep_msg_and_srv
+  vrep_msgs
   wheel_control
 )
 

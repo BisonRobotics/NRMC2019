@@ -10,7 +10,7 @@
 
   <depend>roscpp</depend>
   <depend>std_msgs</depend>
-  <depend>vrep_msg_and_srv</depend>
+  <depend>vrep_msgs</depend>
   <depend>roslib</depend>
   <depend>pluginlib</depend>
   <depend>velocity_plugins</depend>

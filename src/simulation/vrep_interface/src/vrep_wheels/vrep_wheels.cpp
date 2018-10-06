@@ -1,4 +1,5 @@
 #include <vrep_wheels/vrep_wheels.h>
+#include <string>
 
 
 using namespace vrep_interface;
@@ -13,7 +14,7 @@ simInt VREPWheels::initialize()
   {
     this->handles[i]= -1;
   }
-  this->setDistance(3.4290e-01 * 2, 3.429e-01 * 2);
+  //this->setDistance(3.4290e-01 * 2, 3.429e-01 * 2);
 }
 
 

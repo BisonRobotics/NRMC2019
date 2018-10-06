@@ -69,12 +69,6 @@ add_service_files(
 )
 generate_messages(DEPENDENCIES std_msgs actionlib_msgs geometry_msgs)
 
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
-
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -86,7 +80,7 @@ generate_messages(DEPENDENCIES std_msgs actionlib_msgs geometry_msgs)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES navigation_msgs
+#  LIBRARIES
 #  CATKIN_DEPENDS
 #  DEPENDS system_lib
 )

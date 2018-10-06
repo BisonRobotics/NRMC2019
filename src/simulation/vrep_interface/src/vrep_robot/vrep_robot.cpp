@@ -3,7 +3,6 @@
 #include <ros/ros.h>
 
 #include <vrep_robot/vrep_robot.h>
-#include <wheel_control/differential_drive_controller/differential_drive_controller.h>
 
 
 using namespace vrep_interface;

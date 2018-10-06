@@ -14,8 +14,6 @@
 
 #include <vrep_lib/v_repLib.h>
 #include <vrep_wheels/vrep_wheels.h>
-#include <wheel_control/wheels/wheels.h>
-#include <wheel_control/velocity_interface/velocity_interface.h>
 
 
 namespace vrep_interface
@@ -47,7 +45,7 @@ public:
 
   void spinOnce();
   void setVelocity(double linear, double angular);
-  void initialize(wheel_control::Wheels *wheels, wheel_control::VelocityInterface *controller);
+  void initialize();
   void getPosition(tf::Transform *position);
 
   simInt setModelFile(std::string model_file);
