@@ -34,19 +34,18 @@ class VREPRobot
   public:
 
     VREPRobot();
-    VREPRobot(std::string model_file);
 
-    void getPosition(tf::Transform *position);
-
-    void setModelFile(std::string model_file);
+    void initialize(std::string model_file);
     void spawnRobot();
     void spawnRobot(simFloat x, simFloat y, simFloat rotation);
     void checkState();
     void loadModel();
+    void getPosition(tf::Transform *position);
     void move(simFloat x, simFloat y);
     void rotate(simFloat rotation);
     void updateWheelHandles();
     void spinOnce();
+    void shutdown();
 
   private:
     simInt handle;

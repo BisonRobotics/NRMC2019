@@ -20,42 +20,33 @@
 namespace vrep_interface
 {
 
-class vrep_interface_server
+class VREPServer
 {
 public:
   static bool initialize();
   static void shutDown();
-
   static void instancePass();
   static void mainScriptAboutToBeCalled();
-
   static void simulationAboutToStart();
   static void simulationEnded();
 
 private:
-  vrep_interface_server(){};
+  VREPServer(){};
 
   static ros::NodeHandle *nh;
-
-  static void spinOnce();
-
-  // Services:
-  static bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req,
-                                vrep_msgs::SpawnRobot::Response &res);
-  static bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
-  static bool shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
   static ros::ServiceServer spawn_robot_server;
   static ros::ServiceServer spawn_robot_random_server;
   static ros::ServiceServer shutdown_vrep_server;
-
-  // TF Broadcaster
   static tf::TransformBroadcaster* tf_broadcaster;
-
-  // Subscribers:
-  static void addStatusBarMessageCallback(const std_msgs::String::ConstPtr &msg);
-
   static ros::Subscriber add_status_bar_message_subscriber;
 
+  static VREPRobot robot;
+
+  static bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
+  static bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+  static bool shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+  static void addStatusBarMessageCallback(const std_msgs::String::ConstPtr &msg);
+  static void spinOnce();
 };
 
 }

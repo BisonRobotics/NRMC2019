@@ -13,26 +13,20 @@ VREPRobot::VREPRobot()
 {
   handle = -1;
   std::string model_file = "";
-
-  wheels.emplace_back(0, "wheel_front_left_joint");
-  wheels.emplace_back(1, "wheel_front_right_joint");
-  wheels.emplace_back(2, "wheel_back_left_joint");
-  wheels.emplace_back(3, "wheel_back_left_joint");
-  updateWheelHandles();
 }
 
-VREPRobot::VREPRobot(std::string model_file) : VREPRobot()
-{
-  setModelFile(model_file);
-}
-
-void VREPRobot::setModelFile(std::string model_file)
+void VREPRobot::initialize(std::string model_file)
 {
   if (!boost::filesystem::exists(model_file))
   {
     std::runtime_error("[method setModelFile] file doesn't exist, make sure you are specifying the full path");
   }
   this->model_file = model_file;
+
+  wheels.emplace_back(0, "wheel_front_left_joint");
+  wheels.emplace_back(1, "wheel_front_right_joint");
+  wheels.emplace_back(2, "wheel_back_left_joint");
+  wheels.emplace_back(3, "wheel_back_left_joint");
 }
 
 void VREPRobot::spawnRobot()
@@ -168,6 +162,14 @@ void VREPRobot::spinOnce()
     wheels[i].updateState();
   }
   // TODO update robot state too
+}
+
+void VREPRobot::shutdown()
+{
+  for (int i = 0; i < wheels.size(); i++)
+  {
+    wheels[i].shutdown();
+  }
 }
 
 

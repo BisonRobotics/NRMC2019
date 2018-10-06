@@ -92,4 +92,13 @@ void VREPDriverBase::updateHandle()
                           + " for \"" + std::string(joint_name) + "\"").c_str());
 }
 
+void VREPDriverBase::shutdown()
+{
+  spinner->stop();
+  subscriber->shutdown();
+  publisher->shutdown();
+  nh->shutdown();
+  queue->clear();
+}
+
 

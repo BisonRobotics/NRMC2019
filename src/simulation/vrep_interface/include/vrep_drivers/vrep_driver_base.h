@@ -14,7 +14,7 @@
 namespace vrep_interface
 {
 
-static const driver_access::Limits vrep_driver_limits(0, 1e10, 0, 1e10, -1e10, 1e10);
+static const driver_access::Limits vrep_driver_limits(-1e10, 1e10, 0, 1e10, 0, 1e10);
 
 class VREPDriverBase : public driver_access::DriverAccessBase
 {
@@ -28,6 +28,7 @@ class VREPDriverBase : public driver_access::DriverAccessBase
     std_msgs::Header getHeader();
     uint8_t getMode();
     void updateHandle();
+    void shutdown();
 
     virtual void updateState() = 0;
 

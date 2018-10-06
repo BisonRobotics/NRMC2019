@@ -16,8 +16,8 @@
 // 5th 2017
 
 #include "vrep_library/v_repLib.h"
-#include "vrep_interface/vrep_interface_plugin.h"
-#include "vrep_interface/vrep_interface_server.h"
+#include "vrep_interface/vrep_plugin.h"
+#include "vrep_interface/vrep_server.h"
 
 #include "ros/ros.h"
 #include <iostream>
@@ -78,7 +78,7 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
   // ******************************************
 
   // Initialize the ROS part:
-  if (!vrep_interface::vrep_interface_server::initialize())
+  if (!vrep_interface::VREPServer::initialize())
   {
     std::cout << "ROS master is not running. Cannot start 'rosSkeleton' plugin.\n";
     return (0);  // If the master is not running then the plugin is not loaded.
@@ -93,7 +93,7 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
 // releasing this plugin):
 VREP_DLLEXPORT void v_repEnd()
 {
-  vrep_interface::vrep_interface_server::shutDown();      // shutdown the vrep_interface_server
+  vrep_interface::VREPServer::shutDown();      // shutdown the vrep_interface_server
   unloadVrepLibrary(vrepLib);  // release the library
 }
 
@@ -118,7 +118,7 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // commands, then put some code here
   if (message == sim_message_eventcallback_instancepass)
   {
-    vrep_interface::vrep_interface_server::instancePass();
+    vrep_interface::VREPServer::instancePass();
   }
 
   // Main script is about to be run (only called while a simulation is running
@@ -127,19 +127,19 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // This is a good location to execute simulation commands
   if (message == sim_message_eventcallback_mainscriptabouttobecalled)
   {
-    vrep_interface::vrep_interface_server::mainScriptAboutToBeCalled();
+    vrep_interface::VREPServer::mainScriptAboutToBeCalled();
   }
 
   // Simulation is about to start
   if (message == sim_message_eventcallback_simulationabouttostart)
   {
-    vrep_interface::vrep_interface_server::simulationAboutToStart();
+    vrep_interface::VREPServer::simulationAboutToStart();
   }
 
   // Simulation just ended
   if (message == sim_message_eventcallback_simulationended)
   {
-    vrep_interface::vrep_interface_server::simulationEnded();
+    vrep_interface::VREPServer::simulationEnded();
   }
 
   // Keep following unchanged:
