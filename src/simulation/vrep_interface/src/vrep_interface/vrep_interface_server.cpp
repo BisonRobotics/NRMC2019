@@ -1,4 +1,4 @@
-#include <vrep_interface_server/vrep_interface_server.h>
+#include <vrep_interface/vrep_interface_server.h>
 
 
 using namespace vrep_interface;

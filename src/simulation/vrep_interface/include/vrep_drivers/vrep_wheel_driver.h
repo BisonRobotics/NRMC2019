@@ -1,12 +1,12 @@
 #ifndef VREP_INTERFACE_VREP_WHEEL_DRIVER_H
 #define VREP_INTERFACE_VREP_WHEEL_DRIVER_H
 
-#include <vrep_drivers/vrep_driver.h>
+#include <vrep_drivers/vrep_driver_base.h>
 
 namespace vrep_interface
 {
 
-class VREPWheelDriver : public VREPDriver
+class VREPWheelDriver : public VREPDriverBase
 {
   public:
     VREPWheelDriver(uint8_t id, const std::string &joint_name);

@@ -7,7 +7,7 @@ using std::to_string;
 using vrep_msgs::VREPDriverMessage;
 using vrep_msgs::VREPDriverMessageConstPtr;
 
-VREPWheelDriver::VREPWheelDriver(uint8_t id, const std::string &joint_name) : VREPDriver(id, joint_name)
+VREPWheelDriver::VREPWheelDriver(uint8_t id, const std::string &joint_name) : VREPDriverBase(id, joint_name)
 {
   handle = -1;
 }

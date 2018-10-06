@@ -16,8 +16,8 @@
 // 5th 2017
 
 #include "vrep_library/v_repLib.h"
-#include "vrep_interface_plugin/vrep_interface_plugin.h"
-#include "vrep_interface_server/vrep_interface_server.h"
+#include "vrep_interface/vrep_interface_plugin.h"
+#include "vrep_interface/vrep_interface_server.h"
 
 #include "ros/ros.h"
 #include <iostream>

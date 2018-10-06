@@ -1,4 +1,4 @@
-#include <vrep_drivers/vrep_driver.h>
+#include <vrep_drivers/vrep_driver_base.h>
 #include <driver_access/mode.h>
 
 using namespace vrep_interface;
@@ -8,7 +8,7 @@ using vrep_msgs::VREPDriverMessage;
 using vrep_msgs::VREPDriverMessageConstPtr;
 using driver_access::Limits;
 
-VREPDriver::VREPDriver(uint8_t id, const std::string &joint_name) :
+VREPDriverBase::VREPDriverBase(uint8_t id, const std::string &joint_name) :
     DriverAccessBase(vrep_driver_limits, id, "vrep_driver_" + to_string(id)),
     joint_name(joint_name)
 {
@@ -19,7 +19,7 @@ VREPDriver::VREPDriver(uint8_t id, const std::string &joint_name) :
   subscriber.reset(new ros::Subscriber);
   publisher.reset(new ros::Publisher);
 
-  (*subscriber) = nh->subscribe("command", 10, &VREPDriver::callback, this);
+  (*subscriber) = nh->subscribe("command", 10, &VREPDriverBase::callback, this);
   (*publisher) = nh->advertise<VREPDriverMessage>("state", 10, true);
 
   spinner.reset(new ros::AsyncSpinner(0, queue.get()));
@@ -28,27 +28,27 @@ VREPDriver::VREPDriver(uint8_t id, const std::string &joint_name) :
   state.id = id;
 }
 
-double VREPDriver::getVelocity()
+double VREPDriverBase::getVelocity()
 {
   return command.velocity;
 }
 
-double VREPDriver::getEffort()
+double VREPDriverBase::getEffort()
 {
   return command.effort;
 }
 
-double VREPDriver::getPosition()
+double VREPDriverBase::getPosition()
 {
   return command.position;
 }
 
-uint8_t VREPDriver::getMode()
+uint8_t VREPDriverBase::getMode()
 {
   return command.mode;
 }
 
-void VREPDriver::callback(const vrep_msgs::VREPDriverMessageConstPtr &message)
+void VREPDriverBase::callback(const vrep_msgs::VREPDriverMessageConstPtr &message)
 {
   if (message->header.stamp > command.header.stamp)
   {
@@ -73,7 +73,7 @@ void VREPDriver::callback(const vrep_msgs::VREPDriverMessageConstPtr &message)
   }
 }
 
-std_msgs::Header VREPDriver::getHeader()
+std_msgs::Header VREPDriverBase::getHeader()
 {
   std_msgs::Header header;
   header.stamp = ros::Time::now();
@@ -81,7 +81,7 @@ std_msgs::Header VREPDriver::getHeader()
   header.frame_id = name;
 }
 
-void VREPDriver::updateHandle()
+void VREPDriverBase::updateHandle()
 {
   handle = simGetObjectHandle(joint_name.c_str());
   if (handle == -1)

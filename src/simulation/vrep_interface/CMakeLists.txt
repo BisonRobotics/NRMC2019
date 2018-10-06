@@ -23,20 +23,19 @@ catkin_package(CATKIN_DEPENDS
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_library(vrep_driver src/vrep_drivers/vrep_driver.cpp)
+add_library(vrep_driver src/vrep_drivers/vrep_driver_base.cpp)
 add_dependencies(vrep_driver ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vrep_driver ${catkin_LIBRARIES})
 
 add_library(vrep_wheel_driver src/vrep_drivers/vrep_wheel_driver.cpp)
 add_dependencies(vrep_wheel_driver ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vrep_wheel_driver ${catkin_LIBRARIES})
-target_link_libraries(vrep_driver ${catkin_LIBRARIES})
-
+target_link_libraries(vrep_wheel_driver ${catkin_LIBRARIES})
 
 add_library(v_repExtRosInterface
-  src/vrep_interface_plugin/vrep_interface_plugin.cpp
+  src/vrep_interface/vrep_interface_plugin.cpp
   src/vrep_library/v_repLib.cpp
-  src/vrep_interface_server/vrep_interface_server.cpp
+  src/vrep_interface/vrep_interface_server.cpp
   src/vrep_robot/vrep_robot.cpp)
 add_dependencies(v_repExtRosInterface ${catkin_EXPORTED_TARGETS})
 target_link_libraries(v_repExtRosInterface
@@ -44,4 +43,5 @@ target_link_libraries(v_repExtRosInterface
   dl
   boost_system
   boost_filesystem
-  ${catkin_LIBRARIES})
+  ${catkin_LIBRARIES}
+  vrep_wheel_driver)
