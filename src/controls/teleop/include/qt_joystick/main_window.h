@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef MAIN_WINDOW_H
+#define MAIN_WINDOW_H
 
 #include <QMainWindow>
 #include <QTimer>
@@ -42,4 +42,4 @@ class MainWindow : public QMainWindow
     uint32_t seq;
 };
 
-#endif // MAINWINDOW_H
+#endif // MAIN_WINDOW_H
