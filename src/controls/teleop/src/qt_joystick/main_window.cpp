@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   (*publisher) = nh->advertise<Joy>("joy", 10, true);
 
   this->resetButtonClicked();
+  enabled = false;
   joy_timer->start(20);
 }
 
@@ -119,14 +120,21 @@ float clamp(float value)
 
 void MainWindow::publishJoy()
 {
-  Joy joy;
-  joy.header.stamp = ros::Time::now();
-  joy.header.seq = seq++;
-  joy.buttons.resize(5);
-  joy.buttons[4] = enabled;
-  joy.axes.resize(5);
-  joy.axes[1] = clamp(current_left / 100.0f);
-  joy.axes[4] = clamp(current_right / 100.0f);
-  publisher->publish(joy);
+  if (ros::ok())
+  {
+    Joy joy;
+    joy.header.stamp = ros::Time::now();
+    joy.header.seq = seq++;
+    joy.buttons.resize(5);
+    joy.buttons[4] = enabled;
+    joy.axes.resize(5);
+    joy.axes[1] = clamp(current_left / 100.0f);
+    joy.axes[4] = clamp(current_right / 100.0f);
+    publisher->publish(joy);
+  }
+  else
+  {
+    this->close();
+  }
 }
 

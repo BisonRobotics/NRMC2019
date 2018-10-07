@@ -2,6 +2,7 @@
 #define DRIVER_ACCESS_DRIVER_ACCESS_BASE_H
 
 #include <driver_access/driver_access_interface.h>
+#include <driver_access/params.h>
 #include <driver_access/limits.h>
 #include <boost/shared_ptr.hpp>
 #include <cstdint>
@@ -13,9 +14,9 @@ class DriverAccess : public DriverAccessInterface
 {
   public:
     const Limits limits;
-    const uint8_t id;
+    const ID id;
 
-    DriverAccess(const Limits &limits, uint8_t id = 0, Mode mode = Mode::none);
+    DriverAccess(const Limits &limits, ID id = ID::none, Mode mode = Mode::none);
 
     // Use a specific control mode
     void setPosition(double position) override; // rad

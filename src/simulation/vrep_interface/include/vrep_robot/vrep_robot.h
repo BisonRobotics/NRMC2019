@@ -51,7 +51,10 @@ class VREPRobot
     simInt handle;
     simInt base_link_handle;
     std::string model_file;
-    std::vector<VREPWheelDriver> wheels;
+    VREPWheelDriver fl;
+    VREPWheelDriver bl;
+    VREPWheelDriver fr;
+    VREPWheelDriver br;
 
     void loadModelHelper();
 

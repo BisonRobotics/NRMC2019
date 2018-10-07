@@ -9,7 +9,7 @@ namespace vrep_interface
 class VREPWheelDriver : public VREPDriverBase
 {
   public:
-    VREPWheelDriver(uint8_t id, const std::string &joint_name);
+    VREPWheelDriver(driver_access::ID id);
 
     void updateState() override;
 

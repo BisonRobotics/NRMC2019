@@ -17,7 +17,7 @@ namespace vrep_interface
 class VREPDriverBase : public driver_access::DriverAccess
 {
   public:
-    VREPDriverBase(uint8_t id, const std::string &joint_name);
+    VREPDriverBase(driver_access::ID id);
 
     // This class is kind of a hack, so we override these
     double getPosition() override;
@@ -25,6 +25,7 @@ class VREPDriverBase : public driver_access::DriverAccess
     double getEffort() override;
     driver_access::Mode getMode() override;
 
+    double setPoint();
     void updateHeader(std_msgs::Header *header);
     void updateHandle();
     void shutdown();
@@ -32,15 +33,10 @@ class VREPDriverBase : public driver_access::DriverAccess
     virtual void updateState() = 0;
 
   protected:
-    void setDriverPosition(double position) = 0;
-    void setDriverVelocity(double velocity) = 0;
-    void setDriverEffort(double effort) = 0;
-
-
+    const std::string joint_name;
     vrep_msgs::VREPDriverMessage state;
     simInt handle;
-    std::string joint_name;
-    boost::shared_ptr<ros::Publisher> publisher;
+    ros::Publisher *publisher;
 
   private:
     void callback(const vrep_msgs::VREPDriverMessageConstPtr &message);
@@ -48,10 +44,8 @@ class VREPDriverBase : public driver_access::DriverAccess
     vrep_msgs::VREPDriverMessage command;
     uint32_t seq;
 
-    ros::CallbackQueuePtr queue;
-    ros::NodeHandlePtr nh;
-    boost::shared_ptr<ros::AsyncSpinner> spinner;
-    boost::shared_ptr<ros::Subscriber> subscriber;
+    ros::NodeHandle *nh;
+    ros::Subscriber *subscriber;
 
 };
 }

@@ -12,7 +12,7 @@ namespace driver_access
 class VREPDriverAccess : public DriverAccess
 {
   public:
-    VREPDriverAccess(const Limits &limits, uint8_t id = 0, Mode mode = Mode::none);
+    VREPDriverAccess(const Limits &limits, ID id = ID::none, Mode mode = Mode::none);
 
     std_msgs::Header getHeader();
 

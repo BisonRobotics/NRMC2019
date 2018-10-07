@@ -2,6 +2,7 @@
 
 #include <driver_access/driver_access_mock.h>
 #include <driver_access/mode.h>
+#include <driver_access/params.h>
 
 using ::testing::NiceMock;
 using ::testing::InSequence;
@@ -146,6 +147,38 @@ TEST(DriverAccessTests, SetPoint)
   controller.setPoint(0.5);
   controller.setMode(Mode::effort);
   controller.setPoint(0.5);
+
+  ASSERT_EQ(Mode::position, static_cast<Mode>(1));
+  ASSERT_EQ(Mode::velocity, static_cast<Mode>(2));
+  ASSERT_EQ(Mode::effort, static_cast<Mode>(3));
+
+}
+
+TEST(DriverAccessTests, Params)
+{
+  ASSERT_EQ(1, static_cast<uint8_t>(ID::front_left_wheel));
+  ASSERT_EQ(2, static_cast<uint8_t>(ID::front_right_wheel));
+  ASSERT_EQ(3, static_cast<uint8_t>(ID::back_right_wheel));
+  ASSERT_EQ(4, static_cast<uint8_t>(ID::back_left_wheel));
+  ASSERT_EQ(5, static_cast<uint8_t>(ID::central_drive));
+  ASSERT_EQ(6, static_cast<uint8_t>(ID::linear_motor));
+
+  ASSERT_EQ("front_left_wheel",  name(ID::front_left_wheel));
+  ASSERT_EQ("front_right_wheel", name(ID::front_right_wheel));
+  ASSERT_EQ("back_right_wheel",  name(ID::back_right_wheel));
+  ASSERT_EQ("back_left_wheel",   name(ID::back_left_wheel));
+  ASSERT_EQ("central_drive",     name(ID::central_drive));
+  ASSERT_EQ("linear_actuator",   name(ID::linear_motor));
+
+  ASSERT_EQ("front_left_wheel",  name(1));
+  ASSERT_EQ("front_right_wheel", name(2));
+  ASSERT_EQ("back_right_wheel",  name(3));
+  ASSERT_EQ("back_left_wheel",   name(4));
+  ASSERT_EQ("central_drive",     name(5));
+  ASSERT_EQ("linear_actuator",   name(6));
+
+  ASSERT_EQ("",  name(0));
+  ASSERT_EQ("",  name(7));
 }
 
 // Run all the tests that were declared with TEST()

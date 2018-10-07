@@ -8,7 +8,7 @@ using namespace driver_access;
 
 using std::abs;
 
-DriverAccess::DriverAccess(const Limits &limits, uint8_t id, Mode mode) :
+DriverAccess::DriverAccess(const Limits &limits, ID id, Mode mode) :
     limits(limits), id(id), mode(mode) {};
 
 void DriverAccess::setPosition(double position)

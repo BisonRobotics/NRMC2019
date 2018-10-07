@@ -22,32 +22,36 @@ namespace vrep_interface
 
 class VREPServer
 {
-public:
-  static bool initialize();
-  static void shutDown();
-  static void instancePass();
-  static void mainScriptAboutToBeCalled();
-  static void simulationAboutToStart();
-  static void simulationEnded();
+  public:
+    static bool initialize();
+    static void shutDown();
+    static void instancePass();
+    static void mainScriptAboutToBeCalled();
+    static void simulationAboutToStart();
+    static void simulationEnded();
+    static void info(const std::string &message);
+    static void warn(const std::string &message);
+    static void error(const std::string &message);
 
-private:
-  VREPServer(){};
+  private:
+    VREPServer(){};
 
-  static ros::NodeHandle *nh;
-  static ros::ServiceServer spawn_robot_server;
-  static ros::ServiceServer spawn_robot_random_server;
-  static ros::ServiceServer shutdown_vrep_server;
-  static tf::TransformBroadcaster* tf_broadcaster;
-  static ros::Subscriber add_status_bar_message_subscriber;
+    static ros::NodeHandle *nh;
+    static ros::ServiceServer spawn_robot_server;
+    static ros::ServiceServer spawn_robot_random_server;
+    static ros::ServiceServer shutdown_vrep_server;
+    static ros::Publisher *clock_publisher;
+    static ros::Subscriber add_status_bar_message_subscriber;
+    static tf::TransformBroadcaster* tf_broadcaster;
 
-  static VREPRobot robot;
+    static VREPRobot *robot;
 
-  static bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
-  static bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
-  static bool shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
-  static void addStatusBarMessageCallback(const std_msgs::String::ConstPtr &msg);
-  static void spinOnce();
-};
+    static bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
+    static bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+    static bool shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+    static void addStatusBarMessageCallback(const std_msgs::String::ConstPtr &msg);
+    static void spinOnce();
+  };
 
 }
 

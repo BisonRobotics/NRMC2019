@@ -11,7 +11,7 @@ struct mode_error : public driver_access_error
   mode_error(std::string const &message) : driver_access_error(message) {};
 };
 
-enum class Mode {none, position, velocity, effort};
+enum class Mode : uint8_t {none, position, velocity, effort};
 
 }
 

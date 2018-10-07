@@ -2,15 +2,13 @@
 
 using namespace vrep_interface;
 
-using std::to_string;
 using driver_access::Limits;
+using driver_access::ID;
+using driver_access::name;
 using vrep_msgs::VREPDriverMessage;
 using vrep_msgs::VREPDriverMessageConstPtr;
 
-VREPWheelDriver::VREPWheelDriver(uint8_t id, const std::string &joint_name) : VREPDriverBase(id, joint_name)
-{
-  handle = -1;
-}
+VREPWheelDriver::VREPWheelDriver(ID id) : VREPDriverBase(id) {}
 
 void VREPWheelDriver::updateState()
 {
@@ -33,7 +31,7 @@ void VREPWheelDriver::updateState()
 
 void VREPWheelDriver::setDriverPosition(double position)
 {
-  throw std::runtime_error("[setDriverPosition] not implemented");
+  throw std::runtime_error("[setDriverPosition]: not implemented");
 }
 
 void VREPWheelDriver::setDriverVelocity(double velocity)
@@ -41,12 +39,11 @@ void VREPWheelDriver::setDriverVelocity(double velocity)
   // TODO properly scale velocity
   if(simSetJointTargetVelocity(handle, (simFloat)(velocity / 0.1524)) == -1)
   {
-    throw std::runtime_error("[setDriverVelocity] unable to set target velocity for " +
-                            joint_name);
+    throw std::runtime_error("[setDriverVelocity]: unable to set target velocity for " + joint_name);
   }
 }
 
 void VREPWheelDriver::setDriverEffort(double effort)
 {
-  throw std::runtime_error("[setDriverEffort] not implemented");
+  throw std::runtime_error("[setDriverEffort]: not implemented");
 }

@@ -1,32 +1,26 @@
 #include <boost/filesystem.hpp>
-
 #include <ros/ros.h>
-
 #include <vrep_robot/vrep_robot.h>
-
+#include <driver_access/params.h>
+#include <vrep_interface/vrep_server.h>
 
 using namespace vrep_interface;
 
+using driver_access::ID;
+using std::to_string;
 
 //TODO status bar messages should probably be thrown errors
-VREPRobot::VREPRobot()
-{
-  handle = -1;
-  std::string model_file = "";
-}
+VREPRobot::VREPRobot() : handle(-1), model_file(""),
+  fl(ID::front_left_wheel), fr(ID::front_right_wheel),
+  br(ID::back_right_wheel), bl(ID::back_left_wheel){}
 
 void VREPRobot::initialize(std::string model_file)
 {
   if (!boost::filesystem::exists(model_file))
   {
-    std::runtime_error("[method setModelFile] file doesn't exist, make sure you are specifying the full path");
+    throw std::runtime_error("[method setModelFile] file doesn't exist, make sure you are specifying the full path");
   }
   this->model_file = model_file;
-
-  wheels.emplace_back(0, "wheel_front_left_joint");
-  wheels.emplace_back(1, "wheel_front_right_joint");
-  wheels.emplace_back(2, "wheel_back_left_joint");
-  wheels.emplace_back(3, "wheel_back_left_joint");
 }
 
 void VREPRobot::spawnRobot()
@@ -53,7 +47,7 @@ void VREPRobot::checkState()
     if (simIsHandleValid(handle, -1) != 1)
     {
       handle = -1;
-      throw std::runtime_error("[method checkState] Looks like the model was deleted, resetting model state");
+      throw std::runtime_error("[checkState]: Looks like the model was deleted, resetting model state");
     }
   }
 }
@@ -64,7 +58,7 @@ void VREPRobot::loadModelHelper()
   handle = simLoadModel(model_file.c_str());
   if (handle == -1)
   {
-    throw std::runtime_error("[method loadModel] Unable to load model");
+    throw std::runtime_error("[loadModel]: Unable to load model");
   }
   else
   {
@@ -79,10 +73,8 @@ void VREPRobot::loadModelHelper()
         std::string name = std::string(name_c);
         if (name == "base_link")
         {
-          simAddStatusbarMessage(("[method loadModel] Found: " + name).c_str());
           base_link_handle = tree_handles[i];
-          simAddStatusbarMessage(("[method loadModel] Found an id of " + std::to_string(base_link_handle)
-                                 + " for base_link_handle").c_str());
+          VREPServer::info("[loadModel]: Found an id of " + to_string(base_link_handle) + " for base_link_handle");
         }
       }
     }
@@ -92,7 +84,7 @@ void VREPRobot::loadModelHelper()
     {
       simRemoveModel(handle);
       handle = -1;
-      throw std::runtime_error("[method loadModel] Unable to load model (couldn't find base_link)");
+      throw std::runtime_error("[loadModel]: Unable to load model (couldn't find base_link)");
     }
   }
 }
@@ -107,7 +99,7 @@ void VREPRobot::loadModel()
   {
     if (simRemoveModel(handle) == -1)
     {
-      throw std::runtime_error("[method loadModel] Failed to remove previous model");
+      throw std::runtime_error("[loadModel]: Failed to remove previous model");
     }
     else
     {
@@ -120,7 +112,7 @@ void VREPRobot::move(simFloat x, simFloat y)
 {
   simFloat xyz[3] = {x, y, 0.0};
   if (simSetObjectPosition(handle, -1, xyz) == -1) {
-    throw std::runtime_error("[method move] Unable to move model to position");
+    throw std::runtime_error("[move]: Unable to move model to position");
   }
 }
 
@@ -129,16 +121,16 @@ void VREPRobot::rotate(simFloat rotation)
   simFloat abg[3] = {0.0, 0.0, rotation}; // Rotation is degrees from x axis
   if (simSetObjectOrientation(handle, -1, abg) == -1)
   {
-    throw std::runtime_error("[method rotate] Unable to rotate model into orientation");
+    throw std::runtime_error("[rotate]: Unable to rotate model into orientation");
   }
 }
 
 void VREPRobot::updateWheelHandles()
 {
-  for (int i = 0; i < wheels.size(); i++)
-  {
-    wheels[i].updateHandle();
-  }
+  fl.updateHandle();
+  fr.updateHandle();
+  br.updateHandle();
+  bl.updateHandle();
 }
 
 void VREPRobot::getPosition(tf::Transform *position)
@@ -157,19 +149,23 @@ void VREPRobot::getPosition(tf::Transform *position)
 
 void VREPRobot::spinOnce()
 {
-  for (int i = 0; i < wheels.size(); i++)
-  {
-    wheels[i].updateState();
-  }
+  fl.updateState();
+  fr.updateState();
+  br.updateState();
+  bl.updateState();
+  fl.setPoint();
+  fr.setPoint();
+  br.setPoint();
+  bl.setPoint();
   // TODO update robot state too
 }
 
 void VREPRobot::shutdown()
 {
-  for (int i = 0; i < wheels.size(); i++)
-  {
-    wheels[i].shutdown();
-  }
+  fl.shutdown();
+  fr.shutdown();
+  br.shutdown();
+  bl.shutdown();
 }
 
 

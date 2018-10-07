@@ -30,8 +30,9 @@ void Teleop::update(double left, double right)
   }
   else
   {
-    fl->setEffort(0);
-    bl->setEffort(0);
+    // TODO this should release the motors
+    fl->setPoint(0);
+    bl->setPoint(0);
   }
 
   if (abs(right) > deadzone)
@@ -42,18 +43,18 @@ void Teleop::update(double left, double right)
   }
   else
   {
-    fr->setEffort(0);
-    br->setEffort(0);
+    fr->setPoint(0);
+    br->setPoint(0);
   }
 }
 
 
 void Teleop::stopMotors()
 {
-  fl->setEffort(0.0);
-  fr->setEffort(0.0);
-  br->setEffort(0.0);
-  bl->setEffort(0.0);
+  fl->setPoint(0);
+  fr->setPoint(0);
+  br->setPoint(0);
+  bl->setPoint(0);
 }
 
 void Teleop::updateLimits(double min, double max, double deadzone)

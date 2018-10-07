@@ -1,2 +1,0 @@
-Have to run uic to generate ui_*.h,
-Have to run moc to generate moc_*.cpp
