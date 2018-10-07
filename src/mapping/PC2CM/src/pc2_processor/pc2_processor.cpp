@@ -51,18 +51,10 @@ bool pc2cmProcessor::addPoints(pcl::PointCloud<pcl::PointXYZ> cloud_msg){
         pcl::PointXYZ pt = cloud_msg.points[i];
         if (!(pt.x ==0 && pt.y ==0 && pt.z ==0))
         {
-            //point (0,0) should map to index[0][.5*GRID_WIDTH]
-            //point (1,0) should map to index[1/CELL_WIDTH][.5*GRID_WIDTH/CELL_WIDTH]
-            // point (1,1) should map to index(1/CELL_WIDTH][1/CELL_WIDTH + .5*GRID_WIDTH/CELL_WIDTH
-            int x_index = (int)((GRID_HEIGHT - pt.z)/CELL_WIDTH );
-            x_index = CLAMP(x_index, 0, GRID_HEIGHT/CELL_WIDTH);
-
-            int y_index = (int)((-pt.y)/CELL_WIDTH + (.5*GRID_WIDTH/CELL_WIDTH));
-            y_index = CLAMP(y_index, 0, GRID_WIDTH/CELL_WIDTH);
-
-            map.at<double>(x_index, y_index) = map.at<double>(x_index, y_index) +
-                                                (pt.x - map.at<double>(x_index, y_index))
-                                                / (++pointCount.at<int>(x_index, y_index));
+            if(! addPoint(pt)){
+                std::cerr << "Error adding point" << std::endl;
+                return false;
+            }
         }
     }
     return true;
@@ -74,20 +66,29 @@ bool pc2cmProcessor::addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& c
     {
         if (!(pt.x ==0 && pt.y ==0 && pt.z ==0))
         {
-            //point (0,0) should map to index[0][.5*GRID_WIDTH]
-            //point (1,0) should map to index[1/CELL_WIDTH][.5*GRID_WIDTH/CELL_WIDTH]
-            // point (1,1) should map to index(1/CELL_WIDTH][1/CELL_WIDTH + .5*GRID_WIDTH/CELL_WIDTH
-            int x_index = (int)((GRID_HEIGHT - pt.z)/CELL_WIDTH );
-            x_index = CLAMP(x_index, 0, GRID_HEIGHT/CELL_WIDTH);
-
-            int y_index = (int)((-pt.y)/CELL_WIDTH + (.5*GRID_WIDTH/CELL_WIDTH));
-            y_index = CLAMP(y_index, 0, GRID_WIDTH/CELL_WIDTH);
-
-            map.at<double>(x_index, y_index) = map.at<double>(x_index, y_index) +
-                                                (pt.x - map.at<double>(x_index, y_index))
-                                                / (++pointCount.at<int>(x_index, y_index));
+            if(! addPoint(pt)){
+                std::cerr << "Error adding point" << std::endl;
+                return false;
+            }
         }
     }
+    return true;
+}
+
+bool pc2cmProcessor::addPoint(pcl::PointXYZ point){
+    //point (0,0) should map to index[0][.5*GRID_WIDTH]
+    //point (1,0) should map to index[1/CELL_WIDTH][.5*GRID_WIDTH/CELL_WIDTH]
+    // point (1,1) should map to index(1/CELL_WIDTH][1/CELL_WIDTH + .5*GRID_WIDTH/CELL_WIDTH
+
+    int x_index = (int)((GRID_HEIGHT - point.z)/CELL_WIDTH );
+    x_index = CLAMP(x_index, 0, GRID_HEIGHT/CELL_WIDTH);
+
+    int y_index = (int)((-point.y)/CELL_WIDTH + (.5*GRID_WIDTH/CELL_WIDTH));
+    y_index = CLAMP(y_index, 0, GRID_WIDTH/CELL_WIDTH);
+
+    map.at<double>(x_index, y_index) = map.at<double>(x_index, y_index) +
+                                        (point.x - map.at<double>(x_index, y_index))
+                                        / (++pointCount.at<int>(x_index, y_index));
     return true;
 }
 
@@ -116,7 +117,7 @@ void pc2cmProcessor::print_grid(void){
 
 
 
-costmap_2d::Costmap2DROS pc2cmProcessor::computeCostmap(){
+Mat pc2cmProcessor::computeCostmap(){
     // costmap_2d costmap ;
     Mat out;
     filter2D(map, out, -1, DoG);
@@ -124,5 +125,5 @@ costmap_2d::Costmap2DROS pc2cmProcessor::computeCostmap(){
 
     //convert Mat to costmap_2d
     //https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#filter2d
-
+    return out;
 }

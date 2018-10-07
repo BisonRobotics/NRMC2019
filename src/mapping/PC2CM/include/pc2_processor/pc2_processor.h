@@ -34,12 +34,14 @@ public:
 
 
     bool addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg); // Adds points to internal point grid data
+
     bool addPoints(pcl::PointCloud<pcl::PointXYZ> cloud_msg);
+    bool addPoint(pcl::PointXYZ point);
 
     double get_Height(int xindex, int yindex); // get a height from the map at the cordiates from the xindex, yindex (robot relative)
     void print_grid(void);
 
-    costmap_2d::Costmap2DROS computeCostmap(); //computes costmap from data by calling protected member functions correctly
+    cv::Mat computeCostmap(); //computes costmap from data by calling protected member functions correctly
 
     cv::Mat takeDoG(int kernel_size, double sigma1, double sigma2);
     //takes difference of gaussian of internal height grid
