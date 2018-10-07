@@ -21,6 +21,7 @@ class MainWindow : public QMainWindow
 
   public slots:
     void resetButtonClicked();
+    void enabledCheckboxClicked(bool checked);
     void leftSliderMoved();
     void rightSliderMoved();
     void centerSliderMoved();
@@ -32,9 +33,10 @@ class MainWindow : public QMainWindow
 
     int offset_left, offset_right;
     int current_left, current_center, current_right;
+    bool enabled;
 
     Ui::MainWindow *ui;
-    QTimer *timer;
+    QTimer *joy_timer;
     ros::NodeHandle *nh;
     ros::Publisher *publisher;
     uint32_t seq;

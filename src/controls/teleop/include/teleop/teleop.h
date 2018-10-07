@@ -11,8 +11,8 @@ class Teleop
         driver_access::DriverAccessPtr br, driver_access::DriverAccessPtr bl);
 
     void update(double left, double right);
-    void updateLimits(double min, double max, double deadzone);
     void stopMotors();
+    void updateLimits(double min, double max, double deadzone);
 
     double scale(double value);
     static double clamp(double value);

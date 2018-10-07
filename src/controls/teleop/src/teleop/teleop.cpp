@@ -17,57 +17,6 @@ Teleop::Teleop(double min, double max, double deadzone,
   stopMotors();
 }
 
-void Teleop::updateLimits(double min, double max, double deadzone)
-{
-  if (max < min)
-  {
-    throw std::logic_error("Max value must be greater than min value");
-  }
-  else if (max < 0.0 || min < 0.0 || deadzone < 0.0)
-  {
-    throw std::logic_error("Limit values must be positive");
-  }
-  else if (deadzone > 1.0)
-  {
-    throw std::logic_error("Deadzone must be less than 1");
-  }
-  else
-  {
-    this->min = min;
-    this->max = max;
-    this->deadzone = deadzone;
-  }
-}
-
-void Teleop::stopMotors()
-{
-  fl->setEffort(0.0);
-  fr->setEffort(0.0);
-  br->setEffort(0.0);
-  bl->setEffort(0.0);
-}
-
-double Teleop::clamp(double value)
-{
-  if (value > 1.0)
-  {
-    return 1.0;
-  }
-  else if (value < -1.0)
-  {
-    return -1.0;
-  }
-  else
-  {
-    return value;
-  }
-}
-
-double Teleop::scale(double value)
-{
-  return ((value - deadzone) / (1.0 - deadzone)) * (max - min) + min;
-}
-
 void Teleop::update(double left, double right)
 {
   left = clamp(left);
@@ -95,5 +44,57 @@ void Teleop::update(double left, double right)
   {
     fr->setEffort(0);
     br->setEffort(0);
+  }
+}
+
+
+void Teleop::stopMotors()
+{
+  fl->setEffort(0.0);
+  fr->setEffort(0.0);
+  br->setEffort(0.0);
+  bl->setEffort(0.0);
+}
+
+void Teleop::updateLimits(double min, double max, double deadzone)
+{
+  if (max < min)
+  {
+    throw std::logic_error("Max value must be greater than min value");
+  }
+  else if (max < 0.0 || min < 0.0 || deadzone < 0.0)
+  {
+    throw std::logic_error("Limit values must be positive");
+  }
+  else if (deadzone > 1.0)
+  {
+    throw std::logic_error("Deadzone must be less than 1");
+  }
+  else
+  {
+    this->min = min;
+    this->max = max;
+    this->deadzone = deadzone;
+  }
+}
+
+double Teleop::scale(double value)
+{
+  return ((value - deadzone) / (1.0 - deadzone)) * (max - min) + min;
+}
+
+double Teleop::clamp(double value)
+{
+  if (value > 1.0)
+  {
+    return 1.0;
+  }
+  else if (value < -1.0)
+  {
+    return -1.0;
+  }
+  else
+  {
+    return value;
   }
 }

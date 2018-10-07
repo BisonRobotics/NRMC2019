@@ -6,34 +6,54 @@
 
 using sensor_msgs::Joy;
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
-  timer = new QTimer(this);
+  this->setWindowFlags(this->windowFlags() | Qt::WindowStaysOnTopHint);
+  this->setVisible(true);
+
+  joy_timer = new QTimer(this);
+  connect(ui->reset_button,  SIGNAL(clicked(bool)),     this, SLOT(resetButtonClicked()));
+  connect(ui->enabled,       SIGNAL(clicked(bool)),     this, SLOT(enabledCheckboxClicked(bool)));
   connect(ui->left_slider,   SIGNAL(valueChanged(int)), this, SLOT(leftSliderMoved()));
   connect(ui->center_slider, SIGNAL(valueChanged(int)), this, SLOT(centerSliderMoved()));
   connect(ui->right_slider,  SIGNAL(valueChanged(int)), this, SLOT(rightSliderMoved()));
-  connect(ui->reset_button,  SIGNAL(clicked(bool)),     this, SLOT(resetButtonClicked()));
-  timer->start(20);
-
-  this->resetButtonClicked();
+  connect(joy_timer,         SIGNAL(timeout()),         this, SLOT(publishJoy()));
 
   nh = new ros::NodeHandle();
   publisher = new ros::Publisher;
   (*publisher) = nh->advertise<Joy>("joy", 10, true);
+
+  this->resetButtonClicked();
+  joy_timer->start(20);
 }
 
 MainWindow::~MainWindow()
 {
   delete ui;
-  delete timer;
+  delete joy_timer;
 
   nh->shutdown();
   publisher->shutdown();
   delete nh;
   delete publisher;
+}
+
+void MainWindow::enabledCheckboxClicked(bool checked)
+{
+  enabled = checked;
+}
+
+void MainWindow::resetButtonClicked()
+{
+  ui->left_slider->setValue(0);
+  ui->center_slider->setValue(0);
+  ui->right_slider->setValue(0);
+  current_left = 0;
+  current_center = 0;
+  current_right = 0;
+  offset_left = 0;
+  offset_right = 0;
 }
 
 void MainWindow::startSliderMoved(QSlider *first, QSlider *second)
@@ -81,16 +101,20 @@ void MainWindow::centerSliderMoved()
   endSliderMoved(ui->left_slider, ui->right_slider);
 }
 
-void MainWindow::resetButtonClicked()
+float clamp(float value)
 {
-  ui->left_slider->setValue(0);
-  ui->center_slider->setValue(0);
-  ui->right_slider->setValue(0);
-  current_left = 0;
-  current_center = 0;
-  current_right = 0;
-  offset_left = 0;
-  offset_right = 0;
+  if (value > 1.0f)
+  {
+    return 1.0f;
+  }
+  else if (value < -1.0f)
+  {
+    return -1.0f;
+  }
+  else
+  {
+    return value;
+  }
 }
 
 void MainWindow::publishJoy()
@@ -99,9 +123,10 @@ void MainWindow::publishJoy()
   joy.header.stamp = ros::Time::now();
   joy.header.seq = seq++;
   joy.buttons.resize(5);
-  joy.buttons[4] = ui->enabled->isChecked();
+  joy.buttons[4] = enabled;
   joy.axes.resize(5);
-  joy.axes[1] = ui->left_slider->value() / 100.0f;
-  joy.axes[4] = ui->left_slider->value() / 100.0f;
+  joy.axes[1] = clamp(current_left / 100.0f);
+  joy.axes[4] = clamp(current_right / 100.0f);
   publisher->publish(joy);
 }
+
