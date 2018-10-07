@@ -22,6 +22,7 @@ See: http://wiki.ros.org/ROS/Patterns/Conventions
 And: http://wiki.ros.org/StyleGuide
 ### C++
 See: http://wiki.ros.org/CppStyleGuide  
+And: https://google.github.io/styleguide/cppguide.html
 ### Python
 See: http://wiki.ros.org/PyStyleGuide
 

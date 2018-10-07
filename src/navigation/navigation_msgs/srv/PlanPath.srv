@@ -1,0 +1,3 @@
+navigation_msgs/Point2D[] goals
+---
+navigation_msgs/BezierSegment[] path
