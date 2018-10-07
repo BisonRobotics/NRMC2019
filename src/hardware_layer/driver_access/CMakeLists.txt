@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES driver_access vrep_driver_access
+  LIBRARIES driver_access vrep_driver_access ros_driver_access
   CATKIN_DEPENDS vrep_msgs
 #  DEPENDS system_lib
 )
@@ -27,6 +27,10 @@ add_library(driver_access src/driver_access/driver_access.cpp)
 add_library(vrep_driver_access src/vrep_driver_access/vrep_driver_access.cpp)
 add_dependencies(vrep_driver_access ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vrep_driver_access driver_access)
+
+add_library(ros_driver_access src/ros_driver_access/ros_driver_access.cpp)
+add_dependencies(ros_driver_access ${catkin_EXPORTED_TARGETS})
+target_link_libraries(ros_driver_access driver_access)
 
 
 catkin_add_gtest(driver_access_tests tests/driver_access/driver_access_tests.cpp)

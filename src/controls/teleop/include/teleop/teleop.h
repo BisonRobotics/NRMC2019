@@ -7,8 +7,8 @@ class Teleop
   public:
 
     Teleop(double min, double max, double deadzone,
-        driver_access::DriverAccessPtr fl, driver_access::DriverAccessPtr fr,
-        driver_access::DriverAccessPtr br, driver_access::DriverAccessPtr bl);
+        driver_access::DriverAccess *fl, driver_access::DriverAccess *fr,
+        driver_access::DriverAccess *br, driver_access::DriverAccess *bl);
 
     void update(double left, double right);
     void stopMotors();
@@ -19,7 +19,7 @@ class Teleop
 
   private:
     double min, max, deadzone;
-    driver_access::DriverAccessPtr fl, fr, br, bl;
+    driver_access::DriverAccess *fl, *fr, *br, *bl;
 
 };
 }

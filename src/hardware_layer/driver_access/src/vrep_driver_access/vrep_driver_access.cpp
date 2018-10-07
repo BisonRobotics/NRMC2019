@@ -17,8 +17,8 @@ VREPDriverAccess::VREPDriverAccess(const Limits &limits, ID id, Mode mode) : Dri
   subscriber.reset(new ros::Subscriber);
   publisher.reset(new ros::Publisher);
 
-  (*subscriber) = nh->subscribe("state", 10, &VREPDriverAccess::callback, this);
-  (*publisher) = nh->advertise<VREPDriverMessage>("command", 10, true);
+  (*subscriber) = nh->subscribe("state", 1, &VREPDriverAccess::callback, this);
+  (*publisher) = nh->advertise<VREPDriverMessage>("command", 1, true);
 
   spinner.reset(new ros::AsyncSpinner(0, queue.get()));
   spinner->start();

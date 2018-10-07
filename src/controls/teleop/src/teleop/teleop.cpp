@@ -2,11 +2,11 @@
 
 using namespace teleop;
 
-using driver_access::DriverAccessPtr;
+using driver_access::DriverAccess;
 using std::abs;
 
 Teleop::Teleop(double min, double max, double deadzone,
-    DriverAccessPtr fl, DriverAccessPtr fr, DriverAccessPtr br, DriverAccessPtr bl)
+    DriverAccess *fl, DriverAccess *fr, DriverAccess *br, DriverAccess *bl)
 {
   this->fl = fl;
   this->fr = fr;

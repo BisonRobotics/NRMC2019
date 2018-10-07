@@ -22,11 +22,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
   nh = new ros::NodeHandle();
   publisher = new ros::Publisher;
-  (*publisher) = nh->advertise<Joy>("joy", 10, true);
+  (*publisher) = nh->advertise<Joy>("joy", 1, true);
 
   this->resetButtonClicked();
   enabled = false;
-  joy_timer->start(20);
+  joy_timer->start(100);
 }
 
 MainWindow::~MainWindow()

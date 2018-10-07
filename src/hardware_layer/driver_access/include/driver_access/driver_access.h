@@ -16,7 +16,7 @@ class DriverAccess : public DriverAccessInterface
     const Limits limits;
     const ID id;
 
-    DriverAccess(const Limits &limits, ID id = ID::none, Mode mode = Mode::none);
+    explicit DriverAccess(const Limits &limits, ID id = ID::none, Mode mode = Mode::none);
 
     // Use a specific control mode
     void setPosition(double position) override; // rad
@@ -31,8 +31,6 @@ class DriverAccess : public DriverAccessInterface
   private:
     Mode mode;
 };
-
-typedef boost::shared_ptr<DriverAccess> DriverAccessPtr;
 
 }
 
