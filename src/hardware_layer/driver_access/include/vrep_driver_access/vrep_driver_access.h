@@ -1,7 +1,7 @@
 #ifndef MOTOR_ACCESS_VREP_MOTOR_ACCESS_H
 #define MOTOR_ACCESS_VREP_MOTOR_ACCESS_H
 
-#include <driver_access/driver_access_base.h>
+#include <driver_access/driver_access.h>
 #include <vrep_msgs/VREPDriverMessage.h>
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
@@ -9,10 +9,10 @@
 
 namespace driver_access
 {
-class VREPDriverAccess : public DriverAccessBase
+class VREPDriverAccess : public DriverAccess
 {
   public:
-    VREPDriverAccess(const Limits &limits, uint8_t id);
+    VREPDriverAccess(const Limits &limits, uint8_t id = 0, Mode mode = Mode::none);
 
     std_msgs::Header getHeader();
 

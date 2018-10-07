@@ -1,6 +1,7 @@
 #include <gmock/gmock.h>
 
 #include <driver_access/driver_access_mock.h>
+#include <driver_access/mode.h>
 
 using ::testing::NiceMock;
 using ::testing::InSequence;
@@ -99,6 +100,52 @@ TEST(DriverAccessTests, Effort)
   controller.setEffort( 9.0);
   controller.setEffort(-0.5);
   controller.setEffort(-9.0);
+}
+
+
+TEST(DriverAccessTests, SetPoint)
+{
+  InSequence in_sequence;
+
+  Limits limits(1, 2, 3, 4, 5, 6);
+  NiceMock<DriverAccessMock> controller(limits);
+  NiceMock<DriverAccessMock> position_controller(limits, Mode::position);
+  NiceMock<DriverAccessMock> velocity_controller(limits, Mode::velocity);
+  NiceMock<DriverAccessMock> effort_controller(limits, Mode::effort);
+
+  ASSERT_THROW(controller.setPoint(0.5), mode_error);
+  ASSERT_NO_THROW(controller.setPosition(0.5));
+  ASSERT_NO_THROW(controller.setVelocity(0.5));
+  ASSERT_NO_THROW(controller.setEffort(0.5));
+
+  ASSERT_THROW(position_controller.setVelocity(0.5), mode_error);
+  ASSERT_THROW(position_controller.setEffort(0.5), mode_error);
+  ASSERT_NO_THROW(position_controller.setPosition(0.5));
+
+  ASSERT_THROW(velocity_controller.setPosition(0.5), mode_error);
+  ASSERT_THROW(velocity_controller.setEffort(0.5), mode_error);
+  ASSERT_NO_THROW(velocity_controller.setVelocity(0.5));
+
+  ASSERT_THROW(effort_controller.setPosition(0.5), mode_error);
+  ASSERT_THROW(effort_controller.setVelocity(0.5), mode_error);
+  ASSERT_NO_THROW(effort_controller.setEffort(0.5));
+
+  EXPECT_CALL(position_controller, setDriverPosition(1.0));
+  EXPECT_CALL(velocity_controller, setDriverVelocity(3.0));
+  EXPECT_CALL(effort_controller, setDriverEffort(5.0));
+  EXPECT_CALL(controller, setDriverPosition(1.0));
+  EXPECT_CALL(controller, setDriverVelocity(3.0));
+  EXPECT_CALL(controller, setDriverEffort(5.0));
+
+  position_controller.setPoint(0.5);
+  velocity_controller.setPoint(0.5);
+  effort_controller.setPoint(0.5);
+  controller.setMode(Mode::position);
+  controller.setPoint(0.5);
+  controller.setMode(Mode::velocity);
+  controller.setPoint(0.5);
+  controller.setMode(Mode::effort);
+  controller.setPoint(0.5);
 }
 
 // Run all the tests that were declared with TEST()

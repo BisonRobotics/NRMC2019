@@ -1,14 +1,14 @@
 #ifndef DRIVER_ACCESS_LIMITS_H
 #define DRIVER_ACCESS_LIMITS_H
 
-#include <stdexcept>
+#include <driver_access/driver_access_error.h>
 
 namespace driver_access
 {
 
-struct limits_error : public std::logic_error
+struct limits_error : public driver_access_error
 {
-  limits_error(std::string const &message) : std::logic_error(message) {};
+  limits_error(std::string const &message) : driver_access_error(message) {};
 };
 
 class Limits

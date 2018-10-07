@@ -1,14 +1,14 @@
 #include <vrep_driver_access/vrep_driver_access.h>
 #include <driver_access/mode.h>
+#include <string>
 
 using namespace driver_access;
 
-using std::to_string;
 using vrep_msgs::VREPDriverMessage;
 using vrep_msgs::VREPDriverMessageConstPtr;
+using std::to_string;
 
-VREPDriverAccess::VREPDriverAccess(const Limits &limits, uint8_t id) :
-    DriverAccessBase(limits, id, "vrep_driver_" + to_string(id))
+VREPDriverAccess::VREPDriverAccess(const Limits &limits, uint8_t id, Mode mode) : DriverAccess(limits, id, mode)
 {
   queue.reset(new ros::CallbackQueue);
   nh.reset(new ros::NodeHandle("/vrep/driver" + to_string(id)));
@@ -52,7 +52,7 @@ std_msgs::Header VREPDriverAccess::getHeader()
   std_msgs::Header header;
   header.stamp = ros::Time::now();
   header.seq = seq++;
-  header.frame_id = name;
+  return header;
 }
 
 void VREPDriverAccess::setDriverPosition(double position)
@@ -60,7 +60,7 @@ void VREPDriverAccess::setDriverPosition(double position)
   VREPDriverMessage command;
   command.header = getHeader();
   command.id = id;
-  command.mode = Mode::velocity;
+  command.mode = static_cast<uint8_t >(Mode::position);
   command.velocity = 0;
   command.effort = 0;
   command.position = position;
@@ -72,7 +72,7 @@ void VREPDriverAccess::setDriverVelocity(double velocity)
   VREPDriverMessage command;
   command.header = getHeader();
   command.id = id;
-  command.mode = Mode::velocity;
+  command.mode = static_cast<uint8_t >(Mode::velocity);
   command.velocity = velocity;
   command.effort = 0;
   command.position = 0;
@@ -84,7 +84,7 @@ void VREPDriverAccess::setDriverEffort(double effort)
   VREPDriverMessage command;
   command.header = getHeader();
   command.id = id;
-  command.mode = Mode::velocity;
+  command.mode = static_cast<uint8_t >(Mode::effort);
   command.velocity = 0;
   command.effort = effort;
   command.position = 0;

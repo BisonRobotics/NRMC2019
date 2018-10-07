@@ -1,7 +1,7 @@
 #ifndef MOTOR_ACCESS_VREP_MOTOR_ACCESS_H
 #define MOTOR_ACCESS_VREP_MOTOR_ACCESS_H
 
-#include <driver_access/driver_access_base.h>
+#include <driver_access/driver_access.h>
 #include <driver_access/limits.h>
 #include <vrep_msgs/VREPDriverMessage.h>
 
@@ -14,19 +14,18 @@
 namespace vrep_interface
 {
 
-static const driver_access::Limits vrep_driver_limits(-1e10, 1e10, 0, 1e10, 0, 1e10);
-
-class VREPDriverBase : public driver_access::DriverAccessBase
+class VREPDriverBase : public driver_access::DriverAccess
 {
   public:
     VREPDriverBase(uint8_t id, const std::string &joint_name);
 
+    // This class is kind of a hack, so we override these
     double getPosition() override;
     double getVelocity() override;
     double getEffort() override;
+    driver_access::Mode getMode() override;
 
-    std_msgs::Header getHeader();
-    uint8_t getMode();
+    void updateHeader(std_msgs::Header *header);
     void updateHandle();
     void shutdown();
 

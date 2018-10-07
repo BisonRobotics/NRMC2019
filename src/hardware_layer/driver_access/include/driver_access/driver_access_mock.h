@@ -1,16 +1,17 @@
 #ifndef DRIVER_ACCESS_DRIVER_ACCESS_MOCK_H
 #define DRIVER_ACCESS_DRIVER_ACCESS_MOCK_H
 
-#include <driver_access/driver_access_base.h>
+#include <driver_access/driver_access.h>
 #include <gmock/gmock.h>
 
 namespace driver_access
 {
 
-class DriverAccessMock : public DriverAccessBase
+class DriverAccessMock : public DriverAccess
 {
   public:
-    DriverAccessMock(const Limits &limits) : DriverAccessBase(limits) {};
+    DriverAccessMock(const Limits &limits) : DriverAccess(limits) {};
+    DriverAccessMock(const Limits &limits, Mode mode) : DriverAccess(limits, 0, mode) {};
 
     MOCK_METHOD1(setDriverPosition, void(double position));
     MOCK_METHOD1(setDriverVelocity, void(double velocity));

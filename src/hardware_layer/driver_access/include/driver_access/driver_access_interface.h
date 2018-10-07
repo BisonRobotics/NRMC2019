@@ -1,8 +1,7 @@
 #ifndef DRIVER_ACCESS_DRIVER_ACCESS_INTERFACE_H
 #define DRIVER_ACCESS_DRIVER_ACCESS_INTERFACE_H
 
-#include <stdint.h>
-#include <string>
+#include <driver_access/mode.h>
 
 namespace driver_access
 {
@@ -14,9 +13,13 @@ class DriverAccessInterface
     virtual void setVelocity(double velocity) = 0;
     virtual void setEffort(double effort) = 0;
 
-    virtual double getPosition(void) = 0;
-    virtual double getVelocity(void) = 0;
-    virtual double getEffort(void) = 0;
+    virtual void setPoint(double value) = 0;
+    virtual void setMode(Mode mode) = 0;
+    virtual Mode getMode() = 0;
+
+    virtual double getPosition() = 0;
+    virtual double getVelocity() = 0;
+    virtual double getEffort() = 0;
 
   protected:
     virtual void setDriverPosition(double position) = 0;

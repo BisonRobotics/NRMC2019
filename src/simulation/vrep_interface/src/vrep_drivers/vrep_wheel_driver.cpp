@@ -1,9 +1,9 @@
 #include <vrep_drivers/vrep_wheel_driver.h>
-#include <driver_access/mode.h>
 
 using namespace vrep_interface;
 
 using std::to_string;
+using driver_access::Limits;
 using vrep_msgs::VREPDriverMessage;
 using vrep_msgs::VREPDriverMessageConstPtr;
 
@@ -27,7 +27,7 @@ void VREPWheelDriver::updateState()
   simGetJointForce(handle, &force);
   state.effort = (double)force;
 
-  state.header = getHeader();
+  updateHeader(&state.header);
   publisher->publish(state);
 }
 

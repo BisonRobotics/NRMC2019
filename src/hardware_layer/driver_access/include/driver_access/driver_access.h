@@ -3,25 +3,35 @@
 
 #include <driver_access/driver_access_interface.h>
 #include <driver_access/limits.h>
+#include <boost/shared_ptr.hpp>
+#include <cstdint>
 
 namespace driver_access
 {
 
-class DriverAccessBase : public DriverAccessInterface
+class DriverAccess : public DriverAccessInterface
 {
   public:
     const Limits limits;
     const uint8_t id;
-    const std::string name;
 
-    DriverAccessBase(const Limits &limits);
-    DriverAccessBase(const Limits &limits, uint8_t id);
-    DriverAccessBase(const Limits &limits, uint8_t id, std::string name);
+    DriverAccess(const Limits &limits, uint8_t id = 0, Mode mode = Mode::none);
 
+    // Use a specific control mode
     void setPosition(double position) override; // rad
     void setVelocity(double velocity) override; // m/s
     void setEffort(double effort) override;
+
+    // Use previously specified control mode
+    void setPoint(double value) override;
+    void setMode(Mode mode) override;
+    Mode getMode() override;
+
+  private:
+    Mode mode;
 };
+
+typedef boost::shared_ptr<DriverAccess> DriverAccessPtr;
 
 }
 
