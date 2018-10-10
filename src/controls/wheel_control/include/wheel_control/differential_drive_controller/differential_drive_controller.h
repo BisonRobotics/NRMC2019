@@ -18,6 +18,4 @@ public:
 };
 }
 
-PLUGINLIB_EXPORT_CLASS(wheel_control::DifferentialDriveController, wheel_control::VelocityInterface)
-
 #endif  // PROJECT_DIFFERENTIALDRIVECONTROLLER_H
