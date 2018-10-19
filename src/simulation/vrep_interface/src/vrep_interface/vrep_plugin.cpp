@@ -1,100 +1,66 @@
-// Copyright 2006-2017 Coppelia Robotics GmbH. All rights reserved.
-// marc@coppeliarobotics.com
-// www.coppeliarobotics.com
-//
-// -------------------------------------------------------------------
-// THIS FILE IS DISTRIBUTED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED
-// WARRANTY. THE USER WILL USE IT AT HIS/HER OWN RISK. THE ORIGINAL
-// AUTHORS AND COPPELIA ROBOTICS GMBH WILL NOT BE LIABLE FOR DATA LOSS,
-// DAMAGES, LOSS OF PROFITS OR ANY OTHER KIND OF LOSS WHILE USING OR
-// MISUSING THIS SOFTWARE.
-//
-// You are free to use/modify/distribute this file for whatever purpose!
-// -------------------------------------------------------------------
-//
-// This file was automatically created for V-REP release V3.4.0 rev. 1 on April
-// 5th 2017
-
 #include "vrep_library/v_repLib.h"
 #include "vrep_interface/vrep_plugin.h"
-#include "vrep_interface/vrep_server.h"
+#include "vrep_interface/ros_server.h"
 
 #include "ros/ros.h"
 #include <iostream>
+#include <vrep_interface/vrep_interface.h>
 
 #define PLUGIN_VERSION 1
 
-LIBRARY vrepLib;  // the V-REP library that we will dynamically load and bind
+LIBRARY vrepLib;
 
-// This is the plugin start routine (called just once, just after the plugin was
-// loaded):
+// Try to initialize vrep_interface plugin
 VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
 {
-  // Dynamically load and bind V-REP functions:
-  // ******************************************
-  // 1. Figure out this plugin's directory:
+
   char curDirAndFile[1024];
   getcwd(curDirAndFile, sizeof(curDirAndFile));
 
   std::string currentDirAndPath(curDirAndFile);
-  // 2. Append the V-REP library's name:
   std::string temp(currentDirAndPath);
-#ifdef _WIN32
-  temp += "\\v_rep.dll";
-#elif defined(__linux)
   temp += "/libv_rep.so";
-#elif defined(__APPLE__)
-  temp += "/libv_rep.dylib";
-#endif
 
-  // 3. Load the V-REP library:
   vrepLib = loadVrepLibrary(temp.c_str());
   if (vrepLib == NULL)
   {
     std::cout << "Error, could not find or correctly load the V-REP library. "
-                 "Cannot start 'rosSkeleton' plugin.\n";
-    return (0);  // Means error, V-REP will unload this plugin
+                 "Cannot start 'vrep_interface' plugin.\n";
+    return (0); // Error
   }
   if (getVrepProcAddresses(vrepLib) == 0)
   {
     std::cout << "Error, could not find all required functions in the V-REP "
-                 "library. Cannot start 'rosSkeleton' plugin.\n";
+                 "library. Cannot start 'vrep_interface' plugin.\n";
     unloadVrepLibrary(vrepLib);
-    return (0);  // Means error, V-REP will unload this plugin
+    return (0); // Error
   }
-  // ******************************************
 
-  // Check the version of V-REP:
-  // ******************************************
   int vrepVer;
   simGetIntegerParameter(sim_intparam_program_version, &vrepVer);
-  if (vrepVer < 30102)  // if V-REP version is smaller than 3.01.02
+  if (vrepVer < 30102)
   {
     std::cout << "Sorry, your V-REP copy is somewhat old. Cannot start "
-                 "'rosSkeleton' plugin.\n";
+                 "'vrep_interface' plugin.\n";
     unloadVrepLibrary(vrepLib);
-    return (0);  // Means error, V-REP will unload this plugin
+    return (0); // Error
   }
-  // ******************************************
 
-  // Initialize the ROS part:
-  if (!vrep_interface::VREPServer::initialize())
+  if (!vrep_interface::VREPInterface::initialize())
   {
-    std::cout << "ROS master is not running. Cannot start 'rosSkeleton' plugin.\n";
-    return (0);  // If the master is not running then the plugin is not loaded.
+    std::cout << "ROS master is not running. Cannot start 'vrep_interface' plugin.\n";
+    return (0);  // Error
   }
 
-  return (PLUGIN_VERSION);  // initialization went fine, we return the version
-                            // number of this plugin (can be queried with
-                            // simGetModuleName)
+  return (PLUGIN_VERSION); // Success
 }
 
 // This is the plugin end routine (called just once, when V-REP is ending, i.e.
 // releasing this plugin):
 VREP_DLLEXPORT void v_repEnd()
 {
-  vrep_interface::VREPServer::shutDown();      // shutdown the vrep_interface_server
-  unloadVrepLibrary(vrepLib);  // release the library
+  vrep_interface::VREPInterface::shutDown();
+  unloadVrepLibrary(vrepLib);
 }
 
 // This is the plugin messaging routine (i.e. V-REP calls this function very
@@ -118,7 +84,7 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // commands, then put some code here
   if (message == sim_message_eventcallback_instancepass)
   {
-    vrep_interface::VREPServer::instancePass();
+    vrep_interface::VREPInterface::instancePass();
   }
 
   // Main script is about to be run (only called while a simulation is running
@@ -127,19 +93,19 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // This is a good location to execute simulation commands
   if (message == sim_message_eventcallback_mainscriptabouttobecalled)
   {
-    vrep_interface::VREPServer::mainScriptAboutToBeCalled();
+    vrep_interface::VREPInterface::mainScriptAboutToBeCalled();
   }
 
   // Simulation is about to start
   if (message == sim_message_eventcallback_simulationabouttostart)
   {
-    vrep_interface::VREPServer::simulationAboutToStart();
+    vrep_interface::VREPInterface::simulationAboutToStart();
   }
 
   // Simulation just ended
   if (message == sim_message_eventcallback_simulationended)
   {
-    vrep_interface::VREPServer::simulationEnded();
+    vrep_interface::VREPInterface::simulationEnded();
   }
 
   // Keep following unchanged:

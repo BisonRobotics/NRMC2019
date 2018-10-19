@@ -1,4 +1,4 @@
-#include <vrep_interface/vrep_server.h>
+#include <vrep_interface/ros_server.h>
 #include <rosgraph_msgs/Clock.h>
 
 
@@ -6,22 +6,9 @@ using namespace vrep_interface;
 
 
 /*******************************************************************************
- * Global variables
- ******************************************************************************/
-ros::NodeHandle *VREPServer::nh = NULL;
-ros::ServiceServer VREPServer::spawn_robot_server;
-ros::ServiceServer VREPServer::spawn_robot_random_server;
-ros::ServiceServer VREPServer::shutdown_vrep_server;
-ros::Subscriber VREPServer::add_status_bar_message_subscriber;
-ros::Publisher *VREPServer::clock_publisher = NULL;
-tf::TransformBroadcaster* VREPServer::tf_broadcaster = NULL;
-VREPRobot *VREPServer::robot = NULL;
-
-
-/*******************************************************************************
  * VREP template methods
  ******************************************************************************/
-bool VREPServer::initialize()
+bool ROSServer::initialize()
 {
   int argc = 0; char **argv = NULL;
   ros::init(argc, argv, "vrep");
@@ -40,11 +27,12 @@ bool VREPServer::initialize()
     return false;
   }
 
-  spawn_robot_server = nh->advertiseService("spawn_robot", VREPServer::spawnRobotService);
-  spawn_robot_random_server = nh->advertiseService("spawn_robot_random", VREPServer::spawnRobotRandomService);
-  shutdown_vrep_server = nh->advertiseService("shutdown", VREPServer::shutdownService);
+  spawn_robot_server = nh->advertiseService("spawn_robot", &ROSServer::spawnRobotService, this);
+  spawn_robot_random_server = nh->advertiseService("spawn_robot_random",
+      &ROSServer::spawnRobotRandomService, this);
+  shutdown_vrep_server = nh->advertiseService("shutdown", &ROSServer::shutdownService, this);
   add_status_bar_message_subscriber = nh->subscribe("addStatusbarMessage", 1,
-                                                      &VREPServer::addStatusBarMessageCallback);
+      &ROSServer::addStatusBarMessageCallback, this);
   tf_broadcaster = new tf::TransformBroadcaster();
   clock_publisher = new ros::Publisher;
   (*clock_publisher) = nh->advertise<rosgraph_msgs::Clock>("/clock", 10, true);
@@ -71,7 +59,7 @@ bool VREPServer::initialize()
   return true;
 }
 
-void VREPServer::shutDown()
+ROSServer::~ROSServer()
 {
   add_status_bar_message_subscriber.shutdown();
   spawn_robot_server.shutdown();
@@ -79,32 +67,24 @@ void VREPServer::shutDown()
   shutdown_vrep_server.shutdown();
   robot->shutdown();
   ros::shutdown();
+
+  delete clock_publisher;
+  delete tf_broadcaster;
+  delete robot;
+  delete nh;
 }
 
-void VREPServer::instancePass() // Simulation not running
+void ROSServer::simulationAboutToStart()
 {
-  if ((simGetSimulationState() & sim_simulation_advancing) == 0)
-  {
-    ros::spinOnce();
-  }
+
 }
 
-void VREPServer::mainScriptAboutToBeCalled() // Simulation running
-{
-  spinOnce();
-}
-
-void VREPServer::simulationAboutToStart()
-{
-  info("Starting simulation");
-}
-
-void VREPServer::simulationEnded()
+void ROSServer::simulationEnded()
 {
   info("Simulation ended");
 }
 
-void VREPServer::spinOnce()
+void ROSServer::spinOnce()
 {
   // Disable error reporting (it is enabled in the service processing part, but
   // we don't want error reporting for publishers/subscribers)
@@ -140,7 +120,7 @@ void VREPServer::spinOnce()
 /*******************************************************************************
  * Custom services
  ******************************************************************************/
-bool VREPServer::spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+bool ROSServer::spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
 {
   try
   {
@@ -154,7 +134,7 @@ bool VREPServer::spawnRobotRandomService(std_srvs::Trigger::Request &req, std_sr
   }
 }
 
-bool VREPServer::spawnRobotService(vrep_msgs::SpawnRobot::Request &req,
+bool ROSServer::spawnRobotService(vrep_msgs::SpawnRobot::Request &req,
                                    vrep_msgs::SpawnRobot::Response &res)
 {
   try
@@ -168,7 +148,7 @@ bool VREPServer::spawnRobotService(vrep_msgs::SpawnRobot::Request &req,
   }
 }
 
-bool VREPServer::shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+bool ROSServer::shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
 {
   simAddStatusbarMessage("[Service shutdownService] Trying to shutdown");
   res.success = 1;
@@ -177,24 +157,24 @@ bool VREPServer::shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trig
   return true;
 }
 
-void VREPServer::addStatusBarMessageCallback(const std_msgs::String::ConstPtr &msg)
+void ROSServer::addStatusBarMessageCallback(const std_msgs::String::ConstPtr &msg)
 {
   simAddStatusbarMessage(msg->data.c_str());
 }
 
-void VREPServer::info(const std::string &message)
+void ROSServer::info(const std::string &message)
 {
   simAddStatusbarMessage(("[INFO]: " + message).c_str());
   std::cout << message.c_str() << std::endl;
 }
 
-void VREPServer::warn(const std::string &message)
+void ROSServer::warn(const std::string &message)
 {
   simAddStatusbarMessage(("[WARN]: " + message).c_str());
   std::cout << message.c_str() << std::endl;
 }
 
-void VREPServer::error(const std::string &message)
+void ROSServer::error(const std::string &message)
 {
   simAddStatusbarMessage(("[ERROR]: " + message).c_str());
   std::cout << message.c_str() << std::endl;
