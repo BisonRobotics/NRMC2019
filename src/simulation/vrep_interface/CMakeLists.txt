@@ -47,9 +47,7 @@ target_link_libraries(vrep_server
 add_library(v_repExtRosInterface
   src/vrep_interface/vrep_plugin.cpp
   src/vrep_library/v_repLib.cpp
-  src/vrep_interface/vrep_interface.cpp
-  src/vrep_interface/vrep_server.cpp
-  src/vrep_robot/vrep_robot.cpp)
+  src/vrep_interface/vrep_interface.cpp)
 add_dependencies(v_repExtRosInterface ${catkin_EXPORTED_TARGETS})
 target_link_libraries(v_repExtRosInterface
   pthread
@@ -57,5 +55,5 @@ target_link_libraries(v_repExtRosInterface
   boost_system
   boost_filesystem
   ${catkin_LIBRARIES}
-  vrep_wheel_driver)
-#  vrep_server)
+  vrep_wheel_driver
+  vrep_server)
