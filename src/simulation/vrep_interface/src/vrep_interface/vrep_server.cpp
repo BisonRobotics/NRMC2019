@@ -24,7 +24,7 @@ VREPServer::VREPServer()
 
   std::cout << "Initialized" << std::endl;
 
-  /*spawn_robot_server = nh->advertiseService("spawn_robot", &VREPServer::spawnRobotService, this);
+  spawn_robot_server = nh->advertiseService("spawn_robot", &VREPServer::spawnRobotService, this);
   spawn_robot_random_server = nh->advertiseService("spawn_robot_random", &VREPServer::spawnRobotRandomService, this);
   shutdown_vrep_server = nh->advertiseService("shutdown", &VREPServer::shutdownService, this);
   tf_broadcaster = new tf::TransformBroadcaster();
@@ -39,7 +39,7 @@ VREPServer::VREPServer()
 
   robot = new VREPRobot;
   robot->initialize(description_path + "/vrep_models/robot.ttm");
-  robot->spawnRobot();*/
+  robot->spawnRobot();
   info("Server started");
 }
 
