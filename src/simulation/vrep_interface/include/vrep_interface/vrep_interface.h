@@ -2,6 +2,8 @@
 #define VREP_INTERFACE_VREP_INTERFACE_H
 
 #include <vrep_interface/ros_server.h>
+#include <vrep_library/v_repLib.h>
+
 
 namespace vrep_interface
 {

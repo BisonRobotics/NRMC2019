@@ -2,38 +2,38 @@
 
 using namespace vrep_interface;
 
-ROSServer *server = NULL;
+//ROSServer *server = NULL;
 
 bool VREPInterface::initialize()
 {
-  server = new ROSServer;
-  return server->initialize();
+  //return server->initialize();
+  return true;
 }
 
 void VREPInterface::shutDown()
 {
-  delete server;
+  //delete server;
 }
 
 void VREPInterface::instancePass()
 {
   if ((simGetSimulationState() & sim_simulation_advancing) == 0)
   {
-    server->spinOnce();
+    //server->spinOnce();
   }
 }
 
 void VREPInterface::mainScriptAboutToBeCalled()
 {
-  server->spinOnce();
+  //server->spinOnce();
 }
 
 void VREPInterface::simulationAboutToStart()
 {
-  server->simulationAboutToStart();
+  //server->simulationAboutToStart();
 }
 
 void VREPInterface::simulationEnded()
 {
-  server->simulationEnded();
+  //server->simulationEnded();
 }

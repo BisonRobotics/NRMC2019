@@ -1,7 +1,6 @@
 #ifndef ROS_SERVER_H
 #define ROS_SERVER_H
 
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/Int32.h>
@@ -40,11 +39,11 @@ class ROSServer
     ros::ServiceServer spawn_robot_server;
     ros::ServiceServer spawn_robot_random_server;
     ros::ServiceServer shutdown_vrep_server;
-    ros::Publisher *clock_publisher;
+    /*ros::Publisher *clock_publisher;
     ros::Subscriber add_status_bar_message_subscriber;
-    tf::TransformBroadcaster *tf_broadcaster;
+    tf::TransformBroadcaster *tf_broadcaster;*/
 
-    VREPRobot *robot;
+    //VREPRobot *robot;
 
     bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
     bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);

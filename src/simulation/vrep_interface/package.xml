@@ -18,7 +18,6 @@
   <depend>tf</depend>
   <depend>rosconsole</depend>
   <depend>rostime</depend>
-
   <depend>wheel_control</depend>
   <depend>robot_control</depend>
 

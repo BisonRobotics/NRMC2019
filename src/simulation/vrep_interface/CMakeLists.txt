@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   vrep_msgs
   driver_access
+  vrep_msgs
 )
 
 catkin_package(CATKIN_DEPENDS
@@ -27,22 +28,35 @@ add_library(vrep_driver src/vrep_drivers/vrep_driver_base.cpp)
 add_dependencies(vrep_driver ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vrep_driver ${catkin_LIBRARIES})
 
-add_library(vrep_wheel_driver src/vrep_drivers/vrep_wheel_driver.cpp)
-add_dependencies(vrep_wheel_driver ${catkin_EXPORTED_TARGETS})
-target_link_libraries(vrep_wheel_driver ${catkin_LIBRARIES})
-target_link_libraries(vrep_wheel_driver vrep_driver)
+#add_library(vrep_wheel_driver src/vrep_drivers/vrep_wheel_driver.cpp)
+#add_dependencies(vrep_wheel_driver ${catkin_EXPORTED_TARGETS})
+#target_link_libraries(vrep_wheel_driver ${catkin_LIBRARIES})
+#target_link_libraries(vrep_wheel_driver vrep_driver)
+
+add_library(ros_server
+  src/vrep_library/v_repLib.cpp
+  src/vrep_interface/ros_server.cpp)
+add_dependencies(ros_server ${catkin_EXPORTED_TARGETS})
+target_link_libraries(ros_server ${catkin_LIBARIES})
 
 add_library(v_repExtRosInterface
   src/vrep_library/v_repLib.cpp
   src/vrep_interface/vrep_plugin.cpp
   src/vrep_interface/vrep_interface.cpp
-  src/vrep_interface/ros_server.cpp
-  src/vrep_robot/vrep_robot.cpp)
+  src/vrep_library/v_repLib.cpp
+  src/vrep_interface/ros_server.cpp)
+#  src/vrep_interface/ros_server.cpp
+#  src/vrep_robot/vrep_robot.cpp)
 add_dependencies(v_repExtRosInterface ${catkin_EXPORTED_TARGETS})
-target_link_libraries(v_repExtRosInterface
-  pthread
-  dl
-  boost_system
-  boost_filesystem
-  ${catkin_LIBRARIES}
-  vrep_wheel_driver)
+target_link_libraries(v_repExtRosInterface pthread)
+target_link_libraries(v_repExtRosInterface dl)
+target_link_libraries(v_repExtRosInterface boost_system)
+target_link_libraries(v_repExtRosInterface boost_filesystem)
+target_link_libraries(v_repExtRosInterface ros_server)
+target_link_libraries(v_repExtRosInterface ${catkin_LIBRARIES})
+
+#  dl
+#  boost_system
+#  boost_filesystem)
+#  ${catkin_LIBRARIES}
+#  vrep_wheel_driver)

@@ -31,7 +31,7 @@ bool ROSServer::initialize()
   spawn_robot_random_server = nh->advertiseService("spawn_robot_random",
       &ROSServer::spawnRobotRandomService, this);
   shutdown_vrep_server = nh->advertiseService("shutdown", &ROSServer::shutdownService, this);
-  add_status_bar_message_subscriber = nh->subscribe("addStatusbarMessage", 1,
+  /*add_status_bar_message_subscriber = nh->subscribe("addStatusbarMessage", 1,
       &ROSServer::addStatusBarMessageCallback, this);
   tf_broadcaster = new tf::TransformBroadcaster();
   clock_publisher = new ros::Publisher;
@@ -43,35 +43,35 @@ bool ROSServer::initialize()
     error("Unable to load scene");
   }
 
-  robot = new VREPRobot;
+  //robot = new VREPRobot;
   try
   {
-    robot->initialize(description_path + "/vrep_models/robot.ttm");
-    robot->spawnRobot();
+    //robot->initialize(description_path + "/vrep_models/robot.ttm");
+    //robot->spawnRobot();
   }
   catch (const std::exception &e)
   {
     error(e.what());
     return false;
   }
-  info("Server started");
+  info("Server started");*/
 
   return true;
 }
 
 ROSServer::~ROSServer()
 {
-  add_status_bar_message_subscriber.shutdown();
+  /*add_status_bar_message_subscriber.shutdown();
   spawn_robot_server.shutdown();
   spawn_robot_random_server.shutdown();
-  shutdown_vrep_server.shutdown();
-  robot->shutdown();
+  shutdown_vrep_server.shutdown();*/
+  //robot->shutdown();
   ros::shutdown();
 
-  delete clock_publisher;
+  /*delete clock_publisher;
   delete tf_broadcaster;
-  delete robot;
-  delete nh;
+  //delete robot;
+  delete nh;*/
 }
 
 void ROSServer::simulationAboutToStart()
@@ -86,6 +86,7 @@ void ROSServer::simulationEnded()
 
 void ROSServer::spinOnce()
 {
+  /*
   // Disable error reporting (it is enabled in the service processing part, but
   // we don't want error reporting for publishers/subscribers)
   int errorModeSaved;
@@ -115,6 +116,25 @@ void ROSServer::spinOnce()
 
   // Restore previous error report mode:
   simSetIntegerParameter(sim_intparam_error_report_mode, errorModeSaved);
+   */
+}
+
+void ROSServer::info(const std::string &message)
+{
+  simAddStatusbarMessage(("[INFO]: " + message).c_str());
+  std::cout << message.c_str() << std::endl;
+}
+
+void ROSServer::warn(const std::string &message)
+{
+  simAddStatusbarMessage(("[WARN]: " + message).c_str());
+  std::cout << message.c_str() << std::endl;
+}
+
+void ROSServer::error(const std::string &message)
+{
+  simAddStatusbarMessage(("[ERROR]: " + message).c_str());
+  std::cout << message.c_str() << std::endl;
 }
 
 /*******************************************************************************
@@ -124,7 +144,7 @@ bool ROSServer::spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srv
 {
   try
   {
-    robot->spawnRobot();
+    //robot->spawnRobot();
     return true;
   }
   catch (const std::runtime_error &e)
@@ -139,7 +159,7 @@ bool ROSServer::spawnRobotService(vrep_msgs::SpawnRobot::Request &req,
 {
   try
   {
-    robot->spawnRobot(req.x, req.y, req.omega);
+    //robot->spawnRobot(req.x, req.y, req.omega);
   }
   catch (const std::runtime_error &e)
   {
@@ -160,24 +180,6 @@ bool ROSServer::shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigg
 void ROSServer::addStatusBarMessageCallback(const std_msgs::String::ConstPtr &msg)
 {
   simAddStatusbarMessage(msg->data.c_str());
-}
-
-void ROSServer::info(const std::string &message)
-{
-  simAddStatusbarMessage(("[INFO]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
-}
-
-void ROSServer::warn(const std::string &message)
-{
-  simAddStatusbarMessage(("[WARN]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
-}
-
-void ROSServer::error(const std::string &message)
-{
-  simAddStatusbarMessage(("[ERROR]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
 }
 
 
