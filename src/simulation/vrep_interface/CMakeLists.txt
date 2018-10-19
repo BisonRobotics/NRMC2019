@@ -54,6 +54,4 @@ target_link_libraries(v_repExtRosInterface
   dl
   boost_system
   boost_filesystem
-  ${catkin_LIBRARIES}
-  vrep_wheel_driver
   vrep_server)

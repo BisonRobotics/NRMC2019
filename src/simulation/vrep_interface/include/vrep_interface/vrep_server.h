@@ -25,11 +25,15 @@ class VREPServer
   public:
     explicit VREPServer();
     ~VREPServer();
+    void spinOnce();
+    void simulationAboutToStart();
+    void simulationEnded();
     static void info(const std::string &message);
     static void warn(const std::string &message);
     static void error(const std::string &message);
 
   private:
+    bool sim_running;
     ros::NodeHandle *nh;
     ros::ServiceServer spawn_robot_server;
     ros::ServiceServer spawn_robot_random_server;
@@ -42,7 +46,6 @@ class VREPServer
     bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
     bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
     bool shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
-    //void spinOnce();
 };
 
 }

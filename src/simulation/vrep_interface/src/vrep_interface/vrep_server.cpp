@@ -1,5 +1,7 @@
 #include "vrep_interface/vrep_server.h"
 #include <rosgraph_msgs/Clock.h>
+#include <vrep_interface/vrep_server.h>
+
 
 using namespace vrep_interface;
 
@@ -40,13 +42,65 @@ VREPServer::VREPServer()
   robot = new VREPRobot;
   robot->initialize(description_path + "/vrep_models/robot.ttm");
   robot->spawnRobot();
+
+  sim_running = false;
   info("Server started");
 }
 
 VREPServer::~VREPServer()
 {
+  spawn_robot_server.shutdown();
+  spawn_robot_random_server.shutdown();
+  shutdown_vrep_server.shutdown();
+  robot->shutdown();
   nh->shutdown();
   ros::shutdown();
+}
+
+void VREPServer::spinOnce()
+{
+  // Disable error reporting (it is enabled in the service processing part, but
+  // we don't want error reporting for publishers/subscribers)
+  int errorModeSaved;
+  simGetIntegerParameter(sim_intparam_error_report_mode, &errorModeSaved);
+  simSetIntegerParameter(sim_intparam_error_report_mode, sim_api_errormessage_ignore);
+
+  // Process all requested services and topic subscriptions
+  try
+  {
+    if (sim_running)
+    {
+      ros::Time sim_time(simGetSimulationTime());
+      rosgraph_msgs::Clock sim_clock;
+      sim_clock.clock.nsec = sim_time.nsec;
+      sim_clock.clock.sec = sim_time.sec;
+      clock_publisher->publish(sim_clock);
+
+      robot->spinOnce();
+
+      tf::Transform robot_position;
+      robot->getPosition(&robot_position);
+      tf_broadcaster->sendTransform(tf::StampedTransform(robot_position, ros::Time::now(), "map", "base_link"));
+    }
+    ros::spinOnce();
+  }
+  catch (const std::exception &e)
+  {
+    error(e.what());
+  }
+
+  // Restore previous error report mode:
+  simSetIntegerParameter(sim_intparam_error_report_mode, errorModeSaved);
+}
+
+void VREPServer::simulationAboutToStart()
+{
+  sim_running = true;
+}
+
+void VREPServer::simulationEnded()
+{
+  sim_running = false;
 }
 
 bool VREPServer::spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
