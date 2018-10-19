@@ -1,23 +1,5 @@
-// Copyright 2006-2017 Coppelia Robotics GmbH. All rights reserved.
-// marc@coppeliarobotics.com
-// www.coppeliarobotics.com
-//
-// -------------------------------------------------------------------
-// THIS FILE IS DISTRIBUTED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED
-// WARRANTY. THE USER WILL USE IT AT HIS/HER OWN RISK. THE ORIGINAL
-// AUTHORS AND COPPELIA ROBOTICS GMBH WILL NOT BE LIABLE FOR DATA LOSS,
-// DAMAGES, LOSS OF PROFITS OR ANY OTHER KIND OF LOSS WHILE USING OR
-// MISUSING THIS SOFTWARE.
-//
-// You are free to use/modify/distribute this file for whatever purpose!
-// -------------------------------------------------------------------
-//
-// This file was automatically created for V-REP release V3.4.0 rev. 1 on April
-// 5th 2017
-
 #include "vrep_library/v_repLib.h"
 #include "vrep_interface/vrep_plugin.h"
-#include "vrep_interface/vrep_interface.h"
 
 #include "ros/ros.h"
 #include <iostream>
@@ -78,7 +60,7 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
   // ******************************************
 
   // Initialize the ROS part:
-  if (!vrep_interface::VREPInterface::initialize())
+  if (!vrep_interface::VREPPlugin::initialize())
   {
     std::cout << "ROS master is not running. Cannot start 'rosSkeleton' plugin.\n";
     return (0);  // If the master is not running then the plugin is not loaded.
@@ -93,7 +75,7 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
 // releasing this plugin):
 VREP_DLLEXPORT void v_repEnd()
 {
-  vrep_interface::VREPInterface::shutDown();      // shutdown the vrep_interface_server
+  vrep_interface::VREPPlugin::shutDown();      // shutdown the vrep_interface_server
   unloadVrepLibrary(vrepLib);  // release the library
 }
 
@@ -118,7 +100,7 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // commands, then put some code here
   if (message == sim_message_eventcallback_instancepass)
   {
-    vrep_interface::VREPInterface::instancePass();
+    vrep_interface::VREPPlugin::instancePass();
   }
 
   // Main script is about to be run (only called while a simulation is running
@@ -127,22 +109,90 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // This is a good location to execute simulation commands
   if (message == sim_message_eventcallback_mainscriptabouttobecalled)
   {
-    vrep_interface::VREPInterface::mainScriptAboutToBeCalled();
+    vrep_interface::VREPPlugin::mainScriptAboutToBeCalled();
   }
 
   // Simulation is about to start
   if (message == sim_message_eventcallback_simulationabouttostart)
   {
-    vrep_interface::VREPInterface::simulationAboutToStart();
+    vrep_interface::VREPPlugin::simulationAboutToStart();
   }
 
   // Simulation just ended
   if (message == sim_message_eventcallback_simulationended)
   {
-    vrep_interface::VREPInterface::simulationEnded();
+    vrep_interface::VREPPlugin::simulationEnded();
   }
 
   // Keep following unchanged:
   simSetIntegerParameter(sim_intparam_error_report_mode, errorModeSaved);  // restore previous settings
   return (retVal);
+}
+
+using namespace vrep_interface;
+
+VREPServer *VREPPlugin::server = NULL;
+VREPInterface *VREPPlugin::sim_interface = NULL;
+
+bool VREPPlugin::initialize()
+{
+  try
+  {
+    sim_interface = new VREPInterface;
+    server = new VREPServer(sim_interface);
+  }
+  catch (std::exception &e)
+  {
+    return false;
+  }
+  return true;
+}
+
+void VREPPlugin::shutDown()
+{
+  delete server;
+  delete sim_interface;
+}
+
+void VREPPlugin::instancePass() // Simulation not running
+{
+  if ((simGetSimulationState() & sim_simulation_advancing) == 0)
+  {
+    server->spinOnce();
+  }
+}
+
+void VREPPlugin::mainScriptAboutToBeCalled() // Simulation running
+{
+  server->spinOnce();
+}
+
+void VREPPlugin::simulationAboutToStart()
+{
+  info("Starting simulation");
+  server->simulationAboutToStart();
+}
+
+void VREPPlugin::simulationEnded()
+{
+  info("Simulation ended");
+  server->simulationEnded();
+}
+
+void VREPPlugin::info(const std::string &message)
+{
+  simAddStatusbarMessage(("[INFO]: " + message).c_str());
+  std::cout << message.c_str() << std::endl;
+}
+
+void VREPPlugin::warn(const std::string &message)
+{
+  simAddStatusbarMessage(("[WARN]: " + message).c_str());
+  std::cout << message.c_str() << std::endl;
+}
+
+void VREPPlugin::error(const std::string &message)
+{
+  simAddStatusbarMessage(("[ERROR]: " + message).c_str());
+  std::cout << message.c_str() << std::endl;
 }

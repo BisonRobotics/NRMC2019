@@ -23,6 +23,15 @@ catkin_package(CATKIN_DEPENDS
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
+add_library(sim_interface src/vrep_interface/sim_interface.cpp)
+add_dependencies(sim_interface ${catkin_EXPORTED_TARGETS})
+target_link_libraries(sim_interface ${catkin_LIBRARIES})
+
+add_library(vrep_interface src/vrep_interface/vrep_interface.cpp)
+add_dependencies(vrep_interface ${catkin_EXPORTED_TARGETS})
+target_link_libraries(vrep_interface ${catkin_LIBRARIES})
+target_link_libraries(vrep_interface sim_interface)
+
 add_library(vrep_driver src/vrep_drivers/vrep_driver_base.cpp)
 add_dependencies(vrep_driver ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vrep_driver ${catkin_LIBRARIES})
@@ -42,16 +51,17 @@ target_link_libraries(vrep_server
   boost_system
   boost_filesystem
   ${catkin_LIBRARIES}
-  vrep_wheel_driver)
+  vrep_wheel_driver
+  sim_interface)
 
 add_library(v_repExtRosInterface
   src/vrep_interface/vrep_plugin.cpp
-  src/vrep_library/v_repLib.cpp
-  src/vrep_interface/vrep_interface.cpp)
+  src/vrep_library/v_repLib.cpp)
 add_dependencies(v_repExtRosInterface ${catkin_EXPORTED_TARGETS})
 target_link_libraries(v_repExtRosInterface
   pthread
   dl
   boost_system
   boost_filesystem
-  vrep_server)
+  vrep_server
+  vrep_interface)

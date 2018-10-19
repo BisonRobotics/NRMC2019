@@ -1,78 +1,61 @@
 #include <vrep_interface/vrep_interface.h>
-
+#include <vrep_library/v_repLib.h>
 
 using namespace vrep_interface;
 
-VREPServer *VREPInterface::server = NULL;
-
-bool VREPInterface::initialize()
+simInt VREPInterface::vSimAddStatusBarMessage(const simChar *message)
 {
-  try
-  {
-    server = new VREPServer;
-  }
-  catch (std::exception &e)
-  {
-    return false;
-  }
-  return true;
+  return simAddStatusbarMessage(message);
 }
 
-void VREPInterface::shutDown()
+simInt VREPInterface::vSimGetObjectHandle(const simChar *object_name)
 {
-  delete server;
+  return simGetObjectHandle(object_name);
 }
 
-void VREPInterface::instancePass() // Simulation not running
+simInt VREPInterface::vSimGetJointPosition(simInt object_handle, simFloat *position)
 {
-  if ((simGetSimulationState() & sim_simulation_advancing) == 0)
-  {
-    server->spinOnce();
-  }
+  return simGetJointPosition(object_handle, position);
 }
 
-void VREPInterface::mainScriptAboutToBeCalled() // Simulation running
+simInt VREPInterface::vSimSetJointPosition(simInt object_handle, simFloat position)
 {
-  server->spinOnce();
+  return simSetJointPosition(object_handle, position);
 }
 
-void VREPInterface::simulationAboutToStart()
+simInt VREPInterface::vSimGetObjectFloatParameter(simInt object_handle,
+    simInt parameter_id, simFloat *parameter)
 {
-  info("Starting simulation");
-  server->simulationAboutToStart();
+  return simGetObjectFloatParameter(object_handle, parameter_id, parameter);
 }
 
-void VREPInterface::simulationEnded()
+simInt VREPInterface::vSimGetJointForce(simInt object_handle, simFloat *force)
 {
-  info("Simulation ended");
-  server->simulationEnded();
+  return simGetJointForce(object_handle, force);
 }
 
-/*******************************************************************************
- * Custom services
- ******************************************************************************/
-
-
-void VREPInterface::info(const std::string &message)
+simInt VREPInterface::vSimSetJointTargetVelocity(simInt object_handle, simFloat velocity)
 {
-  simAddStatusbarMessage(("[INFO]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
+  return simSetJointTargetVelocity(object_handle, velocity);
 }
 
-void VREPInterface::warn(const std::string &message)
+simInt VREPInterface::vSimLoadScene(const simChar *filename)
 {
-  simAddStatusbarMessage(("[WARN]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
+  return simLoadScene(filename);
 }
 
-void VREPInterface::error(const std::string &message)
+simInt VREPInterface::vSimSetIntegerParameter(simInt parameter, simInt int_state)
 {
-  simAddStatusbarMessage(("[ERROR]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
+  return simSetIntegerParameter(parameter, int_state);
 }
 
+simInt VREPInterface::vSimGetIntegerParameter(simInt parameter, simInt *int_state)
+{
+  return simGetIntegerParameter(parameter, int_state);
+}
 
-
-
-
+simFloat VREPInterface::vSimGetSimulationTime()
+{
+  return simGetSimulationTime();
+}
 

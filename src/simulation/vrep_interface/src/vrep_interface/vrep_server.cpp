@@ -5,8 +5,10 @@
 
 using namespace vrep_interface;
 
-VREPServer::VREPServer()
+VREPServer::VREPServer(const SimInterface *sim)
 {
+  this->sim = sim;
+
   int argc = 0; char **argv = NULL;
   ros::init(argc, argv, "vrep");
   if (!ros::master::check())

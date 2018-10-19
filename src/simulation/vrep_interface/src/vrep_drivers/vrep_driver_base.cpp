@@ -1,7 +1,8 @@
 #include <vrep_drivers/vrep_driver_base.h>
 #include <driver_access/mode.h>
 #include <driver_access/limits.h>
-#include <vrep_interface/vrep_interface.h>
+#include <vrep_interface/sim_interface.h>
+#include <vrep_interface/sim_interface.h>
 
 using namespace vrep_interface;
 
@@ -100,7 +101,7 @@ void VREPDriverBase::updateHandle()
   {
     throw std::runtime_error("[updateHandle] Unable to find joint");
   }
-  VREPInterface::info("[updateHandle]: Found an id of " + to_string(handle) + " for \"" + joint_name + "\"");
+  SimInterface::info("[updateHandle]: Found an id of " + to_string(handle) + " for \"" + joint_name + "\"");
 }
 
 void VREPDriverBase::shutdown()

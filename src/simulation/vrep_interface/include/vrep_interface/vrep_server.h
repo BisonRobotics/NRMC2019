@@ -16,6 +16,7 @@
 
 #include <vrep_robot/vrep_robot.h>
 #include <vrep_msgs/SpawnRobot.h>
+#include <vrep_interface/sim_interface.h>
 
 namespace vrep_interface
 {
@@ -23,7 +24,7 @@ namespace vrep_interface
 class VREPServer
 {
   public:
-    explicit VREPServer();
+    explicit VREPServer(const SimInterface *sim);
     ~VREPServer();
     void spinOnce();
     void simulationAboutToStart();
@@ -33,6 +34,8 @@ class VREPServer
     static void error(const std::string &message);
 
   private:
+    const SimInterface *sim;
+
     bool sim_running;
     ros::NodeHandle *nh;
     ros::ServiceServer spawn_robot_server;
