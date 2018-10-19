@@ -25,24 +25,24 @@ class VREPServer
   public:
     explicit VREPServer();
     ~VREPServer();
+    static void info(const std::string &message);
+    static void warn(const std::string &message);
+    static void error(const std::string &message);
 
   private:
     ros::NodeHandle *nh;
-    //const std::string description_path;
-    /*static ros::ServiceServer spawn_robot_server;
-    static ros::ServiceServer spawn_robot_random_server;
-    static ros::ServiceServer shutdown_vrep_server;
-    static ros::Publisher *clock_publisher;
-    static ros::Subscriber add_status_bar_message_subscriber;
-    static tf::TransformBroadcaster* tf_broadcaster;
+    ros::ServiceServer spawn_robot_server;
+    ros::ServiceServer spawn_robot_random_server;
+    ros::ServiceServer shutdown_vrep_server;
+    ros::Publisher *clock_publisher;
+    tf::TransformBroadcaster* tf_broadcaster;
 
-    static VREPRobot *robot;
+    VREPRobot *robot;
 
-    static bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
-    static bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
-    static bool shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
-    static void addStatusBarMessageCallback(const std_msgs::String::ConstPtr &msg);
-    static void spinOnce();*/
+    bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
+    bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+    bool shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+    //void spinOnce();
 };
 
 }

@@ -1,5 +1,4 @@
 #include <vrep_interface/vrep_interface.h>
-#include <rosgraph_msgs/Clock.h>
 
 
 using namespace vrep_interface;
@@ -23,7 +22,15 @@ VREPRobot *VREPInterface::robot = NULL;*/
  ******************************************************************************/
 bool VREPInterface::initialize()
 {
-  server = new VREPServer;
+  try
+  {
+    server = new VREPServer;
+  }
+  catch (std::exception &e)
+  {
+    return false;
+  }
+  return true;
 
 
 
@@ -55,7 +62,6 @@ bool VREPInterface::initialize()
   }
   info("Server started");*/
 
-  return true;
 }
 
 void VREPInterface::shutDown()
@@ -129,47 +135,7 @@ void VREPInterface::simulationEnded()
 /*******************************************************************************
  * Custom services
  ******************************************************************************/
-/*bool VREPInterface::spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
-{
-  try
-  {
-    robot->spawnRobot();
-    return true;
-  }
-  catch (const std::runtime_error &e)
-  {
-    error(e.what());
-    return false;
-  }
-}*/
 
-/*bool VREPInterface::spawnRobotService(vrep_msgs::SpawnRobot::Request &req,
-                                   vrep_msgs::SpawnRobot::Response &res)
-{
-  try
-  {
-    robot->spawnRobot(req.x, req.y, req.omega);
-  }
-  catch (const std::runtime_error &e)
-  {
-    error(e.what());
-    return false;
-  }
-}*/
-
-/*bool VREPInterface::shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
-{
-  simAddStatusbarMessage("[Service shutdownService] Trying to shutdown");
-  res.success = 1;
-  res.message = "Trying to shutdown...";
-  simQuitSimulator(1);
-  return true;
-}
-
-void VREPInterface::addStatusBarMessageCallback(const std_msgs::String::ConstPtr &msg)
-{
-  simAddStatusbarMessage(msg->data.c_str());
-}*/
 
 void VREPInterface::info(const std::string &message)
 {
@@ -188,6 +154,7 @@ void VREPInterface::error(const std::string &message)
   simAddStatusbarMessage(("[ERROR]: " + message).c_str());
   std::cout << message.c_str() << std::endl;
 }
+
 
 
 
