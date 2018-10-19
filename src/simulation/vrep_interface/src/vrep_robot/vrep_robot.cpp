@@ -2,7 +2,7 @@
 #include <ros/ros.h>
 #include <vrep_robot/vrep_robot.h>
 #include <driver_access/params.h>
-#include <vrep_interface/vrep_server.h>
+#include <vrep_interface/vrep_interface.h>
 
 using namespace vrep_interface;
 
@@ -74,7 +74,7 @@ void VREPRobot::loadModelHelper()
         if (name == "base_link")
         {
           base_link_handle = tree_handles[i];
-          VREPServer::info("[loadModel]: Found an id of " + to_string(base_link_handle) + " for base_link_handle");
+          VREPInterface::info("[loadModel]: Found an id of " + to_string(base_link_handle) + " for base_link_handle");
         }
       }
     }

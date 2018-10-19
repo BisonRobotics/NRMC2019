@@ -1,5 +1,5 @@
-#ifndef ROS_SERVER_H
-#define ROS_SERVER_H
+#ifndef VREP_INTERFACE_VREP_SERVER_H
+#define VREP_INTERFACE_VREP_SERVER_H
 
 
 #include <ros/ros.h>
@@ -23,21 +23,13 @@ namespace vrep_interface
 class VREPServer
 {
   public:
-    static bool initialize();
-    static void shutDown();
-    static void instancePass();
-    static void mainScriptAboutToBeCalled();
-    static void simulationAboutToStart();
-    static void simulationEnded();
-    static void info(const std::string &message);
-    static void warn(const std::string &message);
-    static void error(const std::string &message);
+    explicit VREPServer();
+    ~VREPServer();
 
   private:
-    VREPServer(){};
-
-    static ros::NodeHandle *nh;
-    static ros::ServiceServer spawn_robot_server;
+    ros::NodeHandle *nh;
+    //const std::string description_path;
+    /*static ros::ServiceServer spawn_robot_server;
     static ros::ServiceServer spawn_robot_random_server;
     static ros::ServiceServer shutdown_vrep_server;
     static ros::Publisher *clock_publisher;
@@ -50,9 +42,9 @@ class VREPServer
     static bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
     static bool shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
     static void addStatusBarMessageCallback(const std_msgs::String::ConstPtr &msg);
-    static void spinOnce();
-  };
+    static void spinOnce();*/
+};
 
 }
 
-#endif
+#endif //VREP_INTERFACE_VREP_SERVER_H
