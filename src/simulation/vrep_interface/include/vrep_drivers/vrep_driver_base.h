@@ -5,8 +5,6 @@
 #include <driver_access/limits.h>
 #include <vrep_msgs/VREPDriverMessage.h>
 
-#include <vrep_library/v_repLib.h>
-
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 
@@ -38,7 +36,7 @@ class VREPDriverBase : public driver_access::DriverAccess
     SimInterface *sim;
     const std::string joint_name;
     vrep_msgs::VREPDriverMessage state;
-    simInt handle;
+    int handle;
     ros::Publisher *publisher;
 
   private:

@@ -33,15 +33,12 @@ void VREPRobot::spawnRobot()
   spawnRobot(0.75f, y, rotation);
 }
 
-void VREPRobot::spawnRobot(simFloat x, simFloat y, simFloat rotation)
+void VREPRobot::spawnRobot(double x, double y, double rotation)
 {
   checkState();
   loadModel();
-  std::cout << "Move" << std::endl;
-  move(x, y);
-  std::cout << "Rotate" << std::endl;
-  rotate(rotation);
-  std::cout << "Wheel handles" << std::endl;
+  sim->setObjectPosition(handle, -1, x, y, 0);
+  sim->setObjectOrientation(handle, -1, 0, 0, rotation);
   updateWheelHandles();
 }
 
@@ -90,16 +87,6 @@ void VREPRobot::loadModel()
     sim->removeModel(handle);
     loadModelHelper();
   }
-}
-
-void VREPRobot::move(simFloat x, simFloat y)
-{
-  sim->setObjectPosition(handle, -1, x, y, 0);
-}
-
-void VREPRobot::rotate(simFloat rotation)
-{
-  sim->setObjectOrientation(handle, -1, 0, 0, rotation);
 }
 
 void VREPRobot::updateWheelHandles()

@@ -2,7 +2,6 @@
 #include <rosgraph_msgs/Clock.h>
 #include <vrep_interface/vrep_server.h>
 
-
 using namespace vrep_interface;
 
 VREPServer::VREPServer(SimInterface *sim_interface)

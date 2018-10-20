@@ -5,9 +5,14 @@
 
 using namespace vrep_interface;
 
+SimInterface::SimInterface()
+{
+  last_error_mode = 0;
+}
+
 void SimInterface::setJointPosition(int object_handle, double position)
 {
-  if (simSetJointPosition((simInt) object_handle, (simFloat) position) == -1)
+  if (vSimSetJointPosition((simInt) object_handle, (simFloat) position) == -1)
   {
     throw vrep_error("[SimInterface::setPosition]: Unable to set position for object: "
                      + std::to_string(object_handle));
@@ -21,7 +26,7 @@ void SimInterface::setEffort(int object_handle, double effort)
 
 void SimInterface::setVelocity(int object_handle, double velocity)
 {
-  if (simSetJointTargetVelocity((simInt) object_handle, (simFloat) velocity) == -1)
+  if (vSimSetJointTargetVelocity((simInt) object_handle, (simFloat) velocity) == -1)
   {
     throw vrep_error("[SimInterface::setVelocity]: Unable to set velocity for object: "
                      + std::to_string(object_handle));
@@ -31,7 +36,7 @@ void SimInterface::setVelocity(int object_handle, double velocity)
 double SimInterface::getPosition(int object_handle)
 {
   simFloat position;
-  if (simGetJointPosition((simInt) object_handle, &position) == -1)
+  if (vSimGetJointPosition((simInt) object_handle, &position) == -1)
   {
     throw vrep_error("[SimInterface::getPosition]: Unable to get position for object: "
                      + std::to_string(object_handle));
@@ -42,7 +47,7 @@ double SimInterface::getPosition(int object_handle)
 double SimInterface::getEffort(int object_handle)
 {
   simFloat effort;
-  if (simGetJointForce((simInt) object_handle, &effort) == -1)
+  if (vSimGetJointForce((simInt) object_handle, &effort) == -1)
   {
     throw vrep_error("[SimInterface::getEffort]: Unable to get effort for object: "
                      + std::to_string(object_handle));
@@ -53,7 +58,7 @@ double SimInterface::getEffort(int object_handle)
 double SimInterface::getVelocity(int object_handle)
 {
   simFloat velocity;
-  if (simGetObjectFloatParameter(object_handle, 2012, &velocity) == -1)
+  if (vSimGetObjectFloatParameter(object_handle, 2012, &velocity) == -1)
   {
     throw vrep_error("[SimInterface::getVelocity]: Unable to get velocity for object: "
                      + std::to_string(object_handle));
@@ -63,7 +68,7 @@ double SimInterface::getVelocity(int object_handle)
 
 int SimInterface::getObjectHandle(const std::string &object_name)
 {
-  int object_handle = simGetObjectHandle(object_name.c_str());
+  int object_handle = vSimGetObjectHandle(object_name.c_str());
   if (object_handle == -1)
   {
     throw vrep_error("[SimInterface::getObjectHandle]: "
@@ -72,11 +77,9 @@ int SimInterface::getObjectHandle(const std::string &object_name)
   return object_handle;
 }
 
-int SimInterface::loadScene(std::string filename)
+int SimInterface::loadScene(const std::string &filename)
 {
-  std::cout << "Load scene" << std::endl;
-  int handle = simLoadScene(filename.c_str());
-  std::cout << "Load scene" << std::endl;
+  int handle = vSimLoadScene(filename.c_str());
   if(handle == -1)
   {
     throw vrep_error("[SimInterface::loadScene]: Unable to load scene: " + filename);
@@ -86,12 +89,12 @@ int SimInterface::loadScene(std::string filename)
 
 void SimInterface::disableErrorReporting()
 {
-  if (simGetIntegerParameter(sim_intparam_error_report_mode, &last_error_mode) == -1)
+  if (vSimGetIntegerParameter(sim_intparam_error_report_mode, &last_error_mode) == -1)
   {
     throw vrep_error("[SimInterface::disableErrorReporting]: "
                      "Unable to get error report mode");
   }
-  if (simSetIntegerParameter(sim_intparam_error_report_mode, sim_api_errormessage_ignore) == -1)
+  if (vSimSetIntegerParameter(sim_intparam_error_report_mode, sim_api_errormessage_ignore) == -1)
   {
     throw vrep_error("[SimInterface::disableErrorReporting]: "
                      "Unable to set error report mode");
@@ -100,7 +103,7 @@ void SimInterface::disableErrorReporting()
 
 void SimInterface::resumeErrorReporting()
 {
-  if (simSetIntegerParameter(sim_intparam_error_report_mode, last_error_mode) == -1)
+  if (vSimSetIntegerParameter(sim_intparam_error_report_mode, last_error_mode) == -1)
   {
     throw vrep_error("[SimInterface::resumeErrorReporting]: "
                      "Unable to set error report mode");
@@ -109,7 +112,7 @@ void SimInterface::resumeErrorReporting()
 
 rosgraph_msgs::Clock SimInterface::getSimulationTime()
 {
-  simFloat sim_time_f = simGetSimulationTime();
+  simFloat sim_time_f = vSimGetSimulationTime();
   if (sim_time_f < 0.0f)
   {
     throw vrep_error("[SimInterface::getSimulationTime]: "
@@ -124,44 +127,39 @@ rosgraph_msgs::Clock SimInterface::getSimulationTime()
 
 void SimInterface::info(const std::string &message)
 {
-  if (simAddStatusbarMessage(("[INFO]: " + message).c_str()) == -1)
+  if (vSimAddStatusBarMessage(("[INFO]: " + message).c_str()) == -1)
   {
     throw vrep_error("[SimInterface::info]: "
                      "Unable add a status bar message");
   }
-  std::cout << message.c_str() << std::endl;
 }
 
 void SimInterface::warn(const std::string &message)
 {
-  if (simAddStatusbarMessage(("[WARN]: " + message).c_str()) == -1)
+  if (vSimAddStatusBarMessage(("[WARN]: " + message).c_str()) == -1)
   {
     throw vrep_error("[SimInterface::warn]: "
                      "Unable add a status bar message");
   }
-  std::cout << message.c_str() << std::endl;
 }
 
 void SimInterface::error(const std::string &message)
 {
-  if (simAddStatusbarMessage(("[ERROR]: " + message).c_str()) == -1)
+  if (vSimAddStatusBarMessage(("[ERROR]: " + message).c_str()) == -1)
   {
     throw vrep_error("[SimInterface::error]: "
                      "Unable add a status bar message");
   }
-  std::cout << message.c_str() << std::endl;
 }
 
 bool SimInterface::isHandleValid(int object_handle, int object_type)
 {
-  return (bool)simIsHandleValid(object_handle, object_type);
+  return (bool)vSimIsHandleValid(object_handle, object_type);
 }
 
-int SimInterface::loadModel(std::string filename)
+int SimInterface::loadModel(const std::string &filename)
 {
-  std::cout << "loadModel" << std::endl;
-  int handle = simLoadModel(filename.c_str());
-  std::cout << "loadModel" << std::endl;
+  int handle = vSimLoadModel(filename.c_str());
   if (handle == -1)
   {
     throw vrep_error("[SimInterface::loadModel]: Unable to load model: " + filename);
@@ -174,14 +172,10 @@ int SimInterface::findObjectInTree(int base_handle, const std::string &object_na
   int handle = -1;
   simInt *tree_handles;
   simInt handle_count = -1;
-  std::cout << "tree handles" << std::endl;
-  tree_handles = simGetObjectsInTree(base_handle, object_type, 0x00, &handle_count);
-  std::cout << "tree handles" << std::endl;
+  tree_handles = vSimGetObjectsInTree(base_handle, object_type, 0x00, &handle_count);
   for (int i = 0; i < handle_count; i++)
   {
-    std::cout << "name_c" << std::endl;
-    simChar *name_c = simGetObjectName(tree_handles[i]);
-    std::cout << "name_c" << std::endl;
+    simChar *name_c = vSimGetObjectName(tree_handles[i]);
     if (name_c != NULL)
     {
       std::string name = std::string(name_c);
@@ -191,26 +185,22 @@ int SimInterface::findObjectInTree(int base_handle, const std::string &object_na
       }
     }
   }
-  std::cout << "Here 1" << std::endl;
   if (handle == -1)
   {
     throw vrep_error("[SimInterface::findObjectInTree]: Unable to find object: " +
                      object_name);
   }
-  std::cout << "Here 2" << std::endl;
-  if (simReleaseBuffer((simChar*)tree_handles) == -1)
+  if (vSimReleaseBuffer((simChar*)tree_handles) == -1)
   {
     throw vrep_error("[SimInterface::findObjectInTree]: Unable to release buffer");
   }
-  std::cout << "Here 3" << std::endl;
-
 
   return handle;
 }
 
 void SimInterface::removeModel(int object_handle)
 {
-  if (simRemoveModel(object_handle) == -1)
+  if (vSimRemoveModel(object_handle) == -1)
   {
     throw vrep_error("[SimInterface::removeModel]: Unable to remove model: " +
                      std::to_string(object_handle));
@@ -221,7 +211,7 @@ void SimInterface::setObjectPosition(int handle, int relative_to_handle,
     double x, double y, double z)
 {
   simFloat position[]{(simFloat)x, (simFloat)y, (simFloat)z};
-  if (simSetObjectPosition((simInt)handle, (simInt)relative_to_handle, position) == -1)
+  if (vSimSetObjectPosition((simInt)handle, (simInt)relative_to_handle, position) == -1)
   {
     throw vrep_error("[SimInterface::setObjectPosition]: "
                      "Unable to set object position: " + std::to_string(handle));
@@ -231,7 +221,7 @@ void SimInterface::setObjectPosition(int handle, int relative_to_handle,
 void SimInterface::setObjectOrientation(int handle, int relative_to_handle, double alpha, double beta, double gamma)
 {
   simFloat orientation[]{(simFloat)alpha, (simFloat)beta, (simFloat)gamma};
-  if (simSetObjectOrientation((simInt)handle, (simInt)relative_to_handle, orientation) == -1)
+  if (vSimSetObjectOrientation((simInt)handle, (simInt)relative_to_handle, orientation) == -1)
   {
     throw vrep_error("[SimInterface::setObjectOrientation]: "
                      "Unable to set object orientation: " + std::to_string(handle));
@@ -241,7 +231,7 @@ void SimInterface::setObjectOrientation(int handle, int relative_to_handle, doub
 tuple3d SimInterface::getObjectPosition(int handle, int relative_to_handle)
 {
   simFloat position[3];
-  if (simGetObjectPosition((simInt)handle, (simInt)relative_to_handle, position) == -1)
+  if (vSimGetObjectPosition((simInt)handle, (simInt)relative_to_handle, position) == -1)
   {
     throw vrep_error("[SimInterface::getObjectPosition]: "
                      "Unable to get object position");
@@ -252,10 +242,116 @@ tuple3d SimInterface::getObjectPosition(int handle, int relative_to_handle)
 tuple3d SimInterface::getObjectOrientation(int handle, int relative_to_handle)
 {
   simFloat orientation[3];
-  if (simGetObjectPosition((simInt)handle, (simInt)relative_to_handle, orientation) == -1)
+  if (vSimGetObjectPosition((simInt)handle, (simInt)relative_to_handle, orientation) == -1)
   {
     throw vrep_error("[SimInterface::getObjectOrientation]: "
                      "Unable to get object orientation");
   }
   return std::make_tuple((double)orientation[0], (double)orientation[1], (double)orientation[2]);
 }
+
+simInt SimInterface::vSimAddStatusBarMessage(const simChar *message)
+{
+  return simAddStatusbarMessage(message);
+}
+
+simInt SimInterface::vSimGetObjectHandle(const simChar *object_name)
+{
+  return simGetObjectHandle(object_name);
+}
+
+simInt SimInterface::vSimGetJointPosition(simInt object_handle, simFloat *position)
+{
+  return simGetJointPosition(object_handle, position);
+}
+
+simInt SimInterface::vSimSetJointPosition(simInt object_handle, simFloat position)
+{
+  return simSetJointPosition(object_handle, position);
+}
+
+simInt SimInterface::vSimGetObjectFloatParameter(simInt object_handle, simInt parameter_id, simFloat *parameter)
+{
+  return simGetObjectFloatParameter(object_handle, parameter_id, parameter);
+}
+
+simInt SimInterface::vSimGetJointForce(simInt object_handle, simFloat *force)
+{
+  return simGetJointForce(object_handle, force);
+}
+
+simInt SimInterface::vSimSetJointTargetVelocity(simInt object_handle, simFloat velocity)
+{
+  return simSetJointTargetVelocity(object_handle, velocity);
+}
+
+simInt SimInterface::vSimLoadScene(const simChar *filename)
+{
+  return simLoadScene(filename);
+}
+
+simInt SimInterface::vSimSetIntegerParameter(simInt parameter, simInt int_state)
+{
+  return simSetIntegerParameter(parameter, int_state);
+}
+
+simInt SimInterface::vSimGetIntegerParameter(simInt parameter, simInt *int_state)
+{
+  return simGetIntegerParameter(parameter, int_state);
+}
+
+simFloat SimInterface::vSimGetSimulationTime()
+{
+  return simGetSimulationTime();
+}
+
+simInt SimInterface::vSimIsHandleValid(simInt object_handle, simInt object_type)
+{
+  return simIsHandleValid(object_handle, object_type);
+}
+
+simInt SimInterface::vSimLoadModel(const simChar *filename)
+{
+  return simLoadModel(filename);
+}
+
+simInt* SimInterface::vSimGetObjectsInTree(simInt handle, simInt type, simInt options, simInt *count)
+{
+  return simGetObjectsInTree(handle, type, options, count);
+}
+
+simChar* SimInterface::vSimGetObjectName(simInt handle)
+{
+  return simGetObjectName(handle);
+}
+
+simInt SimInterface::vSimReleaseBuffer(simChar *buffer)
+{
+  return simReleaseBuffer(buffer);
+}
+
+simInt SimInterface::vSimRemoveModel(simInt handle)
+{
+  return simRemoveModel(handle);
+}
+
+simInt SimInterface::vSimSetObjectPosition(simInt handle, simInt relative_to_handle, const simFloat *position)
+{
+  return simSetObjectPosition(handle, relative_to_handle, position);
+}
+
+simInt SimInterface::vSimSetObjectOrientation(simInt handle, simInt relative_to_handle, const simFloat *orientation)
+{
+  return simSetObjectOrientation(handle, relative_to_handle, orientation);
+}
+
+simInt SimInterface::vSimGetObjectPosition(simInt handle, simInt relative_to_handle, simFloat *position)
+{
+  return simGetObjectPosition(handle, relative_to_handle, position);
+}
+
+simInt SimInterface::vSimGetObjectOrientation(simInt handle, simInt relative_to_handle, simFloat *orientation)
+{
+  return simGetObjectOrientation(handle, relative_to_handle, orientation);
+}
+

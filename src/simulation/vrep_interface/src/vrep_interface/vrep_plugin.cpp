@@ -132,13 +132,13 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
 using namespace vrep_interface;
 
 VREPServer *VREPPlugin::server = NULL;
-VREPInterface *VREPPlugin::sim_interface = NULL;
+SimInterface *VREPPlugin::sim_interface = NULL;
 
 bool VREPPlugin::initialize()
 {
   try
   {
-    sim_interface = new VREPInterface;
+    sim_interface = new SimInterface;
     server = new VREPServer(sim_interface);
   }
   catch (std::exception &e)
@@ -170,30 +170,12 @@ void VREPPlugin::mainScriptAboutToBeCalled() // Simulation running
 
 void VREPPlugin::simulationAboutToStart()
 {
-  info("Starting simulation");
+  sim_interface->info("Starting simulation");
   server->simulationAboutToStart();
 }
 
 void VREPPlugin::simulationEnded()
 {
-  info("Simulation ended");
+  sim_interface->info("Simulation ended");
   server->simulationEnded();
-}
-
-void VREPPlugin::info(const std::string &message)
-{
-  simAddStatusbarMessage(("[INFO]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
-}
-
-void VREPPlugin::warn(const std::string &message)
-{
-  simAddStatusbarMessage(("[WARN]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
-}
-
-void VREPPlugin::error(const std::string &message)
-{
-  simAddStatusbarMessage(("[ERROR]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
 }
