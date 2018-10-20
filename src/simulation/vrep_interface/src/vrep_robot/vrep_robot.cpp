@@ -3,16 +3,19 @@
 #include <vrep_robot/vrep_robot.h>
 #include <driver_access/params.h>
 #include <vrep_interface/sim_interface.h>
+#include <vrep_exceptions/vrep_exceptions.h>
 
 using namespace vrep_interface;
 
 using driver_access::ID;
 using std::to_string;
+using std::get;
 
 //TODO status bar messages should probably be thrown errors
-VREPRobot::VREPRobot() : handle(-1), model_file(""),
-  fl(ID::front_left_wheel), fr(ID::front_right_wheel),
-  br(ID::back_right_wheel), bl(ID::back_left_wheel){}
+VREPRobot::VREPRobot(SimInterface *sim) :
+    sim(sim), handle(-1), model_file(""),
+    fl(sim, ID::front_left_wheel), fr(sim, ID::front_right_wheel),
+    br(sim, ID::back_right_wheel), bl(sim, ID::back_left_wheel) {}
 
 void VREPRobot::initialize(std::string model_file)
 {
@@ -34,8 +37,11 @@ void VREPRobot::spawnRobot(simFloat x, simFloat y, simFloat rotation)
 {
   checkState();
   loadModel();
+  std::cout << "Move" << std::endl;
   move(x, y);
+  std::cout << "Rotate" << std::endl;
   rotate(rotation);
+  std::cout << "Wheel handles" << std::endl;
   updateWheelHandles();
 }
 
@@ -44,7 +50,7 @@ void VREPRobot::checkState()
   // Reset model state if it's been deleted
   if (handle != -1)
   {
-    if (simIsHandleValid(handle, -1) != 1)
+    if (!sim->isHandleValid(handle, -1))
     {
       handle = -1;
       throw std::runtime_error("[checkState]: Looks like the model was deleted, resetting model state");
@@ -55,37 +61,21 @@ void VREPRobot::checkState()
 void VREPRobot::loadModelHelper()
 {
   base_link_handle = -1;
-  handle = simLoadModel(model_file.c_str());
-  if (handle == -1)
+  handle = sim->loadModel(model_file);
+
+  try
   {
-    throw std::runtime_error("[loadModel]: Unable to load model");
+    base_link_handle = sim->findObjectInTree(handle, "base_link", sim_object_dummy_type);
+    std::cout << "loadModelHelper" << std::endl;
+    sim->info("[loadModel]: Found an id of " + to_string(base_link_handle) + " for base_link_handle");
+    sim->info("[loadModel]: Found an id of " + to_string(handle) + " for handle");
+    std::cout << "loadModelHelper" << std::endl;
   }
-  else
+  catch (vrep_error &error)
   {
-    simInt *tree_handles;
-    simInt handle_count = -1;
-    tree_handles = simGetObjectsInTree(handle, sim_object_dummy_type, 0x00, &handle_count);
-    for (int i = 0; i < handle_count; i++)
-    {
-      simChar *name_c = simGetObjectName(tree_handles[i]);
-      if (name_c != NULL)
-      {
-        std::string name = std::string(name_c);
-        if (name == "base_link")
-        {
-          base_link_handle = tree_handles[i];
-          SimInterface::info("[loadModel]: Found an id of " + to_string(base_link_handle) + " for base_link_handle");
-        }
-      }
-    }
-    // TODO check for other buffers that need to be released
-    simReleaseBuffer((simChar*)tree_handles);
-    if (base_link_handle == -1)
-    {
-      simRemoveModel(handle);
-      handle = -1;
-      throw std::runtime_error("[loadModel]: Unable to load model (couldn't find base_link)");
-    }
+    sim->removeModel(handle);
+    handle = -1;
+    throw error;
   }
 }
 
@@ -97,32 +87,19 @@ void VREPRobot::loadModel()
   }
   else
   {
-    if (simRemoveModel(handle) == -1)
-    {
-      throw std::runtime_error("[loadModel]: Failed to remove previous model");
-    }
-    else
-    {
-      loadModelHelper();
-    }
+    sim->removeModel(handle);
+    loadModelHelper();
   }
 }
 
 void VREPRobot::move(simFloat x, simFloat y)
 {
-  simFloat xyz[3] = {x, y, 0.0};
-  if (simSetObjectPosition(handle, -1, xyz) == -1) {
-    throw std::runtime_error("[move]: Unable to move model to position");
-  }
+  sim->setObjectPosition(handle, -1, x, y, 0);
 }
 
 void VREPRobot::rotate(simFloat rotation)
 {
-  simFloat abg[3] = {0.0, 0.0, rotation}; // Rotation is degrees from x axis
-  if (simSetObjectOrientation(handle, -1, abg) == -1)
-  {
-    throw std::runtime_error("[rotate]: Unable to rotate model into orientation");
-  }
+  sim->setObjectOrientation(handle, -1, 0, 0, rotation);
 }
 
 void VREPRobot::updateWheelHandles()
@@ -135,15 +112,13 @@ void VREPRobot::updateWheelHandles()
 
 void VREPRobot::getPosition(tf::Transform *position)
 {
-  simFloat origin[3];
-  simFloat euler_angles[3];
-  simGetObjectPosition(base_link_handle, -1, origin);
-  simGetObjectOrientation(base_link_handle, -1, euler_angles);
+  tuple3d origin = sim->getObjectPosition(base_link_handle, -1);
+  tuple3d angles = sim->getObjectOrientation(base_link_handle, -1);
 
   tf::Quaternion rotation;
-  rotation.setEuler(euler_angles[0], euler_angles[1], euler_angles[2]);
+  rotation.setEuler(get<0>(angles), get<1>(angles), get<2>(angles));
 
-  position->setOrigin(tf::Vector3(origin[0], origin[1], origin[2]));
+  position->setOrigin(tf::Vector3(get<0>(origin), get<1>(origin), get<2>(origin)));
   position->setRotation(rotation);
 }
 

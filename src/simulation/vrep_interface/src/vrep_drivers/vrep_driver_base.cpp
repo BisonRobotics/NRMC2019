@@ -15,7 +15,8 @@ using driver_access::Mode;
 using driver_access::ID;
 using driver_access::name;
 
-VREPDriverBase::VREPDriverBase(ID id) :
+VREPDriverBase::VREPDriverBase(SimInterface *sim_interface, ID id) :
+    sim(sim_interface),
     DriverAccess(Limits(-1e10, 1e10, 0, 1e10, 0, 1e10), id),
     handle(-1),
     joint_name(name(id) + "_joint")
@@ -79,7 +80,6 @@ double VREPDriverBase::setPoint()
 
 void VREPDriverBase::callback(const vrep_msgs::VREPDriverMessageConstPtr &message)
 {
-  //simAddStatusbarMessage((joint_name + to_string(message->velocity)).c_str());
   command.header.seq = message->header.seq;
   command.position = message->position;
   command.velocity = message->velocity;
@@ -96,12 +96,8 @@ void VREPDriverBase::updateHeader(std_msgs::Header *header)
 
 void VREPDriverBase::updateHandle()
 {
-  handle = simGetObjectHandle(joint_name.c_str());
-  if (handle == -1)
-  {
-    throw std::runtime_error("[updateHandle] Unable to find joint");
-  }
-  SimInterface::info("[updateHandle]: Found an id of " + to_string(handle) + " for \"" + joint_name + "\"");
+  handle = sim->getObjectHandle(joint_name);
+  sim->info("[updateHandle]: Found an id of " + to_string(handle) + " for \"" + joint_name + "\"");
 }
 
 void VREPDriverBase::shutdown()

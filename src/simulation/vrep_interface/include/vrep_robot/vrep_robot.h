@@ -33,7 +33,7 @@ class VREPRobot
 {
   public:
 
-    VREPRobot();
+    VREPRobot(SimInterface *sim_interface);
 
     void initialize(std::string model_file);
     void spawnRobot();
@@ -48,6 +48,7 @@ class VREPRobot
     void shutdown();
 
   private:
+    SimInterface *sim;
     simInt handle;
     simInt base_link_handle;
     std::string model_file;

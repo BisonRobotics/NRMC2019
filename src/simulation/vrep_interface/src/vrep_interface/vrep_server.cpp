@@ -5,9 +5,9 @@
 
 using namespace vrep_interface;
 
-VREPServer::VREPServer(const SimInterface *sim)
+VREPServer::VREPServer(SimInterface *sim_interface)
 {
-  this->sim = sim;
+  sim = sim_interface;
 
   int argc = 0; char **argv = NULL;
   ros::init(argc, argv, "vrep");
@@ -22,7 +22,7 @@ VREPServer::VREPServer(const SimInterface *sim)
   std::string description_path = ros::package::getPath("description");
   if (description_path.empty())
   {
-    error("Unable to find the description package path, have you sourced your workspace?");
+    sim->error("Unable to find the description package path, have you sourced your workspace?");
     throw std::runtime_error("Unable to find the description package path, have you sourced your workspace?");
   }
 
@@ -35,18 +35,14 @@ VREPServer::VREPServer(const SimInterface *sim)
   clock_publisher = new ros::Publisher;
   (*clock_publisher) = nh->advertise<rosgraph_msgs::Clock>("/clock", 10, true);
 
-  simInt status = simLoadScene((description_path + "/vrep_models/arena.ttt").c_str());
-  if (status == -1)
-  {
-    error("Unable to load scene");
-  }
+  sim->loadScene(description_path + "/vrep_models/arena.ttt");
 
-  robot = new VREPRobot;
+  robot = new VREPRobot(nullptr);
   robot->initialize(description_path + "/vrep_models/robot.ttm");
   robot->spawnRobot();
 
   sim_running = false;
-  info("Server started");
+  sim->info("Server started");
 }
 
 VREPServer::~VREPServer()
@@ -63,19 +59,14 @@ void VREPServer::spinOnce()
 {
   // Disable error reporting (it is enabled in the service processing part, but
   // we don't want error reporting for publishers/subscribers)
-  int errorModeSaved;
-  simGetIntegerParameter(sim_intparam_error_report_mode, &errorModeSaved);
-  simSetIntegerParameter(sim_intparam_error_report_mode, sim_api_errormessage_ignore);
+  sim->disableErrorReporting();
 
   // Process all requested services and topic subscriptions
   try
   {
     if (sim_running)
     {
-      ros::Time sim_time(simGetSimulationTime());
-      rosgraph_msgs::Clock sim_clock;
-      sim_clock.clock.nsec = sim_time.nsec;
-      sim_clock.clock.sec = sim_time.sec;
+      rosgraph_msgs::Clock sim_clock = sim->getSimulationTime();
       clock_publisher->publish(sim_clock);
 
       robot->spinOnce();
@@ -88,11 +79,10 @@ void VREPServer::spinOnce()
   }
   catch (const std::exception &e)
   {
-    error(e.what());
+    sim->error(e.what());
   }
 
-  // Restore previous error report mode:
-  simSetIntegerParameter(sim_intparam_error_report_mode, errorModeSaved);
+  sim->resumeErrorReporting();
 }
 
 void VREPServer::simulationAboutToStart()
@@ -114,7 +104,7 @@ bool VREPServer::spawnRobotRandomService(std_srvs::Trigger::Request &req, std_sr
   }
   catch (const std::runtime_error &e)
   {
-    error(e.what());
+    sim->error(e.what());
     return false;
   }
 }
@@ -128,34 +118,16 @@ bool VREPServer::spawnRobotService(vrep_msgs::SpawnRobot::Request &req,
   }
   catch (const std::runtime_error &e)
   {
-    error(e.what());
+    sim->error(e.what());
     return false;
   }
 }
 
 bool VREPServer::shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
 {
-  simAddStatusbarMessage("[Service shutdownService] Trying to shutdown");
+  sim->info("[shutdownService] Trying to shutdown");
   res.success = 1;
   res.message = "Trying to shutdown...";
   simQuitSimulator(1);
   return true;
-}
-
-void VREPServer::info(const std::string &message)
-{
-  simAddStatusbarMessage(("[INFO]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
-}
-
-void VREPServer::warn(const std::string &message)
-{
-  simAddStatusbarMessage(("[WARN]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
-}
-
-void VREPServer::error(const std::string &message)
-{
-  simAddStatusbarMessage(("[ERROR]: " + message).c_str());
-  std::cout << message.c_str() << std::endl;
 }

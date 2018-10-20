@@ -10,6 +10,8 @@
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 
+#include <vrep_interface/sim_interface.h>
+
 
 namespace vrep_interface
 {
@@ -17,7 +19,7 @@ namespace vrep_interface
 class VREPDriverBase : public driver_access::DriverAccess
 {
   public:
-    VREPDriverBase(driver_access::ID id);
+    VREPDriverBase(SimInterface *sim_interface, driver_access::ID id);
 
     // This class is kind of a hack, so we override these
     double getPosition() override;
@@ -33,20 +35,20 @@ class VREPDriverBase : public driver_access::DriverAccess
     virtual void updateState() = 0;
 
   protected:
+    SimInterface *sim;
     const std::string joint_name;
     vrep_msgs::VREPDriverMessage state;
     simInt handle;
     ros::Publisher *publisher;
 
   private:
-    void callback(const vrep_msgs::VREPDriverMessageConstPtr &message);
-
     vrep_msgs::VREPDriverMessage command;
     uint32_t seq;
 
     ros::NodeHandle *nh;
     ros::Subscriber *subscriber;
 
+    void callback(const vrep_msgs::VREPDriverMessageConstPtr &message);
 };
 }
 

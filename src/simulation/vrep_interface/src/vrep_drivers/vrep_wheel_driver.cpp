@@ -8,42 +8,30 @@ using driver_access::name;
 using vrep_msgs::VREPDriverMessage;
 using vrep_msgs::VREPDriverMessageConstPtr;
 
-VREPWheelDriver::VREPWheelDriver(ID id) : VREPDriverBase(id) {}
+VREPWheelDriver::VREPWheelDriver(SimInterface *sim_interface, ID id) :
+    VREPDriverBase(sim_interface, id) {}
 
 void VREPWheelDriver::updateState()
 {
   // TODO add conversions
-  simFloat position;
-  simGetJointPosition(handle, &position);
-  state.position = (double)position;
-
-  simFloat velocity;
-  simGetObjectFloatParameter(handle, 2012, &velocity);
-  state.velocity = (double)(velocity * 0.1524f);
-
-  simFloat force;
-  simGetJointForce(handle, &force);
-  state.effort = (double)force;
-
+  state.position = sim->getPosition(handle);
+  state.velocity = sim->getVelocity(handle) * 0.1524;
+  state.effort = sim->getEffort(handle);
   updateHeader(&state.header);
   publisher->publish(state);
 }
 
 void VREPWheelDriver::setDriverPosition(double position)
 {
-  throw std::runtime_error("[setDriverPosition]: not implemented");
+  sim->setJointPosition(handle, position);
 }
 
 void VREPWheelDriver::setDriverVelocity(double velocity)
 {
-  // TODO properly scale velocity
-  if(simSetJointTargetVelocity(handle, (simFloat)(velocity / 0.1524)) == -1)
-  {
-    throw std::runtime_error("[setDriverVelocity]: unable to set target velocity for " + joint_name);
-  }
+  sim->setVelocity(handle, velocity / 0.1524);
 }
 
 void VREPWheelDriver::setDriverEffort(double effort)
 {
-  throw std::runtime_error("[setDriverEffort]: not implemented");
+  sim->setEffort(handle, effort);
 }

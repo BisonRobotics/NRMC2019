@@ -24,17 +24,14 @@ namespace vrep_interface
 class VREPServer
 {
   public:
-    explicit VREPServer(const SimInterface *sim);
+    explicit VREPServer(SimInterface *sim_interface);
     ~VREPServer();
     void spinOnce();
     void simulationAboutToStart();
     void simulationEnded();
-    static void info(const std::string &message);
-    static void warn(const std::string &message);
-    static void error(const std::string &message);
 
   private:
-    const SimInterface *sim;
+    SimInterface *sim;
 
     bool sim_running;
     ros::NodeHandle *nh;
