@@ -6,7 +6,7 @@ add_compile_options(-std=c++11)
 
 # Non ROS packages
 find_package(Boost REQUIRED COMPONENTS thread timer)
-find_package(OpenCV 3.3.0)
+find_package(OpenCV 3)
 
 # ROS packages
 find_package(catkin REQUIRED COMPONENTS

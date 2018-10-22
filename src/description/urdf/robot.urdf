@@ -1,97 +1,169 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
 
-    <!-- Define materials -->
-    <material name="brown">
-        <color rgba="0.45 0.45 0.28 1"/>
-    </material>
+  <!-- Define materials -->
+  <material name="brown">
+    <color rgba="0.45 0.45 0.28 1"/>
+  </material>
 
-    <material name="orange">
-        <color rgba="0.5 0.24 0.00 1"/>
-    </material>
+  <material name="orange">
+    <color rgba="0.5 0.24 0.00 1"/>
+  </material>
 
-    <material name="green">
-        <color rgba="0.24 0.34 0.00 1"/>
-    </material>
+  <material name="green">
+    <color rgba="0.24 0.34 0.00 1"/>
+  </material>
 
-    <material name="black">
-        <color rgba="0.30 0.30 0.30 1"/>
-    </material>
+  <material name="black">
+    <color rgba="0.30 0.30 0.30 1"/>
+  </material>
 
-    <material name="grey">
-        <color rgba="0.70 0.70 0.70 1"/>
-    </material>
+  <material name="grey">
+    <color rgba="0.70 0.70 0.70 1"/>
+  </material>
 
-    <material name="gold">
-        <color rgba="0.85490196078 0.64705882352 0.12549019607 1"/>
-    </material>
+  <material name="gold">
+    <color rgba="0.85490196078 0.64705882352 0.12549019607 1"/>
+  </material>
 
-    <!-- Define linkages and joints -->
-    <link name="base_link" />
-        <!--<visual>
-            <geometry>
-                <box size="0.001 0.001 0.001" />
-            </geometry>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <material name="orange" />
-        </visual>
-        <collision>
-            <geometry>
-                <box size="0.001 0.001 0.001" />
-            </geometry>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-        </collision>
-    </link>-->
+  <!-- Define linkages and joints -->
+  <link name="base_link" >
+    <visual>
+      <geometry>
+        <box size="0.001 0.001 0.001" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="orange" />
+    </visual>
+    <!--<collision>
+      <geometry>
+        <box size="0.001 0.001 0.001" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </collision>-->
+    <inertial>
+      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+          ixx="1.0" ixy="0.0" ixz="0.0"
+          iyy="1.0" iyz="0.0"
+          izz="1.0"/>
+    </inertial>
+  </link>
 
-    <link name="frame">
-        <visual>
-            <geometry>
-                <mesh filename="package://description/meshes/frame.stl" />
-            </geometry>
-            <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
-            <material name="grey" />
-        </visual>
+  <!-- Base Link -->
+  <!--<link name="link1">
+    <collision>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.0 1.0 1.0"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0.5" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.0 1.0 1.0"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+          ixx="1.0" ixy="0.0" ixz="0.0"
+          iyy="1.0" iyz="0.0"
+          izz="1.0"/>
+    </inertial>
+  </link>-->
+
+  <link name="frame">
+    <visual>
+      <geometry>
+        <mesh filename="package://description/meshes/frame.stl" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
+      <material name="grey" />
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.001 0.001 0.001" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </collision>
+    <inertial>
+      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+          ixx="1.0" ixy="0.0" ixz="0.0"
+          iyy="1.0" iyz="0.0"
+          izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="base_link_to_frame" type="fixed">
+      <parent link="base_link"/>
+      <child link="frame"/>
+      <origin xyz="-387.35e-3 0 2.0796e-01" rpy="0 0 0" />
+  </joint>
+
+  <xacro:macro name="wheel" params="x_name y_name rot y_dir xdist color">
+    <link name="${x_name}_${y_name}_wheel">
+      <visual>
+        <geometry>
+          <mesh filename="package://description/meshes/wheel.stl" />
+        </geometry>
+        <origin xyz="0 0 0" rpy="${rot} 0 0"/>
+        <material name="${color}"/>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://description/meshes/wheel.stl" />
+        </geometry>
+        <origin xyz="0 0 0" rpy="${rot} 0 0"/>
+        <material name="${color}"/>
+      </collision>
+      <inertial>
+        <origin xyz="0 0 1" rpy="0 0 0"/>
+        <mass value="1"/>
+        <inertia
+            ixx="1.0" ixy="0.0" ixz="0.0"
+            iyy="1.0" iyz="0.0"
+            izz="1.0"/>
+      </inertial>
     </link>
 
-    <joint name="base_link_to_frame" type="fixed">
-        <parent link="base_link"/>
-        <child link="frame"/>
-        <origin xyz="-387.35e-3 0 2.0796e-01" rpy="0 0 0" />
+    <joint name="${x_name}_${y_name}_wheel_joint" type="revolute">
+      <parent link="frame"/>
+      <child link="${x_name}_${y_name}_wheel"/>
+      <origin xyz="${xdist} ${y_dir*0.3109468} -0.0555752" />
+      <axis xyz="0 1 0"/>
+      <limit effort="1000.0" lower="-1e9" upper="1e9" velocity="1000.0"/>
     </joint>
+  </xacro:macro>
+  <xacro:wheel x_name="front" y_name="left"  rot="${-pi/2}" y_dir="1"  xdist="0.73025" color="gold"   />
+  <xacro:wheel x_name="front" y_name="right" rot="${pi/2}"  y_dir="-1" xdist="0.73025" color="gold" />
+  <xacro:wheel x_name="back"  y_name="left"  rot="${-pi/2}" y_dir="1"  xdist="0.0455676" color="gold"   />
+  <xacro:wheel x_name="back"  y_name="right" rot="${pi/2}"  y_dir="-1" xdist="0.0455676" color="gold" />
 
-    <xacro:macro name="wheel" params="x_name y_name rot y_dir xdist color">
-        <link name="${x_name}_${y_name}_wheel">
-            <visual>
-                <geometry>
-                    <mesh filename="package://description/meshes/wheel.stl" />
-                </geometry>
-                <origin xyz="0 0 0" rpy="${rot} 0 0"/>
-                <material name="${color}"/>
-            </visual>
-        </link>
-
-        <joint name="${x_name}_${y_name}_wheel_joint" type="revolute">
-            <parent link="frame"/>
-            <child link="${x_name}_${y_name}_wheel"/>
-            <origin xyz="${xdist} ${y_dir*0.3109468} -0.0555752" />
-            <axis xyz="0 1 0"/>
-            <limit effort="1000.0" lower="-1e9" upper="1e9" velocity="1000.0"/>
-        </joint>
-    </xacro:macro>
-    <xacro:wheel x_name="front" y_name="left"  rot="${-pi/2}" y_dir="1"  xdist="0.73025" color="gold"   />
-    <xacro:wheel x_name="front" y_name="right" rot="${pi/2}"  y_dir="-1" xdist="0.73025" color="gold" />
-    <xacro:wheel x_name="back"  y_name="left"  rot="${-pi/2}" y_dir="1"  xdist="0.0455676" color="gold"   />
-    <xacro:wheel x_name="back"  y_name="right" rot="${pi/2}"  y_dir="-1" xdist="0.0455676" color="gold" />
-
-    <link name="central_drive">
-        <visual>
-            <geometry>
-                <mesh filename="package://description/meshes/central_drive.stl" />
-            </geometry>
-            <origin xyz="0.1121664 -0.098425 -0.05715" rpy="0 ${pi/2} ${pi}" />
-            <material name="black" />
-        </visual>
-    </link>
+  <link name="central_drive">
+    <visual>
+      <geometry>
+        <mesh filename="package://description/meshes/central_drive.stl" />
+      </geometry>
+      <origin xyz="0.1121664 -0.098425 -0.05715" rpy="0 ${pi/2} ${pi}" />
+      <material name="black" />
+    </visual>
+    <inertial>
+      <origin xyz="0 0 1" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia
+          ixx="1.0" ixy="0.0" ixz="0.0"
+          iyy="1.0" iyz="0.0"
+          izz="1.0"/>
+    </inertial>
+  </link>
 
     <joint name="frame_to_central_drive" type="fixed">
         <parent link="frame"/>
@@ -100,13 +172,21 @@
     </joint>
 
     <link name="computer_box">
-        <visual>
-            <geometry>
-                <mesh filename="package://description/meshes/box.stl" />
-            </geometry>
-            <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
-            <material name="grey" />
-        </visual>
+      <visual>
+        <geometry>
+          <mesh filename="package://description/meshes/box.stl" />
+        </geometry>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
+        <material name="grey" />
+      </visual>
+      <inertial>
+        <origin xyz="0 0 1" rpy="0 0 0"/>
+        <mass value="1"/>
+        <inertia
+            ixx="1.0" ixy="0.0" ixz="0.0"
+            iyy="1.0" iyz="0.0"
+            izz="1.0"/>
+      </inertial>
     </link>
 
     <joint name="frame_to_computer_box" type="fixed">
@@ -116,13 +196,21 @@
     </joint>
 
     <link name="battery_box">
-        <visual>
-            <geometry>
-                <mesh filename="package://description/meshes/box.stl" />
-            </geometry>
-            <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
-            <material name="grey" />
-        </visual>
+      <visual>
+        <geometry>
+          <mesh filename="package://description/meshes/box.stl" />
+        </geometry>
+        <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
+        <material name="grey" />
+      </visual>
+      <inertial>
+        <origin xyz="0 0 1" rpy="0 0 0"/>
+        <mass value="1"/>
+        <inertia
+            ixx="1.0" ixy="0.0" ixz="0.0"
+            iyy="1.0" iyz="0.0"
+            izz="1.0"/>
+      </inertial>
     </link>
 
     <joint name="frame_to_battery_box" type="fixed">
@@ -132,7 +220,7 @@
     </joint>
 
     <!-- Add a few static transforms for testing -->
-    <xacro:arg name="test_urdf" default="false"/>
+    <!--<xacro:arg name="test_urdf" default="false"/>
     <xacro:if value="$(arg test_urdf)">
         <link name="map" />
         <joint name="map_to_base_link" type="fixed">
@@ -140,7 +228,7 @@
             <child link="base_link"/>
             <origin xyz="1.5 -0.5 0" rpy="0 0 ${-pi/8}" />
         </joint>
-    </xacro:if>
+    </xacro:if>-->
 </robot>
 
 
