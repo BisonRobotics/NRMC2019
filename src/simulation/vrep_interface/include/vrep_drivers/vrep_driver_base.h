@@ -4,6 +4,8 @@
 #include <driver_access/driver_access.h>
 #include <driver_access/limits.h>
 #include <vrep_msgs/VREPDriverMessage.h>
+#include <vrep_msgs/PIDGet.h>
+#include <vrep_msgs/PIDSet.h>
 
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
@@ -45,8 +47,12 @@ class VREPDriverBase : public driver_access::DriverAccess
 
     ros::NodeHandle *nh;
     ros::Subscriber *subscriber;
+    ros::ServiceServer *pid_set_server;
+    ros::ServiceServer *pid_get_server;
 
     void callback(const vrep_msgs::VREPDriverMessageConstPtr &message);
+    bool getPIDCallback(vrep_msgs::PIDGetRequest &req, vrep_msgs::PIDGetResponse &res);
+    bool setPIDCallback(vrep_msgs::PIDSetRequest &req, vrep_msgs::PIDSetResponse &res);
 };
 }
 

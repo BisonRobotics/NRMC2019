@@ -37,6 +37,8 @@ class SimInterface
                               double beta, double gamma);
     tuple3d getObjectPosition(int handle, int relative_to_handle);
     tuple3d getObjectOrientation(int handle, int relative_to_handle);
+    double getFloatParameter(int handle, int parameter_id);
+    void setParameter(int handle, int parameter_id, double value);
 
     void info(const std::string &message);
     void warn(const std::string &message);
@@ -51,6 +53,7 @@ class SimInterface
     simInt vSimGetJointPosition(simInt handle, simFloat *position);
     simInt vSimSetJointPosition(simInt handle, simFloat position);
     simInt vSimGetObjectFloatParameter(simInt handle, simInt parameter_id, simFloat *parameter);
+    simInt vSimSetObjectFloatParameter(simInt handle, simInt parameter_id, simFloat parameter);
     simInt vSimGetJointForce(simInt handle, simFloat *force);
     simInt vSimSetJointTargetVelocity(simInt handle, simFloat velocity);
     simInt vSimLoadScene(const simChar *filename);

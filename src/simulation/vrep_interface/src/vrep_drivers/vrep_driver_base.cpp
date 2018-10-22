@@ -2,7 +2,7 @@
 #include <driver_access/mode.h>
 #include <driver_access/limits.h>
 #include <vrep_interface/sim_interface.h>
-#include <vrep_interface/sim_interface.h>
+#include <vrep_library/v_repConst.h>
 
 using namespace vrep_interface;
 
@@ -24,9 +24,14 @@ VREPDriverBase::VREPDriverBase(SimInterface *sim_interface, ID id) :
   nh = new ros::NodeHandle("/vrep/" + name(id));
   subscriber = new ros::Subscriber;
   publisher = new ros::Publisher;
+  pid_set_server = new ros::ServiceServer;
+  pid_get_server = new ros::ServiceServer;
 
   (*subscriber) = nh->subscribe("command", 10, &VREPDriverBase::callback, this);
   (*publisher) = nh->advertise<VREPDriverMessage>("state", 10, true);
+  (*pid_set_server) = nh->advertiseService("set_pid", &VREPDriverBase::setPIDCallback, this);
+  (*pid_get_server) = nh->advertiseService("get_pid", &VREPDriverBase::getPIDCallback, this);
+
 
   state.id = static_cast<uint8_t>(id);
   command.mode = static_cast<uint8_t>(Mode::velocity);
@@ -108,6 +113,50 @@ void VREPDriverBase::shutdown()
   delete subscriber;
   delete publisher;
   delete nh;
+}
+
+bool VREPDriverBase::getPIDCallback(vrep_msgs::PIDGetRequest &req, vrep_msgs::PIDGetResponse &res)
+{
+  try
+  {
+    res.p = sim->getFloatParameter(handle, sim_jointfloatparam_pid_p);
+    res.i = sim->getFloatParameter(handle, sim_jointfloatparam_pid_i);
+    res.d = sim->getFloatParameter(handle, sim_jointfloatparam_pid_d);
+    res.success = 1;
+    sim->info("[getPIDCallback]: " + joint_name + " PID = ("
+              + std::to_string(res.p) + ", "
+              + std::to_string(res.i) + ", "
+              + std::to_string(res.d) + ")");
+    return true;
+  }
+  catch (std::runtime_error &e)
+  {
+    sim->info(e.what());
+    res.success = 0;
+    return false;
+  }
+}
+
+bool VREPDriverBase::setPIDCallback(vrep_msgs::PIDSetRequest &req, vrep_msgs::PIDSetResponse &res)
+{
+  try
+  {
+    sim->setParameter(handle, sim_jointfloatparam_pid_p, req.p);
+    sim->setParameter(handle, sim_jointfloatparam_pid_i, req.i);
+    sim->setParameter(handle, sim_jointfloatparam_pid_d, req.d);
+    res.success = 1;
+    sim->info("[setPIDCallback]: " + joint_name + " PID = ("
+                                   + std::to_string(req.p) + ", "
+                                   + std::to_string(req.i) + ", "
+                                   + std::to_string(req.d) + ")");
+    return true;
+  }
+  catch (std::runtime_error &e)
+  {
+    sim->info(e.what());
+    res.success = 0;
+    return false;
+  }
 }
 
 

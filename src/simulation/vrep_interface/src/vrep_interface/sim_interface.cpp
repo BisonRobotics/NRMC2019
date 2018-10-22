@@ -5,10 +5,7 @@
 
 using namespace vrep_interface;
 
-SimInterface::SimInterface()
-{
-  last_error_mode = 0;
-}
+SimInterface::SimInterface() : last_error_mode(0) {}
 
 void SimInterface::setJointPosition(int object_handle, double position)
 {
@@ -250,6 +247,29 @@ tuple3d SimInterface::getObjectOrientation(int handle, int relative_to_handle)
   return std::make_tuple((double)orientation[0], (double)orientation[1], (double)orientation[2]);
 }
 
+double SimInterface::getFloatParameter(int handle, int parameter_id)
+{
+  simFloat parameter;
+  if (vSimGetObjectFloatParameter((simInt)handle, (simInt)parameter_id, &parameter) == -1)
+  {
+    info("[SimInterface::getFloatParameter]: "
+         "Unable to get parameter: " + std::to_string(parameter_id));
+    throw vrep_error("[SimInterface::getFloatParameter]: "
+                     "Unable to get parameter: " + std::to_string(parameter_id));
+  }
+  return (double)parameter;
+}
+
+void SimInterface::setParameter(int handle, int parameter_id, double value)
+{
+  if (vSimSetObjectFloatParameter((simInt) handle, (simInt) parameter_id, (simFloat) value) == -1)
+  {
+    throw vrep_error("[SimInterface::setParameter]: "
+                     "Unable to set parameter: " + std::to_string(parameter_id) +
+                     " to: " + std::to_string(value));
+  }
+}
+
 simInt SimInterface::vSimAddStatusBarMessage(const simChar *message)
 {
   return simAddStatusbarMessage(message);
@@ -273,6 +293,11 @@ simInt SimInterface::vSimSetJointPosition(simInt object_handle, simFloat positio
 simInt SimInterface::vSimGetObjectFloatParameter(simInt object_handle, simInt parameter_id, simFloat *parameter)
 {
   return simGetObjectFloatParameter(object_handle, parameter_id, parameter);
+}
+
+simInt SimInterface::vSimSetObjectFloatParameter(simInt handle, simInt parameter_id, simFloat parameter)
+{
+  return simSetObjectFloatParameter(handle, parameter_id, parameter);
 }
 
 simInt SimInterface::vSimGetJointForce(simInt object_handle, simFloat *force)
