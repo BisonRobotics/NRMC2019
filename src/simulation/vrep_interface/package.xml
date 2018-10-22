@@ -1,0 +1,29 @@
+<package format="2">
+  <name>vrep_interface</name>
+  <description>A V-REP plugin that provides and interface for ROS</description>
+  <maintainer email="jacob.huesman@ndsu.edu">Jacob</maintainer>
+  <version>0.0.1</version>
+  <author>Jacob</author>
+  <license>Copyleft</license>
+  <url>www.github.com/bisonrobotics</url>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>vrep_msgs</depend>
+  <depend>roslib</depend>
+  <depend>pluginlib</depend>
+  <depend>velocity_plugins</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>tf</depend>
+  <depend>rosconsole</depend>
+  <depend>rostime</depend>
+
+  <depend>wheel_control</depend>
+  <depend>robot_control</depend>
+
+  <exec_depend>rospack</exec_depend>
+  <exec_depend>roscpp_serialization</exec_depend>
+</package>
+
+

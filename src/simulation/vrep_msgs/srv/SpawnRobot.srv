@@ -1,0 +1,10 @@
+#
+# simInt spawnRobot(const simChar* modelFile, double x, double y, double omega)
+#
+float32 x
+float32 y
+float32 omega
+---
+bool   success
+string response
+

@@ -12,12 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   tf2_ros
   tf
+  vesc_access
+  sensor_access
 )
 
 find_package (Eigen3 REQUIRED)
-find_package (vesc_access REQUIRED)
-find_package (sensor_access REQUIRED)
-find_package (teleop_skid_steer REQUIRED)
 
 link_directories(/usr/src/gmock/build)
 set(GTEST_LIBRARIES gmock_main)
@@ -43,11 +42,8 @@ catkin_package(
 ###########
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
-  ${vesc_access_INCLUDE_DIRS}
-  ${sensor_access_INCLUDE_DIRS}
-  include/
-  ${teleop_skid_steer_INCLUDE_DIRS}
   ${GTEST_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
 )
@@ -72,14 +68,14 @@ target_link_libraries(PoseEstimateFilter ${OpenCV_LIBS})
 ############
 # Programs #
 ############
-add_executable(localizer_teleop_test tests/localization_test.cpp)
-add_dependencies(localizer_teleop_test apriltag_tracker_interface)
+#add_executable(localizer_teleop_test tests/localization_test.cpp)
+#add_dependencies(localizer_teleop_test apriltag_tracker_interface)
 #target_link_libraries (apriltag_tracker_interface ${catkin_LIBRARIES})
-target_link_libraries(localizer_teleop_test ${catkin_LIBRARIES})
-target_link_libraries(localizer_teleop_test lpresearch_imu)
-target_link_libraries(localizer_teleop_test apriltag_tracker_interface)
-target_link_libraries(localizer_teleop_test super_localizer_lib)
-target_link_libraries(localizer_teleop_test teleop_interface)
+#target_link_libraries(localizer_teleop_test ${catkin_LIBRARIES})
+#target_link_libraries(localizer_teleop_test lpresearch_imu)
+#target_link_libraries(localizer_teleop_test apriltag_tracker_interface)
+#target_link_libraries(localizer_teleop_test super_localizer_lib)
+#target_link_libraries(localizer_teleop_test teleop_interface)
 
 add_executable(pose_estimate_filter src/pose_estimate_filter/pose_estimate_filter_node.cpp)
 target_link_libraries(pose_estimate_filter ${catkin_LIBRARIES})
