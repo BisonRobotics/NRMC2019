@@ -16,6 +16,9 @@
 //#include <std_msgs/String.h>
 //#include <std_msgs/Float64.h>
 
+#include <driver_access/driver_access_interface.h>
+#include <vrep_driver_access/vrep_driver_access.h>
+#include <ros_driver_access/ros_driver_access.h>
 #include <vesc_access/ivesc_access.h>
 #include <vesc_access/vesc_access.h>
 #include <wheel_params/wheel_params.h>
@@ -161,6 +164,89 @@ void haltCallback(const std_msgs::Empty::ConstPtr &msg)
   halt = true;
 }
 
+//Go other way, inhertis from driver_access and holds a vesc access
+//eventually need a ROSDriverAccess which takes a vector of drivers
+//  must call ros_driver.publish() inside the loop
+/*class DriverVescCrossover : public iVescAccess
+{
+   private:
+    driver_access::DriverAccessInterface *face;
+   public:
+    DriverVescCrossover(driver_access::DriverAccessInterface *f)
+    :face(f) {}
+    void setLinearVelocity(float meters_per_second) {face->setVelocity(meters_per_second);}
+    void setTorque(float current) {face->setEffort(current);}
+    float getLinearVelocity(void) {return face->getVelocity();}
+    float getTorque(void) {return face->getEffort();}
+    nsVescAccess::limitSwitchState getLimitSwitchState(void) 
+         {return nsVescAccess::limitSwitchState::inTransit;}
+    float getPotPosition(void) {return face->getPosition();}
+    void setDuty(float d) {};
+
+};*/
+//todo needs to implement VREPDriverAccess ? 
+/*class DriverVescCrossover : public driver_access::DriverAccessInterface
+{
+  private:
+    vesc_access *vesc;
+  public:
+    DriverVescCrossover(iVescAccess *v) : vesc(v) {}
+    void setPosition(double position) {} // rad
+    void setVelocity(double velocity) {} // m/s
+    void setEffort(double effort) {}
+
+    void setPoint(double value) {}
+    void setMode(Mode mode) {}
+    Mode getMode() {return driver_access::Mode::velocity;}
+
+    double getPosition() {return 0;}
+    double getVelocity() {return vesc->getLinearVelocity();}
+    double getEffort() = {return 0;}
+
+  private:
+    Mode mode;
+};*/
+/*
+class DriverVescCrossover : public iVescAccess
+{
+   private:
+    driver_access::VREPDriverAccess *face;
+   public:
+    DriverVescCrossover(driver_access::DriverAccessInterface *f)
+    :face(f) {}
+    void setLinearVelocity(float meters_per_second) {face->setVelocity(meters_per_second);}
+    void setTorque(float current) {face->setEffort(current);}
+    float getLinearVelocity(void) {return face->getVelocity();}
+    float getTorque(void) {return face->getEffort();}
+    nsVescAccess::limitSwitchState getLimitSwitchState(void) 
+         {return nsVescAccess::limitSwitchState::inTransit;}
+    float getPotPosition(void) {return face->getPosition();}
+    void setDuty(float d) {};
+    void publish() {face->publish();}
+
+};*/
+class DriverVescCrossover : public iVescAccess
+{
+   private:
+    driver_access::VREPDriverAccess *face;
+    iVescAccess *vesc;
+   public:
+    DriverVescCrossover(driver_access::VREPDriverAccess *f, iVescAccess *v)
+    :face(f), vesc(v) {}
+    void setLinearVelocity(float meters_per_second) 
+      {face->setVelocity(meters_per_second); vesc->setLinearVelocity(meters_per_second);}
+    void setTorque(float current) 
+      {face->setEffort(current); vesc->setTorque(current);}
+    float getLinearVelocity(void) 
+      {return (true ? face->getVelocity() : vesc->getLinearVelocity());} //or should it come from the vesc?
+    float getTorque(void) {return face->getEffort();}
+    nsVescAccess::limitSwitchState getLimitSwitchState(void) 
+      {return nsVescAccess::limitSwitchState::inTransit;}
+    float getPotPosition(void) 
+      {return face->getPosition();}
+    void setDuty(float d) {vesc->setDuty(d);}
+};
+
 int main(int argc, char **argv)
 {
   // read ros param for simulating
@@ -208,6 +294,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   SimRobot *sim;
   iVescAccess *fl, *fr, *br, *bl;
+  driver_access::VREPDriverAccess *dfl, *dfr, *dbr, *dbl;
   ImuSensorInterface *imu;
   PosSensorInterface *pos;
 
@@ -218,16 +305,23 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   if (simulating)
   {
     sim = new SimRobot(.5, 1, .7, .1); //axel len, x, y, theta
-    fl = (sim->getFLVesc());
-    fr = (sim->getFRVesc());
-    br = (sim->getBRVesc());
-    bl = (sim->getBLVesc());
+    //TODO use new interface
+    driver_access::Limits limits(0, 0, 0, 1, 0, 1);
+    dfl = new driver_access::VREPDriverAccess(limits, driver_access::ID::front_left_wheel,  driver_access::Mode::velocity);
+    dfr = new driver_access::VREPDriverAccess(limits, driver_access::ID::front_right_wheel, driver_access::Mode::velocity);
+    dbr = new driver_access::VREPDriverAccess(limits, driver_access::ID::back_right_wheel,  driver_access::Mode::velocity);
+    dbl = new driver_access::VREPDriverAccess(limits, driver_access::ID::back_left_wheel,   driver_access::Mode::velocity);
+    fl = new DriverVescCrossover(dfl, sim->getFLVesc());
+    fr = new DriverVescCrossover(dfr, sim->getFRVesc());
+    br = new DriverVescCrossover(dbr, sim->getBRVesc());
+    bl = new DriverVescCrossover(dbl, sim->getBLVesc());
 
     imu = sim->getImu();
     pos = sim->getPos();
   }
   else
   {
+    //TODO use VescAcces DriverAccess combo?
     sim = NULL;  // Make no reference to the sim if not simulating
     bool no_except = false;
     while (!no_except  && ros::ok()) {
@@ -250,6 +344,10 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     //pos = new AprilTagTrackerInterface("/pose_estimate_filter/pose_estimate", .1);
     //imu = new LpResearchImu("imu_base_link");
   }
+
+
+  std::vector<driver_access::DriverAccess*> drivers = {dfl, dfr, dbr, dbl};
+  driver_access::ROSDriverAccess ros_drivers(drivers);
 
   ros::Duration loopTime;
   bool firstTime = true;
@@ -386,6 +484,9 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
     tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
 
+    ros_drivers.publish();
+
+/*
     sensor_msgs::JointState jsMessage;
 
     jsMessage.name.push_back("frame_to_front_left_wheel");
@@ -409,16 +510,12 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     jsMessage.velocity.push_back(bl->getLinearVelocity());
 
     jspub.publish(jsMessage);
-    
-    //lWheelVel.data = fl->getLinearVelocity();
-    //rWheelVel.data = fr->getLinearVelocity();
-    //lWheelVelPub.publish(lWheelVel);
-    //rWheelVelPub.publish(rWheelVel);
 
     ROS_DEBUG("FrontLeftVel : %.4f", jsMessage.velocity[0]);
     ROS_DEBUG("FrontRightVel : %.4f", jsMessage.velocity[1]);
     ROS_DEBUG("BackRightVel : %.4f", jsMessage.velocity[2]);
     ROS_DEBUG("BackLeftVel : %.4f", jsMessage.velocity[3]);
+*/
 
    if (newWaypointHere)
    {
@@ -445,7 +542,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     result.pose.position.x = sv.x;
     result.pose.position.y = sv.y;
     result.pose.position.z = 0.0;
-    // TODO add orientation
+
     result.pose.orientation.w = std::cos(.5*sv.theta);
     result.pose.orientation.x = 0;
     result.pose.orientation.y = 0;
@@ -455,45 +552,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     doing_path = false;
   }
 
-  // The Way We Used To Do Things (TWWUTDT)
-  /*  wcStat = wc.update(stateVector, loopTime.toSec());
-
-    status_msg.has_reached_goal.data = 0;
-    status_msg.in_motion.data = 0;
-    status_msg.cannot_plan_path.data = 0;
-    status_msg.is_stuck.data = 0;
-    status_msg.header.stamp = ros::Time::now();
-    status_msg.header.seq++;
-    // print status also post to topic /drive_controller_status
-    if (wcStat == WaypointController::Status::OFFPATH)
-    {
-      ROS_WARN("Mode : -1");
-      ss << "Mode : OFFPATH";
-      status_msg.cannot_plan_path.data = 0;
-    }
-    if (wcStat == WaypointController::Status::OVERSHOT)
-    {
-      ROS_WARN("Mode : 0");
-      ss << "Mode : OVERSHOT";
-      status_msg.in_motion.data = 1;
-    }
-    else if (wcStat == WaypointController::Status::ALLGOOD)
-    {
-      ROS_DEBUG("Mode : 1");
-      ss << "Mode: ALLGOOD";
-      status_msg.in_motion.data = 1;
-    }
-    else if (wcStat == WaypointController::Status::GOALREACHED)
-    {
-      ROS_DEBUG("Mode : 2");
-      wc.haltAndAbort();
-      ss << "Mode: GOALRECHED";
-      status_msg.has_reached_goal.data = 1;
-    }
-*/
-
-/*Insert >100 lines of debug statements here*/
-
     if (halt)
     {
       dc.haltAndAbort();
@@ -502,5 +560,18 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     // ros end stuff
     ros::spinOnce();
     rate.sleep();
+  }
+  delete fr;
+  delete fl;
+  delete br;
+  delete bl;
+  if (simulating)
+  {
+    delete sim;
+  }
+  else
+  {
+    delete imu;
+    delete pos;
   }
 }

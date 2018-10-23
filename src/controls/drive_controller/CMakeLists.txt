@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   vesc_access
+  driver_access
   localization
   new_sim
   geometry_msgs
@@ -36,7 +37,7 @@ generate_messages(DEPENDENCIES actionlib_msgs navigation_msgs)
 catkin_package(
         INCLUDE_DIRS include
 
-        CATKIN_DEPENDS roscpp std_msgs navigation_msgs localization cv_bridge
+        CATKIN_DEPENDS driver_access roscpp std_msgs navigation_msgs localization cv_bridge
 )
 
 ###########
@@ -46,6 +47,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(${vesc_access_INCLUDE_DIRS})
+include_directories(${driver_access_INCLUDE_DIRS})
 include_directories(${localization_INCLUDE_DIRS})
 include_directories(${new_sim_INCLUDE_DIRS})
 include_directories(${occupancy_grid_INCLUDE_DIRS})
@@ -63,8 +65,8 @@ target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access)
 #############
 
 add_executable(drive_controller_master src/drive_controller_master.cpp)
-add_dependencies(drive_controller_master drive_controller sim_robot navigation_msgs localization ${catkin_EXPORTED_TARGETS})
-target_link_libraries (drive_controller_master drive_controller ${OpenCV_LIBS} ${new_sim_LIBRARIES} ${localization_LIBRARIES} ${navigation_msgs_LIBRARIES} ${catkin_LIBRARIES} )
+add_dependencies(drive_controller_master drive_controller vrep_driver_access ros_driver_access driver_access sim_robot ${catkin_EXPORTED_TARGETS}) #navigation_msgs localization
+target_link_libraries (drive_controller_master drive_controller  vrep_driver_access ros_driver_access driver_access ${OpenCV_LIBS} ${new_sim_LIBRARIES} ${localization_LIBRARIES} ${navigation_msgs_LIBRARIES} ${catkin_LIBRARIES} )
 
 
 
