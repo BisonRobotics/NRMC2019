@@ -83,28 +83,6 @@ void newGoalCallback(const FollowPathGoalConstPtr &goal) //technically called in
   curr_path.y4 = segment.p3.y;
 
   newWaypointHere = true;
-
-/* Done after dc.update
-  // Provide feedback
-  FollowPathFeedback feedback;
-  feedback.deviation = 0.01;
-  for (int i = 0; i < 10; i++)
-  {
-    feedback.progress = 0.1 * (i + 1);
-    server->publishFeedback(feedback);
-    rate.sleep();
-  }
-*/
-/* Done after dc.update
-  // Publish result
-  FollowPathResult result;
-  result.pose.position.x = segment.p3.x;
-  result.pose.position.y = segment.p3.y;
-  result.pose.position.z = 0.0;
-  // TODO add orientation
-  result.status = 0;
-  server->setSucceeded(result);
-*/
 }
 
 geometry_msgs::TransformStamped create_tf(double x, double y, double theta, tf2::Quaternion imu_orientation, double z)
