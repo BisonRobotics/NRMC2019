@@ -66,34 +66,55 @@ bool DriveController::update(DriveController_ns::robot_state_vector sv, double d
     if (p_closest_t < p_last_closest_t)
         {p_closest_t = p_last_closest_t;}
 
-    double angle_error = angleDiff(sv.theta,p_theta.at((int)(p_closest_t*Gchopsize)));
-
-    p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd - set_speed)*dt;
-
-  //interpolate point to take steering from slightly ahead
-    double meters_to_jump = p_speed_cmd * dt;
-    double jumped_meters =0;
-    int t_jumps = 0;
-    /*
-    while (jumped_meters < meters_to_jump && ((int)(p_closest_t*Gchopsize) + t_jumps) < Gchopsize)
+    int index_for_t = p_closest_t*Gchopsize;
+    if (index_for_t >= Gchopsize) //Done with path (got orthogonal position to end)
     {
-        jumped_meters = jumped_meters + p_lengths.at((int)(p_closest_t*Gchopsize) + t_jumps);
-        t_jumps = t_jumps+1;
-    } */
-  //Get wheel velocities
-  std::pair<double, double> UlUr = speedSteeringControl(p_speed_cmd, 
-                                     p_theta.at((int)(p_closest_t*Gchopsize) + t_jumps)
-                                     - angle_gain*angle_error - path_gain*path_error,
-                                     Axelsize, 2.0);
+      index_for_t = Gchopsize -1;
+      p_paths -= 1;
+    }
+    else 
+    {
+      if (index_for_t < 0) 
+      {
+         index_for_t = 0;
+      }
 
-  front_right_wheel->setLinearVelocity(UlUr.second);
-  front_left_wheel->setLinearVelocity(UlUr.first);
-  back_left_wheel->setLinearVelocity(UlUr.first);
-  back_right_wheel->setLinearVelocity(UlUr.second);
+      double angle_error = angleDiff(sv.theta,p_theta.at((int)(index_for_t)));
+
+      p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd - set_speed)*dt;
+
+      //interpolate point to take steering from slightly ahead
+      double meters_to_jump = p_speed_cmd * dt;
+      double jumped_meters =0;
+      int t_jumps = 0;
+      /* Skip for now, but does improve accuracy
+      while (jumped_meters < meters_to_jump && ((int)(p_closest_t*Gchopsize) + t_jumps) < Gchopsize)
+      {
+          jumped_meters = jumped_meters + p_lengths.at((int)(p_closest_t*Gchopsize) + t_jumps);
+          t_jumps = t_jumps+1;
+      } */
+      //Get wheel velocities
+      std::pair<double, double> UlUr = speedSteeringControl(p_speed_cmd, 
+                                       p_theta.at((int)(index_for_t) + t_jumps)
+                                       - angle_gain*angle_error - path_gain*path_error,
+                                       Axelsize, 2.0);
+
+      front_right_wheel->setLinearVelocity(UlUr.second);
+      front_left_wheel->setLinearVelocity(UlUr.first);
+      back_left_wheel->setLinearVelocity(UlUr.first);
+      back_right_wheel->setLinearVelocity(UlUr.second);
+    }
 
   return true;
   }
-  else return false;
+  else 
+  {
+    front_right_wheel->setLinearVelocity(0);
+    front_left_wheel->setLinearVelocity(0);
+    back_left_wheel->setLinearVelocity(0);
+    back_right_wheel->setLinearVelocity(0);
+    return false;
+  }
 }
 
 double DriveController::getPClosestT()
@@ -101,7 +122,7 @@ double DriveController::getPClosestT()
   return p_closest_t;
 }
 
-double DriveController::getPPaths()
+int DriveController::getPPaths()
 {
   return p_paths;
 }

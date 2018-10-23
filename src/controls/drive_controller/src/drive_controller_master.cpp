@@ -485,6 +485,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     // update controller
      dc.update(sv, loopTime.toSec());
 
+  ROS_INFO("Paths on Stack: %d", dc.getPPaths());
   if (dc.getPPaths() >=1)
   {
     // Provide feedback
