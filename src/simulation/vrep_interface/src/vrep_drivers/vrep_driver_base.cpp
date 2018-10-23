@@ -6,6 +6,7 @@
 
 using namespace vrep_interface;
 
+using std::get;
 using std::string;
 using std::to_string;
 using vrep_msgs::VREPDriverMessage;
@@ -18,20 +19,18 @@ using driver_access::name;
 VREPDriverBase::VREPDriverBase(SimInterface *sim_interface, ID id) :
     sim(sim_interface),
     DriverAccess(Limits(-1e10, 1e10, 0, 1e10, 0, 1e10), id),
-    handle(-1),
-    joint_name(name(id) + "_joint")
+    joint_handle(-1),
+    link_handle(-1),
+    joint_name(name(id) + "_joint"),
+    link_name(name(id))
 {
-  nh = new ros::NodeHandle("/vrep/" + name(id));
+  nh = new ros::NodeHandle("/vrep/" + link_name);
   subscriber = new ros::Subscriber;
   publisher = new ros::Publisher;
-  pid_set_server = new ros::ServiceServer;
-  pid_get_server = new ros::ServiceServer;
+  params_server = new ros::ServiceServer;
 
-  (*subscriber) = nh->subscribe("command", 10, &VREPDriverBase::callback, this);
+  (*subscriber) = nh->subscribe("command", 10, &VREPDriverBase::commandCallback, this);
   (*publisher) = nh->advertise<VREPDriverMessage>("state", 10, true);
-  (*pid_set_server) = nh->advertiseService("set_pid", &VREPDriverBase::setPIDCallback, this);
-  (*pid_get_server) = nh->advertiseService("get_pid", &VREPDriverBase::getPIDCallback, this);
-
 
   state.id = static_cast<uint8_t>(id);
   command.mode = static_cast<uint8_t>(Mode::velocity);
@@ -39,22 +38,21 @@ VREPDriverBase::VREPDriverBase(SimInterface *sim_interface, ID id) :
   command.position = 0;
   command.velocity = 0;
   command.effort = 0;
-
 }
 
 double VREPDriverBase::getVelocity()
 {
-  return command.velocity;
+  return state.velocity;
 }
 
 double VREPDriverBase::getEffort()
 {
-  return command.effort;
+  return state.effort;
 }
 
 double VREPDriverBase::getPosition()
 {
-  return command.position;
+  return state.position;
 }
 
 Mode VREPDriverBase::getMode()
@@ -67,15 +65,15 @@ double VREPDriverBase::setPoint()
   Mode mode = getMode();
   if (mode == Mode::position)
   {
-    setPosition(getPosition());
+    setPosition(command.position);
   }
   else if (mode == Mode::velocity)
   {
-    setVelocity(getVelocity());
+    setVelocity(command.velocity);
   }
   else if (mode == Mode::effort)
   {
-    setEffort(getEffort());
+    setEffort(command.effort);
   }
   else
   {
@@ -83,7 +81,7 @@ double VREPDriverBase::setPoint()
   }
 }
 
-void VREPDriverBase::callback(const vrep_msgs::VREPDriverMessageConstPtr &message)
+void VREPDriverBase::commandCallback(const vrep_msgs::VREPDriverMessageConstPtr &message)
 {
   command.header.seq = message->header.seq;
   command.position = message->position;
@@ -99,10 +97,13 @@ void VREPDriverBase::updateHeader(std_msgs::Header *header)
   header->seq = seq++;
 }
 
-void VREPDriverBase::updateHandle()
+void VREPDriverBase::initialize()
 {
-  handle = sim->getObjectHandle(joint_name);
-  sim->info("[updateHandle]: Found an id of " + to_string(handle) + " for \"" + joint_name + "\"");
+  joint_handle = sim->getObjectHandle(joint_name);
+  link_handle = sim->getObjectHandle(link_name);
+  initializeChild();
+  sim->info("[initialize]: Found an id of " + to_string(joint_handle) + " for \"" + joint_name + "\"");
+  sim->info("[initialize]: Found an id of " + to_string(link_handle) + " for \"" + link_name + "\"");
 }
 
 void VREPDriverBase::shutdown()
@@ -113,50 +114,6 @@ void VREPDriverBase::shutdown()
   delete subscriber;
   delete publisher;
   delete nh;
-}
-
-bool VREPDriverBase::getPIDCallback(vrep_msgs::PIDGetRequest &req, vrep_msgs::PIDGetResponse &res)
-{
-  try
-  {
-    res.p = sim->getFloatParameter(handle, sim_jointfloatparam_pid_p);
-    res.i = sim->getFloatParameter(handle, sim_jointfloatparam_pid_i);
-    res.d = sim->getFloatParameter(handle, sim_jointfloatparam_pid_d);
-    res.success = 1;
-    sim->info("[getPIDCallback]: " + joint_name + " PID = ("
-              + std::to_string(res.p) + ", "
-              + std::to_string(res.i) + ", "
-              + std::to_string(res.d) + ")");
-    return true;
-  }
-  catch (std::runtime_error &e)
-  {
-    sim->info(e.what());
-    res.success = 0;
-    return false;
-  }
-}
-
-bool VREPDriverBase::setPIDCallback(vrep_msgs::PIDSetRequest &req, vrep_msgs::PIDSetResponse &res)
-{
-  try
-  {
-    sim->setParameter(handle, sim_jointfloatparam_pid_p, req.p);
-    sim->setParameter(handle, sim_jointfloatparam_pid_i, req.i);
-    sim->setParameter(handle, sim_jointfloatparam_pid_d, req.d);
-    res.success = 1;
-    sim->info("[setPIDCallback]: " + joint_name + " PID = ("
-                                   + std::to_string(req.p) + ", "
-                                   + std::to_string(req.i) + ", "
-                                   + std::to_string(req.d) + ")");
-    return true;
-  }
-  catch (std::runtime_error &e)
-  {
-    sim->info(e.what());
-    res.success = 0;
-    return false;
-  }
 }
 
 

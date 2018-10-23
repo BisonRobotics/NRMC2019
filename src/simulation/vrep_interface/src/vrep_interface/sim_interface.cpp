@@ -55,7 +55,7 @@ double SimInterface::getEffort(int object_handle)
 double SimInterface::getVelocity(int object_handle)
 {
   simFloat velocity;
-  if (vSimGetObjectFloatParameter(object_handle, 2012, &velocity) == -1)
+  if (vSimGetObjectFloatParameter(object_handle, sim_jointfloatparam_velocity, &velocity) == -1)
   {
     throw vrep_error("[SimInterface::getVelocity]: Unable to get velocity for object: "
                      + std::to_string(object_handle));
@@ -247,6 +247,17 @@ tuple3d SimInterface::getObjectOrientation(int handle, int relative_to_handle)
   return std::make_tuple((double)orientation[0], (double)orientation[1], (double)orientation[2]);
 }
 
+tuple3d SimInterface::getObjectSize(int handle)
+{
+  simFloat size[3];
+  if (vSimGetObjectSizeValues(handle, (simFloat*) &size) == -1)
+  {
+    throw vrep_error("[SimInterface::getObjectSize]: "
+                     "Unable to get object size");
+  }
+  return std::make_tuple((double)size[0], (double)size[1], (double)size[2]);
+}
+
 double SimInterface::getFloatParameter(int handle, int parameter_id)
 {
   simFloat parameter;
@@ -269,6 +280,8 @@ void SimInterface::setParameter(int handle, int parameter_id, double value)
                      " to: " + std::to_string(value));
   }
 }
+
+
 
 simInt SimInterface::vSimAddStatusBarMessage(const simChar *message)
 {
@@ -378,5 +391,10 @@ simInt SimInterface::vSimGetObjectPosition(simInt handle, simInt relative_to_han
 simInt SimInterface::vSimGetObjectOrientation(simInt handle, simInt relative_to_handle, simFloat *orientation)
 {
   return simGetObjectOrientation(handle, relative_to_handle, orientation);
+}
+
+simInt SimInterface::vSimGetObjectSizeValues(simInt handle, simFloat *size_values)
+{
+  return simGetObjectSizeValues(handle, size_values);
 }
 

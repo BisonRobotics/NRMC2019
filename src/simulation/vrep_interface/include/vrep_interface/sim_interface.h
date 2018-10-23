@@ -37,6 +37,7 @@ class SimInterface
                               double beta, double gamma);
     tuple3d getObjectPosition(int handle, int relative_to_handle);
     tuple3d getObjectOrientation(int handle, int relative_to_handle);
+    tuple3d getObjectSize(int handle);
     double getFloatParameter(int handle, int parameter_id);
     void setParameter(int handle, int parameter_id, double value);
 
@@ -69,6 +70,7 @@ class SimInterface
     simInt vSimSetObjectOrientation(simInt handle, simInt relative_to_handle, const simFloat *orientation);
     simInt vSimGetObjectPosition(simInt handle, simInt relative_to_handle, simFloat *position);
     simInt vSimGetObjectOrientation(simInt handle, simInt relative_to_handle, simFloat *orientation);
+    simInt vSimGetObjectSizeValues(simInt handle, simFloat *size_values);
 };
 
 }

@@ -12,11 +12,15 @@ class VREPWheelDriver : public VREPDriverBase
     VREPWheelDriver(SimInterface *sim_interface, driver_access::ID id);
 
     void updateState() override;
+    void initializeChild() override;
 
   protected:
     void setDriverPosition(double position) override;
     void setDriverVelocity(double velocity) override;
     void setDriverEffort(double torque) override;
+
+  private:
+    double radius;
 };
 }
 

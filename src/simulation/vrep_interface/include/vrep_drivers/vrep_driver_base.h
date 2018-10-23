@@ -4,8 +4,7 @@
 #include <driver_access/driver_access.h>
 #include <driver_access/limits.h>
 #include <vrep_msgs/VREPDriverMessage.h>
-#include <vrep_msgs/PIDGet.h>
-#include <vrep_msgs/PIDSet.h>
+#include <vrep_msgs/VREPDriverParameters.h>
 
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
@@ -21,7 +20,6 @@ class VREPDriverBase : public driver_access::DriverAccess
   public:
     VREPDriverBase(SimInterface *sim_interface, driver_access::ID id);
 
-    // This class is kind of a hack, so we override these
     double getPosition() override;
     double getVelocity() override;
     double getEffort() override;
@@ -29,16 +27,17 @@ class VREPDriverBase : public driver_access::DriverAccess
 
     double setPoint();
     void updateHeader(std_msgs::Header *header);
-    void updateHandle();
+    void initialize();
     void shutdown();
 
     virtual void updateState() = 0;
+    virtual void initializeChild() = 0;
 
   protected:
     SimInterface *sim;
-    const std::string joint_name;
+    const std::string joint_name, link_name;
+    int joint_handle, link_handle;
     vrep_msgs::VREPDriverMessage state;
-    int handle;
     ros::Publisher *publisher;
 
   private:
@@ -47,12 +46,9 @@ class VREPDriverBase : public driver_access::DriverAccess
 
     ros::NodeHandle *nh;
     ros::Subscriber *subscriber;
-    ros::ServiceServer *pid_set_server;
-    ros::ServiceServer *pid_get_server;
+    ros::ServiceServer *params_server;
 
-    void callback(const vrep_msgs::VREPDriverMessageConstPtr &message);
-    bool getPIDCallback(vrep_msgs::PIDGetRequest &req, vrep_msgs::PIDGetResponse &res);
-    bool setPIDCallback(vrep_msgs::PIDSetRequest &req, vrep_msgs::PIDSetResponse &res);
+    void commandCallback(const vrep_msgs::VREPDriverMessageConstPtr &message);
 };
 }
 

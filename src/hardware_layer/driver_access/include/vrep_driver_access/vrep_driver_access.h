@@ -25,10 +25,6 @@ class VREPDriverAccess : public DriverAccess
     double getVelocity() override;
     double getEffort() override;
 
-    void setPID(double p, double i, double d);
-    tuple3d getPID();
-
-
   protected:
     void setDriverPosition(double position) override;
     void setDriverVelocity(double velocity) override;
@@ -45,8 +41,6 @@ class VREPDriverAccess : public DriverAccess
     boost::shared_ptr<ros::AsyncSpinner> spinner;
     boost::shared_ptr<ros::Subscriber> subscriber;
     boost::shared_ptr<ros::Publisher> publisher;
-    boost::shared_ptr<ros::ServiceClient> pid_set_client;
-    boost::shared_ptr<ros::ServiceClient> pid_get_client;
 };
 }
 

@@ -28,8 +28,8 @@ void VREPRobot::initialize(std::string model_file)
 
 void VREPRobot::spawnRobot()
 {
-  simFloat y = mining_zone_centers[rand() % 2];
-  simFloat rotation = mining_zone_rotations[rand() % 6];
+  simFloat y = (simFloat) mining_zone_centers[rand() % 2];
+  simFloat rotation = (simFloat) mining_zone_rotations[rand() % 6];
   spawnRobot(0.75f, y, rotation);
 }
 
@@ -91,10 +91,10 @@ void VREPRobot::loadModel()
 
 void VREPRobot::updateWheelHandles()
 {
-  fl.updateHandle();
-  fr.updateHandle();
-  br.updateHandle();
-  bl.updateHandle();
+  fl.initialize();
+  fr.initialize();
+  br.initialize();
+  bl.initialize();
 }
 
 void VREPRobot::getPosition(tf::Transform *position)

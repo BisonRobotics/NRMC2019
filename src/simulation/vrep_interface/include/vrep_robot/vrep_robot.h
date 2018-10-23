@@ -47,10 +47,7 @@ class VREPRobot
     int handle;
     int base_link_handle;
     std::string model_file;
-    VREPWheelDriver fl;
-    VREPWheelDriver bl;
-    VREPWheelDriver fr;
-    VREPWheelDriver br;
+    VREPWheelDriver fl, bl, fr, br;
 
     void loadModelHelper();
 };
