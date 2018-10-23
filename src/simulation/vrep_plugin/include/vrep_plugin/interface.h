@@ -40,6 +40,11 @@ class Interface
     tuple3d getObjectSize(int handle);
     double getFloatParameter(int handle, int parameter_id);
     void setParameter(int handle, int parameter_id, double value);
+    void setParameter(int parameter_id, bool value);
+    void startSimulation();
+    void pauseSimulation();
+    void stopSimulation();
+    void shutdown();
 
     void info(const std::string &message);
     void warn(const std::string &message);
@@ -71,6 +76,11 @@ class Interface
     simInt vSimGetObjectPosition(simInt handle, simInt relative_to_handle, simFloat *position);
     simInt vSimGetObjectOrientation(simInt handle, simInt relative_to_handle, simFloat *orientation);
     simInt vSimGetObjectSizeValues(simInt handle, simFloat *size_values);
+    simInt vSimStartSimulation();
+    simInt vSimPauseSimulation();
+    simInt vSimStopSimulation();
+    void vSimQuitSimulator(simBool do_not_display_messages);
+    simInt vSimSetBoolParameter(simInt parameter, simBool state);
 };
 
 }

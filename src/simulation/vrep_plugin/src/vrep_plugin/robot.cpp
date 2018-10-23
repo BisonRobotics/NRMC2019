@@ -60,10 +60,8 @@ void Robot::loadModelHelper()
   try
   {
     base_link_handle = sim->findObjectInTree(handle, "base_link", sim_object_dummy_type);
-    std::cout << "loadModelHelper" << std::endl;
     sim->info("[loadModel]: Found an id of " + to_string(base_link_handle) + " for base_link_handle");
     sim->info("[loadModel]: Found an id of " + to_string(handle) + " for handle");
-    std::cout << "loadModelHelper" << std::endl;
   }
   catch (vrep_error &error)
   {

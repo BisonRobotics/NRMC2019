@@ -2,6 +2,7 @@
 #include <vrep_library/v_repConst.h>
 #include <vrep_plugin/exceptions.h>
 #include <vrep_library/v_repLib.h>
+#include <ros/ros.h>
 
 using namespace vrep_plugin;
 
@@ -124,6 +125,7 @@ rosgraph_msgs::Clock Interface::getSimulationTime()
 
 void Interface::info(const std::string &message)
 {
+  ROS_INFO("%s", message.c_str());
   if (vSimAddStatusBarMessage(("[INFO]: " + message).c_str()) == -1)
   {
     throw vrep_error("[Interface::info]: "
@@ -133,6 +135,7 @@ void Interface::info(const std::string &message)
 
 void Interface::warn(const std::string &message)
 {
+  ROS_WARN("%s", message.c_str());
   if (vSimAddStatusBarMessage(("[WARN]: " + message).c_str()) == -1)
   {
     throw vrep_error("[Interface::warn]: "
@@ -142,6 +145,7 @@ void Interface::warn(const std::string &message)
 
 void Interface::error(const std::string &message)
 {
+  ROS_ERROR("%s", message.c_str());
   if (vSimAddStatusBarMessage(("[ERROR]: " + message).c_str()) == -1)
   {
     throw vrep_error("[Interface::error]: "
@@ -281,6 +285,44 @@ void Interface::setParameter(int handle, int parameter_id, double value)
   }
 }
 
+void Interface::setParameter(int parameter_id, bool value)
+{
+  if (vSimSetBoolParameter((simInt) parameter_id, (simBool) value) == -1)
+  {
+    throw vrep_error("[Interface::setParameter]: "
+                     "Unable to set parameter: " + std::to_string(parameter_id) +
+                     " to: " + std::to_string(value));
+  }
+}
+
+void Interface::startSimulation()
+{
+  if (vSimStartSimulation() == -1)
+  {
+    throw vrep_error("[Interface::startSimulation]: Unable to start");
+  }
+}
+
+void Interface::pauseSimulation()
+{
+  if (vSimPauseSimulation() == -1)
+  {
+    throw vrep_error("[Interface::pauseSimulation]: Unable to pause");
+  }
+}
+
+void Interface::stopSimulation()
+{
+  if (vSimStopSimulation() == -1)
+  {
+    throw vrep_error("[Interface::stopSimulation]: Unable to stop");
+  }
+}
+
+void Interface::shutdown()
+{
+  vSimQuitSimulator(0);
+}
 
 
 simInt Interface::vSimAddStatusBarMessage(const simChar *message)
@@ -396,5 +438,30 @@ simInt Interface::vSimGetObjectOrientation(simInt handle, simInt relative_to_han
 simInt Interface::vSimGetObjectSizeValues(simInt handle, simFloat *size_values)
 {
   return simGetObjectSizeValues(handle, size_values);
+}
+
+simInt Interface::vSimStartSimulation()
+{
+  return simStartSimulation();
+}
+
+simInt Interface::vSimPauseSimulation()
+{
+  return simPauseSimulation();
+}
+
+simInt Interface::vSimStopSimulation()
+{
+  return simStopSimulation();
+}
+
+void Interface::vSimQuitSimulator(simBool do_not_display_messages)
+{
+  return simQuitSimulator(0);
+}
+
+simInt Interface::vSimSetBoolParameter(simInt parameter, simBool state)
+{
+  return simSetBoolParameter(parameter, state);
 }
 

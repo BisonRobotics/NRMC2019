@@ -4,6 +4,9 @@
 
 using namespace vrep_plugin;
 
+using vrep_msgs::SpawnRobot;
+using std_srvs::Trigger;
+
 Server::Server(Interface *sim_interface)
 {
   sim = sim_interface;
@@ -25,9 +28,14 @@ Server::Server(Interface *sim_interface)
     sim->error("Unable to find the description package path, have you sourced your workspace?");
     throw std::runtime_error("Unable to find the description package path, have you sourced your workspace?");
   }
-  spawn_robot_server = nh->advertiseService("spawn_robot", &Server::spawnRobotService, this);
-  spawn_robot_random_server = nh->advertiseService("spawn_robot_random", &Server::spawnRobotRandomService, this);
-  shutdown_vrep_server = nh->advertiseService("shutdown", &Server::shutdownService, this);
+
+  spawn_robot_server = nh->advertiseService("spawn_robot", &Server::spawnRobot, this);
+  spawn_robot_random_server = nh->advertiseService("spawn_robot_random", &Server::spawnRobotRandom, this);
+  start_server = nh->advertiseService("start", &Server::start, this);
+  pause_server = nh->advertiseService("pause", &Server::pause, this);
+  stop_server = nh->advertiseService("stop", &Server::stop, this);
+  shutdown_server = nh->advertiseService("shutdown", &Server::shutdown, this);
+
   tf_broadcaster = new tf::TransformBroadcaster();
   clock_publisher = new ros::Publisher;
   (*clock_publisher) = nh->advertise<rosgraph_msgs::Clock>("/clock", 10, true);
@@ -38,6 +46,18 @@ Server::Server(Interface *sim_interface)
   robot->initialize(description_path + "/vrep_models/robot.ttm");
   robot->spawnRobot();
 
+  bool real_time;
+  nh->param<bool>("real_time", real_time, true);
+  if (real_time)
+  {
+    sim->info("[Server]: Real time simulation enabled");
+  }
+  else
+  {
+    sim->info("Real time simulation disabled");
+  }
+  sim->setParameter(sim_boolparam_realtime_simulation, real_time);
+
   sim->info("[Server]: Ready");
 }
 
@@ -45,7 +65,7 @@ Server::~Server()
 {
   spawn_robot_server.shutdown();
   spawn_robot_random_server.shutdown();
-  shutdown_vrep_server.shutdown();
+  shutdown_server.shutdown();
   robot->shutdown();
   nh->shutdown();
   ros::shutdown();
@@ -87,39 +107,98 @@ void Server::simulationEnded()
   sim_running = false;
 }
 
-bool Server::spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+bool Server::spawnRobotRandom(Trigger::Request &req, Trigger::Response &res)
 {
   try
   {
     robot->spawnRobot();
+    res.success = 1;
+    res.message = "success";
     return true;
   }
   catch (const std::runtime_error &e)
   {
     sim->error(e.what());
+    res.message = e.what();
     return false;
   }
 }
 
-bool Server::spawnRobotService(vrep_msgs::SpawnRobot::Request &req,
-                                   vrep_msgs::SpawnRobot::Response &res)
+bool Server::spawnRobot(SpawnRobot::Request &req, SpawnRobot::Response &res)
 {
   try
   {
     robot->spawnRobot(req.x, req.y, req.omega);
+    res.success = 1;
+    return true;
   }
   catch (const std::runtime_error &e)
   {
+
     sim->error(e.what());
     return false;
   }
 }
 
-bool Server::shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+bool Server::start(Trigger::Request &req, Trigger::Response &res)
 {
-  sim->info("[shutdownService] Trying to shutdown");
+  try
+  {
+    sim->startSimulation();
+    res.success = 1;
+    res.message = "success";
+    return true;
+  }
+  catch (const std::runtime_error &e)
+  {
+    sim->error(e.what());
+    res.success = 0;
+    res.message = e.what();
+    return false;
+  }
+}
+
+bool Server::pause(Trigger::Request &req, Trigger::Response &res)
+{
+  try
+  {
+    sim->pauseSimulation();
+    res.success = 1;
+    res.message = "success";
+    return true;
+  }
+  catch (const std::runtime_error &e)
+  {
+    sim->error(e.what());
+    res.success = 0;
+    res.message = e.what();
+    return false;
+  }
+}
+
+bool Server::stop(Trigger::Request &req, Trigger::Response &res)
+{
+  try
+  {
+    sim->stopSimulation();
+    res.success = 1;
+    res.message = "success";
+    return true;
+  }
+  catch (const std::runtime_error &e)
+  {
+    sim->error(e.what());
+    res.success = 0;
+    res.message = e.what();
+    return false;
+  }
+}
+
+bool Server::shutdown(Trigger::Request &req, Trigger::Response &res)
+{
+  sim->info("[Server]: Trying to shutdown");
+  sim->shutdown();
   res.success = 1;
   res.message = "Trying to shutdown...";
-  simQuitSimulator(1);
   return true;
 }

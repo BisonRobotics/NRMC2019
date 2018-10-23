@@ -37,15 +37,21 @@ class Server
     ros::NodeHandle *nh;
     ros::ServiceServer spawn_robot_server;
     ros::ServiceServer spawn_robot_random_server;
-    ros::ServiceServer shutdown_vrep_server;
+    ros::ServiceServer shutdown_server;
+    ros::ServiceServer start_server;
+    ros::ServiceServer pause_server;
+    ros::ServiceServer stop_server;
     ros::Publisher *clock_publisher;
     tf::TransformBroadcaster* tf_broadcaster;
 
     Robot *robot;
 
-    bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
-    bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
-    bool shutdownService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+    bool spawnRobot(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
+    bool spawnRobotRandom(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
+    bool start(std_srvs::TriggerRequest &req, std_srvs::Trigger::Response &res);
+    bool pause(std_srvs::TriggerRequest &req, std_srvs::Trigger::Response &res);
+    bool stop(std_srvs::TriggerRequest &req, std_srvs::Trigger::Response &res);
+    bool shutdown(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
 };
 
 }
