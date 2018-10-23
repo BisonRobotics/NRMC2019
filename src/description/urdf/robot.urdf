@@ -1,6 +1,13 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
 
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/robot</robotNamespace>
+    </plugin>
+    <plugin name="driver_plugin" filename="libdriver_plugin.so" />
+  </gazebo>
+
   <!-- Define materials -->
   <material name="brown">
     <color rgba="0.45 0.45 0.28 1"/>
@@ -134,6 +141,10 @@
       </inertial>
     </link>
 
+    <gazebo reference="${x_name}_${y_name}_wheel">
+      <material>Gazebo/Orange</material>
+    </gazebo>
+
     <joint name="${x_name}_${y_name}_wheel_joint" type="revolute">
       <parent link="frame"/>
       <child link="${x_name}_${y_name}_wheel"/>
@@ -141,11 +152,23 @@
       <axis xyz="0 1 0"/>
       <limit effort="1000.0" lower="-1e9" upper="1e9" velocity="1000.0"/>
     </joint>
+
+    <!--<transmission name="${x_name}_${y_name}_wheel_transmission">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${x_name}_${y_name}_wheel_joint">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${x_name}_${y_name}_wheel_motor">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>-->
   </xacro:macro>
   <xacro:wheel x_name="front" y_name="left"  rot="${-pi/2}" y_dir="1"  xdist="0.73025" color="gold"   />
   <xacro:wheel x_name="front" y_name="right" rot="${pi/2}"  y_dir="-1" xdist="0.73025" color="gold" />
   <xacro:wheel x_name="back"  y_name="left"  rot="${-pi/2}" y_dir="1"  xdist="0.0455676" color="gold"   />
   <xacro:wheel x_name="back"  y_name="right" rot="${pi/2}"  y_dir="-1" xdist="0.0455676" color="gold" />
+
 
   <link name="central_drive">
     <visual>

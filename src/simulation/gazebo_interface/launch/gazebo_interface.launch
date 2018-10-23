@@ -7,6 +7,12 @@
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
 
+  <!--<rosparam file="$(find gazebo_interface)/config/robot_control.yaml" command="load"/>-->
+
+  <!-- load the controllers -->
+  <!--<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+        output="screen" ns="/robot" args="joint1_position_controller joint2_position_controller joint3_position_controller joint4_position_controller joint_state_controller"/>-->
+
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find gazebo_interface)/worlds/nrmc2019.world"/>
