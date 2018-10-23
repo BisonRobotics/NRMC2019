@@ -4,19 +4,19 @@
 #include <vrep_plugin/interface.h>
 #include <vrep_library/v_repConst.h>
 
-using namespace vrep_interface;
+using namespace vrep_plugin;
 
 using std::get;
 using std::string;
 using std::to_string;
-using vrep_msgs::VREPDriverMessage;
-using vrep_msgs::VREPDriverMessageConstPtr;
+using vrep_msgs::DriverMessage;
+using vrep_msgs::DriverMessageConstPtr;
 using driver_access::Limits;
 using driver_access::Mode;
 using driver_access::ID;
 using driver_access::name;
 
-VREPDriverBase::VREPDriverBase(SimInterface *sim_interface, ID id) :
+DriverBase::DriverBase(Interface *sim_interface, ID id) :
     sim(sim_interface),
     DriverAccess(Limits(-1e10, 1e10, 0, 1e10, 0, 1e10), id),
     joint_handle(-1),
@@ -29,8 +29,8 @@ VREPDriverBase::VREPDriverBase(SimInterface *sim_interface, ID id) :
   publisher = new ros::Publisher;
   params_server = new ros::ServiceServer;
 
-  (*subscriber) = nh->subscribe("command", 10, &VREPDriverBase::commandCallback, this);
-  (*publisher) = nh->advertise<VREPDriverMessage>("state", 10, true);
+  (*subscriber) = nh->subscribe("command", 10, &DriverBase::commandCallback, this);
+  (*publisher) = nh->advertise<DriverMessage>("state", 10, true);
 
   state.id = static_cast<uint8_t>(id);
   command.mode = static_cast<uint8_t>(Mode::velocity);
@@ -40,27 +40,27 @@ VREPDriverBase::VREPDriverBase(SimInterface *sim_interface, ID id) :
   command.effort = 0;
 }
 
-double VREPDriverBase::getVelocity()
+double DriverBase::getVelocity()
 {
   return state.velocity;
 }
 
-double VREPDriverBase::getEffort()
+double DriverBase::getEffort()
 {
   return state.effort;
 }
 
-double VREPDriverBase::getPosition()
+double DriverBase::getPosition()
 {
   return state.position;
 }
 
-Mode VREPDriverBase::getMode()
+Mode DriverBase::getMode()
 {
   return static_cast<Mode>(command.mode);
 }
 
-double VREPDriverBase::setPoint()
+double DriverBase::setPoint()
 {
   Mode mode = getMode();
   if (mode == Mode::position)
@@ -81,7 +81,7 @@ double VREPDriverBase::setPoint()
   }
 }
 
-void VREPDriverBase::commandCallback(const vrep_msgs::VREPDriverMessageConstPtr &message)
+void DriverBase::commandCallback(const vrep_msgs::DriverMessageConstPtr &message)
 {
   command.header.seq = message->header.seq;
   command.position = message->position;
@@ -91,13 +91,13 @@ void VREPDriverBase::commandCallback(const vrep_msgs::VREPDriverMessageConstPtr 
   command.mode = message->mode;
 }
 
-void VREPDriverBase::updateHeader(std_msgs::Header *header)
+void DriverBase::updateHeader(std_msgs::Header *header)
 {
   header->stamp = ros::Time::now();
   header->seq = seq++;
 }
 
-void VREPDriverBase::initialize()
+void DriverBase::initialize()
 {
   joint_handle = sim->getObjectHandle(joint_name);
   link_handle = sim->getObjectHandle(link_name);
@@ -106,7 +106,7 @@ void VREPDriverBase::initialize()
   sim->info("[initialize]: Found an id of " + to_string(link_handle) + " for \"" + link_name + "\"");
 }
 
-void VREPDriverBase::shutdown()
+void DriverBase::shutdown()
 {
   subscriber->shutdown();
   publisher->shutdown();

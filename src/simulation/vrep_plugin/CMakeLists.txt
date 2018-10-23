@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(vrep_interface)
+project(vrep_plugin)
+
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -42,9 +43,9 @@ target_link_libraries(vrep_server
   boost_filesystem
   ${catkin_LIBRARIES})
 
-add_library(v_repExtRosInterface src/vrep_plugin/plugin.cpp src/vrep_library/v_repLib.cpp)
-add_dependencies(v_repExtRosInterface ${catkin_EXPORTED_TARGETS})
-target_link_libraries(v_repExtRosInterface
+add_library(v_repExtNRMC2019Plugin src/vrep_plugin/plugin.cpp src/vrep_library/v_repLib.cpp)
+add_dependencies(v_repExtNRMC2019Plugin ${catkin_EXPORTED_TARGETS})
+target_link_libraries(v_repExtNRMC2019Plugin
   pthread
   dl
   boost_system

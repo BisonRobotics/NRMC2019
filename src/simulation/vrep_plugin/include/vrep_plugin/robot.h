@@ -1,17 +1,16 @@
 #ifndef VREP_INTERFACE_VREP_ROBOT_H
 #define VREP_INTERFACE_VREP_ROBOT_H
 
-#include "../../../../../../../../usr/include/c++/5/string"
-#include "../../../../../../../../usr/include/c++/5/map"
-#include "../../../../../../../../usr/include/c++/5/vector"
-#include "../../../../../../../../usr/include/c++/5/cmath"
+#include <string>
+#include <vector>
+#include <cmath>
 
-#include "../../../../../../../../opt/ros/kinetic/include/tf/tf.h"
+#include <tf/tf.h>
 
-#include "../vrep_library/v_repLib.h"
-#include "vrep_drivers/driver_wheel.h"
+#include <vrep_library/v_repLib.h>
+#include <vrep_drivers/driver_wheel.h>
 
-namespace vrep_interface
+namespace vrep_plugin
 {
 
 const double mining_zone_centers[2] = {0.945, -0.945};
@@ -26,11 +25,11 @@ const double mining_zone_rotations[6] =
   5.0 * M_2PI_6
 };
 
-class VREPRobot
+class Robot
 {
   public:
 
-    VREPRobot(SimInterface *sim_interface);
+    Robot(Interface *sim_interface);
 
     void initialize(std::string model_file);
     void spawnRobot();
@@ -43,11 +42,11 @@ class VREPRobot
     void shutdown();
 
   private:
-    SimInterface *sim;
+    Interface *sim;
     int handle;
     int base_link_handle;
     std::string model_file;
-    VREPWheelDriver fl, bl, fr, br;
+    WheelDriver fl, bl, fr, br;
 
     void loadModelHelper();
 };

@@ -1,18 +1,17 @@
-#ifndef VREP_INTERFACE_VREP_PLUGIN_H
-#define VREP_INTERFACE_VREP_PLUGIN_H
+#ifndef VREP_PLUGIN_PLUGIN_H
+#define VREP_PLUGIN_PLUGIN_H
 
 #include <vrep_library/v_repLib.h>
 #include <vrep_plugin/server.h>
 
-// vrep entry points
 #define VREP_DLLEXPORT extern "C"
 VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt);
 VREP_DLLEXPORT void v_repEnd();
 VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customData, int *replyData);
 
-namespace vrep_interface
+namespace vrep_plugin
 {
-class VREPPlugin
+class Plugin
 {
   public:
     static bool initialize();
@@ -23,9 +22,9 @@ class VREPPlugin
     static void simulationEnded();
 
   private:
-    VREPPlugin(){};
-    static SimInterface *sim_interface;
-    static VREPServer *server;
+    Plugin(){};
+    static Interface *sim_interface;
+    static Server *server;
 
 };
 

@@ -18,20 +18,20 @@
 #include <vrep_msgs/SpawnRobot.h>
 #include <vrep_plugin/interface.h>
 
-namespace vrep_interface
+namespace vrep_plugin
 {
 
-class VREPServer
+class Server
 {
   public:
-    explicit VREPServer(SimInterface *sim_interface);
-    ~VREPServer();
+    explicit Server(Interface *sim_interface);
+    ~Server();
     void spinOnce();
     void simulationAboutToStart();
     void simulationEnded();
 
   private:
-    SimInterface *sim;
+    Interface *sim;
 
     bool sim_running;
     ros::NodeHandle *nh;
@@ -41,7 +41,7 @@ class VREPServer
     ros::Publisher *clock_publisher;
     tf::TransformBroadcaster* tf_broadcaster;
 
-    VREPRobot *robot;
+    Robot *robot;
 
     bool spawnRobotService(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
     bool spawnRobotRandomService(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);

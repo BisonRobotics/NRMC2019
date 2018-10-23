@@ -34,13 +34,13 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
   if (vrepLib == NULL)
   {
     std::cout << "Error, could not find or correctly load the V-REP library. "
-                 "Cannot start 'rosSkeleton' plugin.\n";
+                 "Cannot start 'NRMC2019' plugin.\n";
     return (0);  // Means error, V-REP will unload this plugin
   }
   if (getVrepProcAddresses(vrepLib) == 0)
   {
     std::cout << "Error, could not find all required functions in the V-REP "
-                 "library. Cannot start 'rosSkeleton' plugin.\n";
+                 "library. Cannot start 'NRMC2019' plugin.\n";
     unloadVrepLibrary(vrepLib);
     return (0);  // Means error, V-REP will unload this plugin
   }
@@ -53,16 +53,16 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
   if (vrepVer < 30102)  // if V-REP version is smaller than 3.01.02
   {
     std::cout << "Sorry, your V-REP copy is somewhat old. Cannot start "
-                 "'rosSkeleton' plugin.\n";
+                 "'NRMC2019' plugin.\n";
     unloadVrepLibrary(vrepLib);
     return (0);  // Means error, V-REP will unload this plugin
   }
   // ******************************************
 
   // Initialize the ROS part:
-  if (!vrep_interface::VREPPlugin::initialize())
+  if (!vrep_plugin::Plugin::initialize())
   {
-    std::cout << "ROS master is not running. Cannot start 'rosSkeleton' plugin.\n";
+    std::cout << "ROS master is not running. Cannot start 'NRMC2019' plugin.\n";
     return (0);  // If the master is not running then the plugin is not loaded.
   }
 
@@ -75,7 +75,7 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
 // releasing this plugin):
 VREP_DLLEXPORT void v_repEnd()
 {
-  vrep_interface::VREPPlugin::shutDown();      // shutdown the vrep_interface_server
+  vrep_plugin::Plugin::shutDown();      // shutdown the vrep_interface_server
   unloadVrepLibrary(vrepLib);  // release the library
 }
 
@@ -100,7 +100,7 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // commands, then put some code here
   if (message == sim_message_eventcallback_instancepass)
   {
-    vrep_interface::VREPPlugin::instancePass();
+    vrep_plugin::Plugin::instancePass();
   }
 
   // Main script is about to be run (only called while a simulation is running
@@ -109,19 +109,19 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // This is a good location to execute simulation commands
   if (message == sim_message_eventcallback_mainscriptabouttobecalled)
   {
-    vrep_interface::VREPPlugin::mainScriptAboutToBeCalled();
+    vrep_plugin::Plugin::mainScriptAboutToBeCalled();
   }
 
   // Simulation is about to start
   if (message == sim_message_eventcallback_simulationabouttostart)
   {
-    vrep_interface::VREPPlugin::simulationAboutToStart();
+    vrep_plugin::Plugin::simulationAboutToStart();
   }
 
   // Simulation just ended
   if (message == sim_message_eventcallback_simulationended)
   {
-    vrep_interface::VREPPlugin::simulationEnded();
+    vrep_plugin::Plugin::simulationEnded();
   }
 
   // Keep following unchanged:
@@ -129,17 +129,17 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   return (retVal);
 }
 
-using namespace vrep_interface;
+using namespace vrep_plugin;
 
-VREPServer *VREPPlugin::server = NULL;
-SimInterface *VREPPlugin::sim_interface = NULL;
+Server *Plugin::server = NULL;
+Interface *Plugin::sim_interface = NULL;
 
-bool VREPPlugin::initialize()
+bool Plugin::initialize()
 {
   try
   {
-    sim_interface = new SimInterface;
-    server = new VREPServer(sim_interface);
+    sim_interface = new Interface;
+    server = new Server(sim_interface);
   }
   catch (std::exception &e)
   {
@@ -149,13 +149,13 @@ bool VREPPlugin::initialize()
   return true;
 }
 
-void VREPPlugin::shutDown()
+void Plugin::shutDown()
 {
   delete server;
   delete sim_interface;
 }
 
-void VREPPlugin::instancePass() // Simulation not running
+void Plugin::instancePass() // Simulation not running
 {
   if ((simGetSimulationState() & sim_simulation_advancing) == 0)
   {
@@ -163,18 +163,18 @@ void VREPPlugin::instancePass() // Simulation not running
   }
 }
 
-void VREPPlugin::mainScriptAboutToBeCalled() // Simulation running
+void Plugin::mainScriptAboutToBeCalled() // Simulation running
 {
   server->spinOnce();
 }
 
-void VREPPlugin::simulationAboutToStart()
+void Plugin::simulationAboutToStart()
 {
   sim_interface->info("Starting simulation");
   server->simulationAboutToStart();
 }
 
-void VREPPlugin::simulationEnded()
+void Plugin::simulationEnded()
 {
   sim_interface->info("Simulation ended");
   server->simulationEnded();

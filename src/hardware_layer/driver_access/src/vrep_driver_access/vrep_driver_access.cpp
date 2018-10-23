@@ -4,11 +4,9 @@
 
 using namespace driver_access;
 
-using vrep_msgs::VREPDriverMessage;
-using vrep_msgs::VREPDriverMessageConstPtr;
+using vrep_msgs::DriverMessage;
+using vrep_msgs::DriverMessageConstPtr;
 using std::to_string;
-using vrep_msgs::PIDGet;
-using vrep_msgs::PIDSet;
 
 VREPDriverAccess::VREPDriverAccess(const Limits &limits, ID id, Mode mode) : DriverAccess(limits, id, mode)
 {
@@ -20,7 +18,7 @@ VREPDriverAccess::VREPDriverAccess(const Limits &limits, ID id, Mode mode) : Dri
   publisher.reset(new ros::Publisher);
 
   (*subscriber) = nh->subscribe("state", 1, &VREPDriverAccess::callback, this);
-  (*publisher) = nh->advertise<VREPDriverMessage>("command", 1, true);
+  (*publisher) = nh->advertise<DriverMessage>("command", 1, true);
 
   spinner.reset(new ros::AsyncSpinner(0, queue.get()));
   spinner->start();
@@ -41,7 +39,7 @@ double VREPDriverAccess::getEffort()
   return state.effort;
 }
 
-void VREPDriverAccess::callback(const vrep_msgs::VREPDriverMessageConstPtr &message)
+void VREPDriverAccess::callback(const vrep_msgs::DriverMessageConstPtr &message)
 {
   if (message->header.stamp > state.header.stamp)
   {
@@ -59,7 +57,7 @@ std_msgs::Header VREPDriverAccess::getHeader()
 
 void VREPDriverAccess::setDriverPosition(double position)
 {
-  VREPDriverMessage command;
+  DriverMessage command;
   command.header = getHeader();
   command.id = static_cast<uint8_t>(id);
   command.mode = static_cast<uint8_t>(Mode::position);
@@ -71,7 +69,7 @@ void VREPDriverAccess::setDriverPosition(double position)
 
 void VREPDriverAccess::setDriverVelocity(double velocity)
 {
-  VREPDriverMessage command;
+  DriverMessage command;
   command.header = getHeader();
   command.id = static_cast<uint8_t>(id);
   command.mode = static_cast<uint8_t>(Mode::velocity);
@@ -83,7 +81,7 @@ void VREPDriverAccess::setDriverVelocity(double velocity)
 
 void VREPDriverAccess::setDriverEffort(double effort)
 {
-  VREPDriverMessage command;
+  DriverMessage command;
   command.header = getHeader();
   command.id = static_cast<uint8_t>(id);
   command.mode = static_cast<uint8_t>(Mode::effort);

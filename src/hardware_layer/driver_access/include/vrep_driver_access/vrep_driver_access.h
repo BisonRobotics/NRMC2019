@@ -2,9 +2,7 @@
 #define MOTOR_ACCESS_VREP_MOTOR_ACCESS_H
 
 #include <driver_access/driver_access.h>
-#include <vrep_msgs/VREPDriverMessage.h>
-#include <vrep_msgs/PIDGet.h>
-#include <vrep_msgs/PIDSet.h>
+#include <vrep_msgs/DriverMessage.h>
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 #include <tuple>
@@ -31,9 +29,9 @@ class VREPDriverAccess : public DriverAccess
     void setDriverEffort(double torque) override;
 
   private:
-    void callback(const vrep_msgs::VREPDriverMessageConstPtr &message);
+    void callback(const vrep_msgs::DriverMessageConstPtr &message);
 
-    vrep_msgs::VREPDriverMessage state;
+    vrep_msgs::DriverMessage state;
     uint32_t seq;
 
     ros::CallbackQueuePtr queue;

@@ -5,19 +5,18 @@
 #include <vrep_plugin/interface.h>
 #include <vrep_plugin/exceptions.h>
 
-using namespace vrep_interface;
+using namespace vrep_plugin;
 
 using driver_access::ID;
 using std::to_string;
 using std::get;
 
-//TODO status bar messages should probably be thrown errors
-VREPRobot::VREPRobot(SimInterface *sim) :
+Robot::Robot(Interface *sim) :
     sim(sim), handle(-1), model_file(""),
     fl(sim, ID::front_left_wheel), fr(sim, ID::front_right_wheel),
     br(sim, ID::back_right_wheel), bl(sim, ID::back_left_wheel) {}
 
-void VREPRobot::initialize(std::string model_file)
+void Robot::initialize(std::string model_file)
 {
   if (!boost::filesystem::exists(model_file))
   {
@@ -26,14 +25,14 @@ void VREPRobot::initialize(std::string model_file)
   this->model_file = model_file;
 }
 
-void VREPRobot::spawnRobot()
+void Robot::spawnRobot()
 {
-  simFloat y = (simFloat) mining_zone_centers[rand() % 2];
-  simFloat rotation = (simFloat) mining_zone_rotations[rand() % 6];
+  double y = mining_zone_centers[rand() % 2];
+  double rotation = mining_zone_rotations[rand() % 6];
   spawnRobot(0.75f, y, rotation);
 }
 
-void VREPRobot::spawnRobot(double x, double y, double rotation)
+void Robot::spawnRobot(double x, double y, double rotation)
 {
   checkState();
   loadModel();
@@ -42,9 +41,8 @@ void VREPRobot::spawnRobot(double x, double y, double rotation)
   updateWheelHandles();
 }
 
-void VREPRobot::checkState()
+void Robot::checkState()
 {
-  // Reset model state if it's been deleted
   if (handle != -1)
   {
     if (!sim->isHandleValid(handle, -1))
@@ -55,11 +53,10 @@ void VREPRobot::checkState()
   }
 }
 
-void VREPRobot::loadModelHelper()
+void Robot::loadModelHelper()
 {
   base_link_handle = -1;
   handle = sim->loadModel(model_file);
-
   try
   {
     base_link_handle = sim->findObjectInTree(handle, "base_link", sim_object_dummy_type);
@@ -76,7 +73,7 @@ void VREPRobot::loadModelHelper()
   }
 }
 
-void VREPRobot::loadModel()
+void Robot::loadModel()
 {
   if (handle == -1)
   {
@@ -89,7 +86,7 @@ void VREPRobot::loadModel()
   }
 }
 
-void VREPRobot::updateWheelHandles()
+void Robot::updateWheelHandles()
 {
   fl.initialize();
   fr.initialize();
@@ -97,7 +94,7 @@ void VREPRobot::updateWheelHandles()
   bl.initialize();
 }
 
-void VREPRobot::getPosition(tf::Transform *position)
+void Robot::getPosition(tf::Transform *position)
 {
   tuple3d origin = sim->getObjectPosition(base_link_handle, -1);
   tuple3d angles = sim->getObjectOrientation(base_link_handle, -1);
@@ -109,7 +106,7 @@ void VREPRobot::getPosition(tf::Transform *position)
   position->setRotation(rotation);
 }
 
-void VREPRobot::spinOnce()
+void Robot::spinOnce()
 {
   fl.updateState();
   fr.updateState();
@@ -122,7 +119,7 @@ void VREPRobot::spinOnce()
   // TODO update robot state too
 }
 
-void VREPRobot::shutdown()
+void Robot::shutdown()
 {
   fl.shutdown();
   fr.shutdown();

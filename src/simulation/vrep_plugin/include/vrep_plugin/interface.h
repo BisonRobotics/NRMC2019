@@ -1,20 +1,20 @@
-#ifndef VREP_INTERFACE_INTERFACE_H
-#define VREP_INTERFACE_INTERFACE_H
+#ifndef VREP_PLUGIN_INTERFACE_H
+#define VREP_PLUGIN_INTERFACE_H
 
 #include <vrep_library/v_repTypes.h>
 #include <string>
 #include <rosgraph_msgs/Clock.h>
 #include <tuple>
 
-namespace vrep_interface
+namespace vrep_plugin
 {
 
 typedef std::tuple<double, double, double> tuple3d;
 
-class SimInterface
+class Interface
 {
   public:
-    SimInterface();
+    Interface();
 
     void setJointPosition(int handle, double position);
     void setEffort(int handle, double effort);
@@ -75,4 +75,4 @@ class SimInterface
 
 }
 
-#endif //VREP_INTERFACE_INTERFACE_H
+#endif //VREP_PLUGIN_INTERFACE_H

@@ -1,15 +1,15 @@
-#ifndef VREP_INTERFACE_VREP_WHEEL_DRIVER_H
-#define VREP_INTERFACE_VREP_WHEEL_DRIVER_H
+#ifndef VREP_PLUGIN_WHEEL_DRIVER_H
+#define VREP_PLUGIN_WHEEL_DRIVER_H
 
 #include <vrep_drivers/driver_base.h>
 
-namespace vrep_interface
+namespace vrep_plugin
 {
 
-class VREPWheelDriver : public VREPDriverBase
+class WheelDriver : public DriverBase
 {
   public:
-    VREPWheelDriver(SimInterface *sim_interface, driver_access::ID id);
+    WheelDriver(Interface *sim_interface, driver_access::ID id);
 
     void updateState() override;
     void initializeChild() override;
@@ -24,4 +24,4 @@ class VREPWheelDriver : public VREPDriverBase
 };
 }
 
-#endif //VREP_INTERFACE_VREP_WHEEL_DRIVER_H
+#endif //VREP_PLUGIN_WHEEL_DRIVER_H
