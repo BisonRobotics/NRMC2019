@@ -106,6 +106,7 @@ You may not be able to enumerate two CANables on the same computer easily and as
 ```
 sudo ip link set can1 type can bitrate 500000 triple-sampling on
 sudo ip link set can1 up
+# 
 
 sudo ip link set can2 type can bitrate 500000 triple-sampling on
 sudo ip link set can2 up
