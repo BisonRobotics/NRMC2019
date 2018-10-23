@@ -126,31 +126,19 @@ rosgraph_msgs::Clock Interface::getSimulationTime()
 void Interface::info(const std::string &message)
 {
   ROS_INFO("%s", message.c_str());
-  if (vSimAddStatusBarMessage(("[INFO]: " + message).c_str()) == -1)
-  {
-    throw vrep_error("[Interface::info]: "
-                     "Unable add a status bar message");
-  }
+  vSimAddStatusBarMessage(("[INFO]: " + message).c_str());
 }
 
 void Interface::warn(const std::string &message)
 {
   ROS_WARN("%s", message.c_str());
-  if (vSimAddStatusBarMessage(("[WARN]: " + message).c_str()) == -1)
-  {
-    throw vrep_error("[Interface::warn]: "
-                     "Unable add a status bar message");
-  }
+  vSimAddStatusBarMessage(("[WARN]: " + message).c_str());
 }
 
 void Interface::error(const std::string &message)
 {
   ROS_ERROR("%s", message.c_str());
-  if (vSimAddStatusBarMessage(("[ERROR]: " + message).c_str()) == -1)
-  {
-    throw vrep_error("[Interface::error]: "
-                     "Unable add a status bar message");
-  }
+  vSimAddStatusBarMessage(("[ERROR]: " + message).c_str());
 }
 
 bool Interface::isHandleValid(int object_handle, int object_type)
@@ -243,7 +231,7 @@ tuple3d Interface::getObjectPosition(int handle, int relative_to_handle)
 tuple3d Interface::getObjectOrientation(int handle, int relative_to_handle)
 {
   simFloat orientation[3];
-  if (vSimGetObjectPosition((simInt)handle, (simInt)relative_to_handle, orientation) == -1)
+  if (vSimGetObjectOrientation((simInt)handle, (simInt)relative_to_handle, orientation) == -1)
   {
     throw vrep_error("[Interface::getObjectOrientation]: "
                      "Unable to get object orientation");

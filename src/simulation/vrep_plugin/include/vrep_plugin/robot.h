@@ -36,7 +36,7 @@ class Robot
     void spawnRobot(double x, double y, double rotation);
     void checkState();
     void loadModel();
-    void getPosition(tf::Transform *position);
+    void getTf(tf::Transform *position);
     void updateWheelHandles();
     void spinOnce();
     void shutdown();

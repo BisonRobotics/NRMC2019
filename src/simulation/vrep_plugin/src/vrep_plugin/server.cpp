@@ -17,6 +17,7 @@ Server::Server(Interface *sim_interface)
   if (!ros::master::check())
   {
     simAddStatusbarMessage("[WARN]: Unable to start, ros master isn't running");
+    std::cout << "[WARN]: Unable to start, ros master isn't running" << std::endl;
     throw std::runtime_error("Unable to start, ros master isn't running");
   }
   nh = new ros::NodeHandle("~");
@@ -84,7 +85,7 @@ void Server::spinOnce()
 
       robot->spinOnce();
       tf::Transform robot_position;
-      robot->getPosition(&robot_position);
+      robot->getTf(&robot_position);
       tf_broadcaster->sendTransform(tf::StampedTransform(robot_position, ros::Time::now(), "map", "base_link"));
     }
     ros::spinOnce();
@@ -196,9 +197,9 @@ bool Server::stop(Trigger::Request &req, Trigger::Response &res)
 
 bool Server::shutdown(Trigger::Request &req, Trigger::Response &res)
 {
-  sim->info("[Server]: Trying to shutdown");
+  sim->info("[Server]: Shutting down...");
   sim->shutdown();
   res.success = 1;
-  res.message = "Trying to shutdown...";
+  res.message = "Shutting down...";
   return true;
 }

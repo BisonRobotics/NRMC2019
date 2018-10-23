@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   vector<DriverAccess*> drivers = {fl, fr, br, bl};
   ROSDriverAccess ros_drivers(drivers);
 
-  Teleop controller(0, 0.2, 0.01, fl, fr, br, bl);
+  Teleop controller(0, 1.0, 0.01, fl, fr, br, bl);
 
   while (ros::ok())
   {

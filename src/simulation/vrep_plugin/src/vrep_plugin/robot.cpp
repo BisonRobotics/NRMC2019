@@ -92,7 +92,7 @@ void Robot::updateWheelHandles()
   bl.initialize();
 }
 
-void Robot::getPosition(tf::Transform *position)
+void Robot::getTf(tf::Transform *position)
 {
   tuple3d origin = sim->getObjectPosition(base_link_handle, -1);
   tuple3d angles = sim->getObjectOrientation(base_link_handle, -1);
@@ -100,7 +100,7 @@ void Robot::getPosition(tf::Transform *position)
   tf::Quaternion rotation;
   rotation.setEuler(get<0>(angles), get<1>(angles), get<2>(angles));
 
-  position->setOrigin(tf::Vector3(get<0>(origin), get<1>(origin), get<2>(origin)));
+  position->setOrigin(tf::Vector3(get<0>(origin), get<1>(origin), get<2>(origin))); // 0,1,2
   position->setRotation(rotation);
 }
 
