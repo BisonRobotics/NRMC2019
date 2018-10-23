@@ -238,7 +238,7 @@ class DriverVescCrossover : public iVescAccess
     void setTorque(float current) 
       {face->setEffort(current); vesc->setTorque(current);}
     float getLinearVelocity(void) 
-      {return (true ? face->getVelocity() : vesc->getLinearVelocity());} //or should it come from the vesc?
+      {return (false ? face->getVelocity() : vesc->getLinearVelocity());} // for now, needs to come from the vesc, o/w the control system doesn't work
     float getTorque(void) {return face->getEffort();}
     nsVescAccess::limitSwitchState getLimitSwitchState(void) 
       {return nsVescAccess::limitSwitchState::inTransit;}
@@ -304,7 +304,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   if (simulating)
   {
-    sim = new SimRobot(.5, 1, .7, .1); //axel len, x, y, theta
+    sim = new SimRobot(.5, 1, .7, .1); //axel len, x, y, theta //this is temporary, its needed for the imu and pos
     //TODO use new interface
     driver_access::Limits limits(0, 0, 0, 1, 0, 1);
     dfl = new driver_access::VREPDriverAccess(limits, driver_access::ID::front_left_wheel,  driver_access::Mode::velocity);
@@ -316,7 +316,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     br = new DriverVescCrossover(dbr, sim->getBRVesc());
     bl = new DriverVescCrossover(dbl, sim->getBLVesc());
 
-    imu = sim->getImu();
+    imu = sim->getImu(); //if these can be replaced, we can get rid of the SimRobot
     pos = sim->getPos();
   }
   else
@@ -341,6 +341,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       }
       vesc_init_rate.sleep();
     }
+    //these will need updated with new sensors, using the same interface
     //pos = new AprilTagTrackerInterface("/pose_estimate_filter/pose_estimate", .1);
     //imu = new LpResearchImu("imu_base_link");
   }
@@ -428,17 +429,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   bl->setLinearVelocity(0);
   fl->setLinearVelocity(0);
 
- // while (((ros::Time::now()-lastTime).toSec()<settle_time) && (ros::ok()))
- // {
- //   superLocalizer.updateStateVector(.02);
- //   rate.sleep();
- // }
-    tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
+  tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
   ros::spinOnce ();
-
-  // initialize waypoint controller
-  //WaypointController wc = WaypointController(ROBOT_AXLE_LENGTH, ROBOT_MAX_SPEED, currPose, fl, fr, br, bl,
-    //                                         1.0 / UPDATE_RATE_HZ, waypoint_default_gains);
 
   DriveController dc = DriveController(fr, fl, bl, br);
   ROS_INFO("DC Init");
@@ -446,7 +438,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   server = new SimpleActionServer<FollowPathAction>(globalNode, "follow_path", &newGoalCallback, false);
   server->start();
   ROS_INFO("[action_server] Started");
-
 
   firstTime = true;
   while (ros::ok())
@@ -471,7 +462,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     if (simulating)
     {
       sim->update(loopTime.toSec());
-
+      //this would be handled by the new sim? sending tf's to rviz
       tfBroad.sendTransform(create_sim_tf(sim->getX(), sim->getY(), sim->getTheta()));
     }
 
@@ -486,37 +477,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
     ros_drivers.publish();
 
-/*
-    sensor_msgs::JointState jsMessage;
-
-    jsMessage.name.push_back("frame_to_front_left_wheel");
-    jsMessage.name.push_back("frame_to_front_right_wheel");
-    jsMessage.name.push_back("frame_to_back_right_wheel");
-    jsMessage.name.push_back("frame_to_back_left_wheel");
-
-    jsMessage.header.stamp = ros::Time::now();
-    wheel_positions[0] += 10*fl->getLinearVelocity() / UPDATE_RATE_HZ;
-    wheel_positions[1] += 10*fr->getLinearVelocity() / UPDATE_RATE_HZ;
-    wheel_positions[2] += 10*br->getLinearVelocity() / UPDATE_RATE_HZ;
-    wheel_positions[3] += 10*bl->getLinearVelocity() / UPDATE_RATE_HZ;
-    jsMessage.position.push_back(wheel_positions[0]);
-    jsMessage.position.push_back(wheel_positions[1]);
-    jsMessage.position.push_back(wheel_positions[2]);
-    jsMessage.position.push_back(wheel_positions[3]);
-
-    jsMessage.velocity.push_back(fl->getLinearVelocity());
-    jsMessage.velocity.push_back(fr->getLinearVelocity());
-    jsMessage.velocity.push_back(br->getLinearVelocity());
-    jsMessage.velocity.push_back(bl->getLinearVelocity());
-
-    jspub.publish(jsMessage);
-
-    ROS_DEBUG("FrontLeftVel : %.4f", jsMessage.velocity[0]);
-    ROS_DEBUG("FrontRightVel : %.4f", jsMessage.velocity[1]);
-    ROS_DEBUG("BackRightVel : %.4f", jsMessage.velocity[2]);
-    ROS_DEBUG("BackLeftVel : %.4f", jsMessage.velocity[3]);
-*/
-
    if (newWaypointHere)
    {
        dc.addPath(curr_path);
@@ -530,7 +490,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     // Provide feedback
     FollowPathFeedback feedback;
     feedback.deviation = 0.01;
-    feedback.progress = dc.getPClosestT();; //eventually will grab t parameter from dc
+    feedback.progress = dc.getPClosestT();
     server->publishFeedback(feedback);
     doing_path = true;
    }
