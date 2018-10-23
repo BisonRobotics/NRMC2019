@@ -47,8 +47,6 @@ Much of the setup process was automated last year. Assuming you are running Ubun
 # Install ansible, restart your computer afterwards
 sudo apt update
 sudo apt install ansible
-sudo ansible-playbook -i "localhost," -c local dev_computer_playbook.yml
-
 
 # Install dependencies
 cd ~/NRMC2019
