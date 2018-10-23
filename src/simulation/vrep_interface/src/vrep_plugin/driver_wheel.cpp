@@ -1,4 +1,4 @@
-#include <vrep_drivers/vrep_wheel_driver.h>
+#include <vrep_drivers/driver_wheel.h>
 
 using namespace vrep_interface;
 

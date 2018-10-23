@@ -1,6 +1,6 @@
-#include "vrep_interface/vrep_server.h"
+#include "vrep_plugin/server.h"
 #include <rosgraph_msgs/Clock.h>
-#include <vrep_interface/vrep_server.h>
+#include <vrep_plugin/server.h>
 
 using namespace vrep_interface;
 

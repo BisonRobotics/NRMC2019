@@ -2,7 +2,7 @@
 #define VREP_INTERFACE_VREP_PLUGIN_H
 
 #include <vrep_library/v_repLib.h>
-#include <vrep_interface/vrep_server.h>
+#include <vrep_plugin/server.h>
 
 // vrep entry points
 #define VREP_DLLEXPORT extern "C"

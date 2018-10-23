@@ -1,5 +1,5 @@
 #include "vrep_library/v_repLib.h"
-#include "vrep_interface/vrep_plugin.h"
+#include "vrep_plugin/plugin.h"
 
 #include "ros/ros.h"
 #include <iostream>

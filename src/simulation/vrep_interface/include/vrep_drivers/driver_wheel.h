@@ -1,7 +1,7 @@
 #ifndef VREP_INTERFACE_VREP_WHEEL_DRIVER_H
 #define VREP_INTERFACE_VREP_WHEEL_DRIVER_H
 
-#include <vrep_drivers/vrep_driver_base.h>
+#include <vrep_drivers/driver_base.h>
 
 namespace vrep_interface
 {

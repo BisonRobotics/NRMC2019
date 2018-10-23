@@ -23,40 +23,30 @@ catkin_package(CATKIN_DEPENDS
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_library(sim_interface src/vrep_interface/sim_interface.cpp)
-add_dependencies(sim_interface ${catkin_EXPORTED_TARGETS})
-target_link_libraries(sim_interface ${catkin_LIBRARIES})
+add_library(vrep_interface src/vrep_plugin/interface.cpp)
+add_dependencies(vrep_interface ${catkin_EXPORTED_TARGETS})
+target_link_libraries(vrep_interface ${catkin_LIBRARIES})
 
-add_library(vrep_driver src/vrep_drivers/vrep_driver_base.cpp)
-add_dependencies(vrep_driver ${catkin_EXPORTED_TARGETS})
-target_link_libraries(vrep_driver ${catkin_LIBRARIES})
+add_library(vrep_drivers src/vrep_plugin/driver_base.cpp src/vrep_plugin/driver_wheel.cpp)
+add_dependencies(vrep_drivers ${catkin_EXPORTED_TARGETS})
+target_link_libraries(vrep_drivers ${catkin_LIBRARIES})
 
-add_library(vrep_wheel_driver src/vrep_drivers/vrep_wheel_driver.cpp)
-add_dependencies(vrep_wheel_driver ${catkin_EXPORTED_TARGETS})
-target_link_libraries(vrep_wheel_driver ${catkin_LIBRARIES})
-target_link_libraries(vrep_wheel_driver vrep_driver)
-
-add_library(vrep_server
-  src/vrep_interface/vrep_server.cpp
-  src/vrep_robot/vrep_robot.cpp)
+add_library(vrep_server src/vrep_plugin/server.cpp src/vrep_plugin/robot.cpp)
 add_dependencies(vrep_server ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vrep_server
+  vrep_drivers
+  vrep_interface
   pthread
   dl
   boost_system
   boost_filesystem
-  ${catkin_LIBRARIES}
-  vrep_wheel_driver
-  sim_interface)
+  ${catkin_LIBRARIES})
 
-add_library(v_repExtRosInterface
-  src/vrep_interface/vrep_plugin.cpp
-  src/vrep_library/v_repLib.cpp)
+add_library(v_repExtRosInterface src/vrep_plugin/plugin.cpp src/vrep_library/v_repLib.cpp)
 add_dependencies(v_repExtRosInterface ${catkin_EXPORTED_TARGETS})
 target_link_libraries(v_repExtRosInterface
   pthread
   dl
   boost_system
   boost_filesystem
-  vrep_server
-  sim_interface)
+  vrep_server)

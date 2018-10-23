@@ -1,6 +1,6 @@
-#include <vrep_interface/sim_interface.h>
+#include <vrep_plugin/interface.h>
 #include <vrep_library/v_repConst.h>
-#include <vrep_exceptions/vrep_exceptions.h>
+#include <vrep_plugin/exceptions.h>
 #include <vrep_library/v_repLib.h>
 
 using namespace vrep_interface;

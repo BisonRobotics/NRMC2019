@@ -1,9 +1,9 @@
 #include <boost/filesystem.hpp>
 #include <ros/ros.h>
-#include <vrep_robot/vrep_robot.h>
+#include <vrep_plugin/robot.h>
 #include <driver_access/params.h>
-#include <vrep_interface/sim_interface.h>
-#include <vrep_exceptions/vrep_exceptions.h>
+#include <vrep_plugin/interface.h>
+#include <vrep_plugin/exceptions.h>
 
 using namespace vrep_interface;
 

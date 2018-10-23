@@ -14,9 +14,9 @@
 
 #include <vrep_library/v_repLib.h>
 
-#include <vrep_robot/vrep_robot.h>
+#include <vrep_plugin/robot.h>
 #include <vrep_msgs/SpawnRobot.h>
-#include <vrep_interface/sim_interface.h>
+#include <vrep_plugin/interface.h>
 
 namespace vrep_interface
 {

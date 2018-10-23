@@ -1,7 +1,7 @@
-#include <vrep_drivers/vrep_driver_base.h>
+#include <vrep_drivers/driver_base.h>
 #include <driver_access/mode.h>
 #include <driver_access/limits.h>
-#include <vrep_interface/sim_interface.h>
+#include <vrep_plugin/interface.h>
 #include <vrep_library/v_repConst.h>
 
 using namespace vrep_interface;

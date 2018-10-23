@@ -9,7 +9,7 @@
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 
-#include <vrep_interface/sim_interface.h>
+#include <vrep_plugin/interface.h>
 
 
 namespace vrep_interface
