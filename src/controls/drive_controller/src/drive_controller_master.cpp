@@ -164,67 +164,6 @@ void haltCallback(const std_msgs::Empty::ConstPtr &msg)
   halt = true;
 }
 
-//Go other way, inhertis from driver_access and holds a vesc access
-//eventually need a ROSDriverAccess which takes a vector of drivers
-//  must call ros_driver.publish() inside the loop
-/*class DriverVescCrossover : public iVescAccess
-{
-   private:
-    driver_access::DriverAccessInterface *face;
-   public:
-    DriverVescCrossover(driver_access::DriverAccessInterface *f)
-    :face(f) {}
-    void setLinearVelocity(float meters_per_second) {face->setVelocity(meters_per_second);}
-    void setTorque(float current) {face->setEffort(current);}
-    float getLinearVelocity(void) {return face->getVelocity();}
-    float getTorque(void) {return face->getEffort();}
-    nsVescAccess::limitSwitchState getLimitSwitchState(void) 
-         {return nsVescAccess::limitSwitchState::inTransit;}
-    float getPotPosition(void) {return face->getPosition();}
-    void setDuty(float d) {};
-
-};*/
-//todo needs to implement VREPDriverAccess ? 
-/*class DriverVescCrossover : public driver_access::DriverAccessInterface
-{
-  private:
-    vesc_access *vesc;
-  public:
-    DriverVescCrossover(iVescAccess *v) : vesc(v) {}
-    void setPosition(double position) {} // rad
-    void setVelocity(double velocity) {} // m/s
-    void setEffort(double effort) {}
-
-    void setPoint(double value) {}
-    void setMode(Mode mode) {}
-    Mode getMode() {return driver_access::Mode::velocity;}
-
-    double getPosition() {return 0;}
-    double getVelocity() {return vesc->getLinearVelocity();}
-    double getEffort() = {return 0;}
-
-  private:
-    Mode mode;
-};*/
-/*
-class DriverVescCrossover : public iVescAccess
-{
-   private:
-    driver_access::VREPDriverAccess *face;
-   public:
-    DriverVescCrossover(driver_access::DriverAccessInterface *f)
-    :face(f) {}
-    void setLinearVelocity(float meters_per_second) {face->setVelocity(meters_per_second);}
-    void setTorque(float current) {face->setEffort(current);}
-    float getLinearVelocity(void) {return face->getVelocity();}
-    float getTorque(void) {return face->getEffort();}
-    nsVescAccess::limitSwitchState getLimitSwitchState(void) 
-         {return nsVescAccess::limitSwitchState::inTransit;}
-    float getPotPosition(void) {return face->getPosition();}
-    void setDuty(float d) {};
-    void publish() {face->publish();}
-
-};*/
 class DriverVescCrossover : public iVescAccess
 {
    private:

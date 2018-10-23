@@ -133,7 +133,6 @@ double DriveController::angleDiff(double angle1, double angle2) //TODO Unit test
   return diff;
 }
 
-//TODO test
 std::pair<double, double> DriveController::speedSteeringControl(double speed,   double steering, 
                                                double AxelLen, double MaxSpeed)
 {
