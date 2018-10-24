@@ -102,7 +102,7 @@
     tar -xvzf git-lfs-linux-amd64-v2.5.2.tar.gz
     sudo ./install.sh
     cd ..
-    git lfs install
+    sudo rm -rf .git/lfs
     git lfs pull
   args:
     executable: /bin/bash
