@@ -47,12 +47,12 @@ Much of the setup process was automated last year. Assuming you are running Ubun
 # Install ansible, restart your computer afterwards
 sudo apt update
 sudo apt install ansible
-sudo ansible-playbook -i "localhost," -c local dev_computer_playbook.yml
-
 
 # Install dependencies
 cd ~/NRMC2019
 sudo ansible-playbook -i "localhost," -c local src/utilities/ansible/dev_computer_playbook.yml
+git lfs install
+git lfs pull
 
 # Make sure the ROS environment is always set up (optional)
 echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
