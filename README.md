@@ -50,7 +50,7 @@ sudo apt install ansible
 
 # Install dependencies
 cd ~/NRMC2019
-sudo ansible-playbook -i "localhost," -c local src/utilities/ansible/dev_computer_playbook.yml
+ansible-playbook -i "localhost," -c local src/utilities/ansible/dev_computer_playbook.yml
 git lfs install
 git lfs pull
 
