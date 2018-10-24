@@ -89,7 +89,7 @@
 - name: get and unpack git-lfs
   unarchive:
     src: https://github.com/git-lfs/git-lfs/releases/download/v2.5.2/git-lfs-linux-amd64-v2.5.2.tar.gz
-    dest: ./
+    dest: ./git-lfs
     copy: no
 
 - name: install git-lfs
