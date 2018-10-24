@@ -86,24 +86,15 @@
   command: /usr/bin/rosdep init
   when: depcheck.stat.exists == False
 
-#- name: get and unpack git-lfs
-#  unarchive:
-#    src: https://github.com/git-lfs/git-lfs/releases/download/v2.5.2/git-lfs-linux-amd64-v2.5.2.tar.gz
-#    dest: git-lfs
-#    copy: no
-
 - name: install git-lfs
   become: yes
   shell: |
-    cd {{ playbook_dir }}/../../..
+    cd /tmp
     mkdir git-lfs
     cd git-lfs
     wget https://github.com/git-lfs/git-lfs/releases/download/v2.5.2/git-lfs-linux-amd64-v2.5.2.tar.gz
     tar -xvzf git-lfs-linux-amd64-v2.5.2.tar.gz
     sudo ./install.sh
-    cd ..
-    sudo rm -rf .git/lfs
-    git lfs pull
   args:
     executable: /bin/bash
 
