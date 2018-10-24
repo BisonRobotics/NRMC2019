@@ -99,6 +99,10 @@
     sudo ./install.sh
     popd
     git lfs install
+    cd {{ playbook_dir }}/../../..
+    rm -rf .git/lfs/
+    git checkout src/
+    git lfs pull
   args:
     executable: /bin/bash
 
