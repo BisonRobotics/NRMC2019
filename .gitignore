@@ -29,6 +29,7 @@ tmp/
 .pytest_cache/
 htmlcov/
 *.png
+vrep/
 
 *.old
 emptytests

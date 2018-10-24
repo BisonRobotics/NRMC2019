@@ -16,15 +16,14 @@
     - name: get and unpack vrep
       unarchive:
         src: http://coppeliarobotics.com/files/V-REP_PRO_EDU_V3_5_0_Linux.tar.gz
-        dest: ~/NRMC2019
+        dest: "{{ playbook_dir }}/../../.."
         copy: no
 
     - name: configure vrep
       become: yes
       shell: |
-        mv ~/NRMC2019/V-REP_PRO_EDU_V3_5_0_Linux ~/NRMC2019/vrep
-        ln ~/NRMC2019/devel/lib/libv_repExtNRMC2019Plugin.so ~/NRMC2019/vrep/
-        rm ~/NRMC2019/V-REP_PRO_EDU_V3_5_0_Linux.tar.gz
-
+        cd {{ playbook_dir }}/../../..
+        mv V-REP_PRO_EDU_V3_5_0_Linux vrep
+        ln -s $(pwd)/devel/lib/libv_repExtNRMC2019Plugin.so vrep/
       args:
         executable: /bin/bash
