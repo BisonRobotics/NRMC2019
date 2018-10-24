@@ -28,6 +28,7 @@ tmp/
 .coverage
 .pytest_cache/
 htmlcov/
+*.png
 
 *.old
 emptytests
@@ -227,7 +228,6 @@ pythontex-files-*/
 *.xyc
 
 # endfloat
-*.ttt
 *.fff
 
 # Latexian
