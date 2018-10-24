@@ -54,9 +54,6 @@ ansible-playbook -i "localhost," -c local src/utilities/ansible/dev_computer_pla
 git lfs install
 git lfs pull
 
-# Make sure the ROS environment is always set up (optional)
-echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
-
 # Build NRMC2019 and setup workspace
 catkin_make
 source devel/setup.bash
