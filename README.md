@@ -50,10 +50,7 @@ sudo apt install ansible
 
 # Install dependencies
 cd ~/NRMC2019
-sudo ansible-playbook -i "localhost," -c local src/utilities/ansible/dev_computer_playbook.yml
-
-# Make sure the ROS environment is always set up (optional)
-echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
+ansible-playbook -i "localhost," -c local src/utilities/ansible/dev_computer_playbook.yml
 
 # Build NRMC2019 and setup workspace
 catkin_make
