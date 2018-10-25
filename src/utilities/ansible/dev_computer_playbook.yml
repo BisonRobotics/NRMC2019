@@ -12,3 +12,18 @@
         - desktop
 
     - include: common_tasks.yml
+
+    - name: get and unpack vrep
+      unarchive:
+        src: http://coppeliarobotics.com/files/V-REP_PRO_EDU_V3_5_0_Linux.tar.gz
+        dest: "{{ playbook_dir }}/../../.."
+        copy: no
+
+    - name: configure vrep
+      become: yes
+      shell: |
+        cd {{ playbook_dir }}/../../..
+        mv V-REP_PRO_EDU_V3_5_0_Linux vrep
+        ln -s $(pwd)/devel/lib/libv_repExtNRMC2019Plugin.so vrep/
+      args:
+        executable: /bin/bash

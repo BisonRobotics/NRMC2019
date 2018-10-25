@@ -1,23 +1,5 @@
-// Copyright 2006-2017 Coppelia Robotics GmbH. All rights reserved.
-// marc@coppeliarobotics.com
-// www.coppeliarobotics.com
-//
-// -------------------------------------------------------------------
-// THIS FILE IS DISTRIBUTED "AS IS", WITHOUT ANY EXPRESS OR IMPLIED
-// WARRANTY. THE USER WILL USE IT AT HIS/HER OWN RISK. THE ORIGINAL
-// AUTHORS AND COPPELIA ROBOTICS GMBH WILL NOT BE LIABLE FOR DATA LOSS,
-// DAMAGES, LOSS OF PROFITS OR ANY OTHER KIND OF LOSS WHILE USING OR
-// MISUSING THIS SOFTWARE.
-//
-// You are free to use/modify/distribute this file for whatever purpose!
-// -------------------------------------------------------------------
-//
-// This file was automatically created for V-REP release V3.4.0 rev. 1 on April
-// 5th 2017
-
 #include "vrep_library/v_repLib.h"
-#include "vrep_interface/vrep_plugin.h"
-#include "vrep_interface/vrep_server.h"
+#include "vrep_plugin/plugin.h"
 
 #include "ros/ros.h"
 #include <iostream>
@@ -52,13 +34,13 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
   if (vrepLib == NULL)
   {
     std::cout << "Error, could not find or correctly load the V-REP library. "
-                 "Cannot start 'rosSkeleton' plugin.\n";
+                 "Cannot start 'NRMC2019' plugin.\n";
     return (0);  // Means error, V-REP will unload this plugin
   }
   if (getVrepProcAddresses(vrepLib) == 0)
   {
     std::cout << "Error, could not find all required functions in the V-REP "
-                 "library. Cannot start 'rosSkeleton' plugin.\n";
+                 "library. Cannot start 'NRMC2019' plugin.\n";
     unloadVrepLibrary(vrepLib);
     return (0);  // Means error, V-REP will unload this plugin
   }
@@ -71,16 +53,16 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
   if (vrepVer < 30102)  // if V-REP version is smaller than 3.01.02
   {
     std::cout << "Sorry, your V-REP copy is somewhat old. Cannot start "
-                 "'rosSkeleton' plugin.\n";
+                 "'NRMC2019' plugin.\n";
     unloadVrepLibrary(vrepLib);
     return (0);  // Means error, V-REP will unload this plugin
   }
   // ******************************************
 
   // Initialize the ROS part:
-  if (!vrep_interface::VREPServer::initialize())
+  if (!vrep_plugin::Plugin::initialize())
   {
-    std::cout << "ROS master is not running. Cannot start 'rosSkeleton' plugin.\n";
+    std::cout << "ROS master is not running. Cannot start 'NRMC2019' plugin.\n";
     return (0);  // If the master is not running then the plugin is not loaded.
   }
 
@@ -93,7 +75,7 @@ VREP_DLLEXPORT unsigned char v_repStart(void *reservedPointer, int reservedInt)
 // releasing this plugin):
 VREP_DLLEXPORT void v_repEnd()
 {
-  vrep_interface::VREPServer::shutDown();      // shutdown the vrep_interface_server
+  vrep_plugin::Plugin::shutDown();      // shutdown the vrep_interface_server
   unloadVrepLibrary(vrepLib);  // release the library
 }
 
@@ -118,7 +100,7 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // commands, then put some code here
   if (message == sim_message_eventcallback_instancepass)
   {
-    vrep_interface::VREPServer::instancePass();
+    vrep_plugin::Plugin::instancePass();
   }
 
   // Main script is about to be run (only called while a simulation is running
@@ -127,22 +109,73 @@ VREP_DLLEXPORT void *v_repMessage(int message, int *auxiliaryData, void *customD
   // This is a good location to execute simulation commands
   if (message == sim_message_eventcallback_mainscriptabouttobecalled)
   {
-    vrep_interface::VREPServer::mainScriptAboutToBeCalled();
+    vrep_plugin::Plugin::mainScriptAboutToBeCalled();
   }
 
   // Simulation is about to start
   if (message == sim_message_eventcallback_simulationabouttostart)
   {
-    vrep_interface::VREPServer::simulationAboutToStart();
+    vrep_plugin::Plugin::simulationAboutToStart();
   }
 
   // Simulation just ended
   if (message == sim_message_eventcallback_simulationended)
   {
-    vrep_interface::VREPServer::simulationEnded();
+    vrep_plugin::Plugin::simulationEnded();
   }
 
   // Keep following unchanged:
   simSetIntegerParameter(sim_intparam_error_report_mode, errorModeSaved);  // restore previous settings
   return (retVal);
+}
+
+using namespace vrep_plugin;
+
+Server *Plugin::server = NULL;
+Interface *Plugin::sim_interface = NULL;
+
+bool Plugin::initialize()
+{
+  try
+  {
+    sim_interface = new Interface;
+    server = new Server(sim_interface);
+  }
+  catch (std::exception &e)
+  {
+    std::cout << e.what() << std::endl;
+    return false;
+  }
+  return true;
+}
+
+void Plugin::shutDown()
+{
+  delete server;
+  delete sim_interface;
+}
+
+void Plugin::instancePass() // Simulation not running
+{
+  if ((simGetSimulationState() & sim_simulation_advancing) == 0)
+  {
+    server->spinOnce();
+  }
+}
+
+void Plugin::mainScriptAboutToBeCalled() // Simulation running
+{
+  server->spinOnce();
+}
+
+void Plugin::simulationAboutToStart()
+{
+  sim_interface->info("Starting simulation");
+  server->simulationAboutToStart();
+}
+
+void Plugin::simulationEnded()
+{
+  sim_interface->info("Simulation ended");
+  server->simulationEnded();
 }

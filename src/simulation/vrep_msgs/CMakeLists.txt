@@ -6,7 +6,7 @@ find_package(catkin REQUIRED COMPONENTS message_generation std_msgs)
 
 include_directories(${catkin_INCLUDE_DIRS})
 
-add_message_files(FILES VREPDriverMessage.msg)
+add_message_files(FILES DriverMessage.msg)
 add_service_files(FILES SpawnRobot.srv)
 generate_messages(DEPENDENCIES std_msgs)
 

@@ -1,0 +1,18 @@
+# based off https://github.com/jalessio/ansible-role-ros
+# run locally with "ansible-playbook -i "localhost," -c local dev_computer_playbook.yml"
+---
+- hosts: localhost
+  tasks:
+    - name: install git-lfs
+      become: yes
+      shell: |
+        cd /tmp
+        mkdir git-lfs
+        cd git-lfs
+        wget https://github.com/git-lfs/git-lfs/releases/download/v2.5.2/git-lfs-linux-amd64-v2.5.2.tar.gz
+        tar -xvzf git-lfs-linux-amd64-v2.5.2.tar.gz
+        sudo ./install.sh
+        cd ..
+        sudo rm -rf .git/lfs
+      args:
+        executable: /bin/bash

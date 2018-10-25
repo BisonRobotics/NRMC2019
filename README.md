@@ -51,6 +51,8 @@ sudo apt install ansible
 # Install dependencies
 cd ~/NRMC2019
 ansible-playbook -i "localhost," -c local src/utilities/ansible/dev_computer_playbook.yml
+git lfs install
+git lfs pull
 
 # Build NRMC2019 and setup workspace
 catkin_make

@@ -1,5 +1,5 @@
 <package format="2">
-  <name>vrep_interface</name>
+  <name>vrep_plugin</name>
   <description>A V-REP plugin that provides and interface for ROS</description>
   <maintainer email="jacob.huesman@ndsu.edu">Jacob</maintainer>
   <version>0.0.1</version>

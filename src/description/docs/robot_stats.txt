@@ -1,0 +1,3 @@
+Total robot mass: 45.3592 kg (100 lbs)
+Robot wheel mass: 0.544311 kg (1.2 lbs)
+Wheel output torque: 81.349 nm (60 ftlbs tested, mechanical expects 70 to 80 ftlbs)

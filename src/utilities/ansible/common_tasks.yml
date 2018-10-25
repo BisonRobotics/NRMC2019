@@ -86,19 +86,15 @@
   command: /usr/bin/rosdep init
   when: depcheck.stat.exists == False
 
-- name: get and unpack git-lfs
-  unarchive:
-    src: https://github.com/git-lfs/git-lfs/releases/download/v2.3.4/git-lfs-linux-amd64-2.3.4.tar.gz
-    dest: ./
-    copy: no
-
 - name: install git-lfs
   become: yes
   shell: |
-    pushd git-lfs-2.3.4
+    cd /tmp
+    mkdir git-lfs
+    cd git-lfs
+    wget https://github.com/git-lfs/git-lfs/releases/download/v2.5.2/git-lfs-linux-amd64-v2.5.2.tar.gz
+    tar -xvzf git-lfs-linux-amd64-v2.5.2.tar.gz
     sudo ./install.sh
-    popd
-    git lfs install
   args:
     executable: /bin/bash
 
