@@ -41,7 +41,6 @@ Server::Server(Interface *sim_interface)
   stop_server = nh->advertiseService("stop", &Server::stop, this);
   shutdown_server = nh->advertiseService("shutdown", &Server::shutdown, this);
 
-  tf_broadcaster = new tf::TransformBroadcaster();
   clock_publisher = new ros::Publisher;
   pose_publisher = new ros::Publisher;
   (*clock_publisher) = nh->advertise<rosgraph_msgs::Clock>("/clock", 10, true);
@@ -74,8 +73,13 @@ Server::~Server()
   spawn_robot_random_server.shutdown();
   shutdown_server.shutdown();
   robot->shutdown();
+  clock_publisher->shutdown();
+  pose_publisher->shutdown();
   nh->shutdown();
   ros::shutdown();
+  delete robot;
+  delete clock_publisher;
+  delete pose_publisher;
 }
 
 void Server::spinOnce()

@@ -43,7 +43,6 @@ class Server
     ros::ServiceServer stop_server;
     ros::Publisher *clock_publisher;
     ros::Publisher *pose_publisher;
-    tf::TransformBroadcaster* tf_broadcaster;
 
     Robot *robot;
     unsigned int message_counter;
