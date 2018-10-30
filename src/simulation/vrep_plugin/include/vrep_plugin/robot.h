@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include <tf/tf.h>
+#include <geometry_msgs/Pose.h>
 
 #include <vrep_library/v_repLib.h>
 #include <vrep_drivers/driver_wheel.h>
@@ -36,7 +37,7 @@ class Robot
     void spawnRobot(double x, double y, double rotation);
     void checkState();
     void loadModel();
-    void getTf(tf::Transform *position);
+    void getPose(geometry_msgs::Pose *pose);
     void updateWheelHandles();
     void spinOnce();
     void shutdown();

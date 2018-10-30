@@ -222,6 +222,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   if (simulating)
   {
     sim = new SimRobot(.5, 1, .7, .1); //axel len, x, y, theta //this is temporary, its needed for the imu and pos
+    pos = new AprilTagTrackerInterface("/vrep/pose", .1);
+
     //TODO use new interface
     driver_access::Limits limits(0, 0, 0, 1, 0, 1);
     dfl = new driver_access::VREPDriverAccess(limits, driver_access::ID::front_left_wheel,  driver_access::Mode::velocity);
