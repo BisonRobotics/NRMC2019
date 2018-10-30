@@ -92,7 +92,7 @@ void Robot::updateWheelHandles()
   bl.initialize();
 }
 
-void Robot::getTf(tf::Transform *position)
+void Robot::getPose(geometry_msgs::Pose *pose)
 {
   tuple3d origin = sim->getObjectPosition(base_link_handle, -1);
   tuple3d angles = sim->getObjectOrientation(base_link_handle, -1);
@@ -100,8 +100,13 @@ void Robot::getTf(tf::Transform *position)
   tf::Quaternion rotation;
   rotation.setEuler(get<0>(angles), get<1>(angles), get<2>(angles));
 
-  position->setOrigin(tf::Vector3(get<0>(origin), get<1>(origin), get<2>(origin))); // 0,1,2
-  position->setRotation(rotation);
+  pose->position.x = get<0>(origin);
+  pose->position.y = get<1>(origin);
+  pose->position.z = get<2>(origin);
+  pose->orientation.x = rotation.x();
+  pose->orientation.y = rotation.y();
+  pose->orientation.z = rotation.z();
+  pose->orientation.w = rotation.w();
 }
 
 void Robot::spinOnce()

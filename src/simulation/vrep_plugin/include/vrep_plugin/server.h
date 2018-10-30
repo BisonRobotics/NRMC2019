@@ -42,9 +42,10 @@ class Server
     ros::ServiceServer pause_server;
     ros::ServiceServer stop_server;
     ros::Publisher *clock_publisher;
-    tf::TransformBroadcaster* tf_broadcaster;
+    ros::Publisher *pose_publisher;
 
     Robot *robot;
+    unsigned int message_counter;
 
     bool spawnRobot(vrep_msgs::SpawnRobot::Request &req, vrep_msgs::SpawnRobot::Response &res);
     bool spawnRobotRandom(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);

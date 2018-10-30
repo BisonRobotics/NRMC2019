@@ -1,16 +1,20 @@
 #include "vrep_plugin/server.h"
 #include <rosgraph_msgs/Clock.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <vrep_plugin/server.h>
 
 using namespace vrep_plugin;
 
 using vrep_msgs::SpawnRobot;
 using std_srvs::Trigger;
+using geometry_msgs::Pose;
+using geometry_msgs::PoseStamped;
 
 Server::Server(Interface *sim_interface)
 {
   sim = sim_interface;
   sim_running = false;
+  message_counter = 0;
 
   int argc = 0; char **argv = NULL;
   ros::init(argc, argv, "vrep");
@@ -37,9 +41,10 @@ Server::Server(Interface *sim_interface)
   stop_server = nh->advertiseService("stop", &Server::stop, this);
   shutdown_server = nh->advertiseService("shutdown", &Server::shutdown, this);
 
-  tf_broadcaster = new tf::TransformBroadcaster();
   clock_publisher = new ros::Publisher;
+  pose_publisher = new ros::Publisher;
   (*clock_publisher) = nh->advertise<rosgraph_msgs::Clock>("/clock", 10, true);
+  (*pose_publisher) = nh->advertise<PoseStamped>("pose", 10, true);
 
   sim->loadScene(description_path + "/vrep_models/arena.ttt");
 
@@ -68,8 +73,13 @@ Server::~Server()
   spawn_robot_random_server.shutdown();
   shutdown_server.shutdown();
   robot->shutdown();
+  clock_publisher->shutdown();
+  pose_publisher->shutdown();
   nh->shutdown();
   ros::shutdown();
+  delete robot;
+  delete clock_publisher;
+  delete pose_publisher;
 }
 
 void Server::spinOnce()
@@ -80,13 +90,20 @@ void Server::spinOnce()
   {
     if (sim_running)
     {
+      message_counter++;
+
       rosgraph_msgs::Clock sim_clock = sim->getSimulationTime();
       clock_publisher->publish(sim_clock);
 
       robot->spinOnce();
-      tf::Transform robot_position;
-      robot->getTf(&robot_position);
-      tf_broadcaster->sendTransform(tf::StampedTransform(robot_position, ros::Time::now(), "map", "base_link"));
+
+      Pose pose;
+      robot->getPose(&pose);
+      PoseStamped pose_stamped;
+      pose_stamped.header.stamp = ros::Time::now();
+      pose_stamped.header.seq = message_counter;
+      pose_stamped.pose = pose;
+      pose_publisher->publish(pose_stamped);
     }
     ros::spinOnce();
   }
