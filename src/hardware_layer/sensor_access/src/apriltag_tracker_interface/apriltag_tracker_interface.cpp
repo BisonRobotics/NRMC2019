@@ -11,7 +11,7 @@ AprilTagTrackerInterface::AprilTagTrackerInterface(std::string topic, double tim
   y = 0.0;
   z = 0.0;
   theta = 0.0;
-  is_floating = true;
+  is_floating = false; //true;
   this->timeout = ros::Duration(timeout);
 }
 
@@ -36,7 +36,7 @@ double AprilTagTrackerInterface::getTheta()
 
 void AprilTagTrackerInterface::updateIsFloating()
 {
-  is_floating = (ros::Time::now() - last_time) > timeout;
+  is_floating = false; //(ros::Time::now() - last_time) > timeout;
   std_msgs::Bool msg;
   msg.data = (unsigned char)is_floating;
   pub.publish(msg);
@@ -85,7 +85,7 @@ void AprilTagTrackerInterface::callback(const geometry_msgs::PoseStamped::ConstP
 
 bool AprilTagTrackerInterface::isFloating()
 {
-  return is_floating;
+  return false; //is_floating;
 }
 
 double AprilTagTrackerInterface::qtToTheta(geometry_msgs::Quaternion qt)

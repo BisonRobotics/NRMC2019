@@ -155,7 +155,7 @@ class DriverVescCrossover : public iVescAccess
     void setTorque(float current) 
       {face->setEffort(current); vesc->setTorque(current);}
     float getLinearVelocity(void) 
-      {return (false ? face->getVelocity() : vesc->getLinearVelocity());} // for now, needs to come from the vesc, o/w the control system doesn't work
+      {return (true ? face->getVelocity() : vesc->getLinearVelocity());} // for now, needs to come from the vesc, o/w the control system doesn't work
     float getTorque(void) {return face->getEffort();}
     nsVescAccess::limitSwitchState getLimitSwitchState(void) 
       {return nsVescAccess::limitSwitchState::inTransit;}
@@ -221,10 +221,9 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   if (simulating)
   {
-    sim = new SimRobot(.5, 1, .7, .1); //axel len, x, y, theta //this is temporary, its needed for the imu and pos
+    sim = new SimRobot(0, 0, 0, .1);//.5, 1, .7, .1); //axel len, x, y, theta //this is temporary, its needed for the imu and pos
     pos = new AprilTagTrackerInterface("/vrep/pose", .1);
 
-    //TODO use new interface
     driver_access::Limits limits(0, 0, 0, 1, 0, 1);
     dfl = new driver_access::VREPDriverAccess(limits, driver_access::ID::front_left_wheel,  driver_access::Mode::velocity);
     dfr = new driver_access::VREPDriverAccess(limits, driver_access::ID::front_right_wheel, driver_access::Mode::velocity);
@@ -236,11 +235,10 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     bl = new DriverVescCrossover(dbl, sim->getBLVesc());
 
     imu = sim->getImu(); //if these can be replaced, we can get rid of the SimRobot
-    pos = sim->getPos();
+    //pos = sim->getPos();
   }
   else
   {
-    //TODO use VescAcces DriverAccess combo?
     sim = NULL;  // Make no reference to the sim if not simulating
     bool no_except = false;
     while (!no_except  && ros::ok()) {
@@ -273,7 +271,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   bool firstTime = true;
   tf2_ros::TransformBroadcaster tfBroad;
   std::vector<std::pair<double, double> > waypoint_set;
-  SuperLocalizer superLocalizer(ROBOT_AXLE_LENGTH, 1, .5, 0, fl, fr, br, bl, imu, pos, SuperLocalizer_default_gains);
+  SuperLocalizer superLocalizer(ROBOT_AXLE_LENGTH, 1, .5, 0, fl, fr, br, bl, /*imu,*/ pos, SuperLocalizer_default_gains);
   
   LocalizerInterface::stateVector stateVector;
   ros::Subscriber haltsub = node.subscribe("halt", 100, haltCallback);
@@ -382,7 +380,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     {
       sim->update(loopTime.toSec());
       //this would be handled by the new sim? sending tf's to rviz
-      tfBroad.sendTransform(create_sim_tf(sim->getX(), sim->getY(), sim->getTheta()));
+      tfBroad.sendTransform(create_sim_tf(pos->getX(), pos->getY(), pos->getTheta()));
     }
 
     superLocalizer.updateStateVector(loopTime.toSec());
