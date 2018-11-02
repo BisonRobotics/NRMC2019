@@ -32,6 +32,10 @@ add_library(vrep_drivers src/vrep_plugin/driver_base.cpp src/vrep_plugin/driver_
 add_dependencies(vrep_drivers ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vrep_drivers ${catkin_LIBRARIES})
 
+add_library(vrep_imu src/vrep_plugin/imu.cpp)
+add_dependencies(vrep_imu ${catkin_EXPORTED_TARGETS})
+target_link_libraries(vrep_imu ${catkin_LIBRARIES})
+
 add_library(vrep_server src/vrep_plugin/server.cpp src/vrep_plugin/robot.cpp)
 add_dependencies(vrep_server ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vrep_server
