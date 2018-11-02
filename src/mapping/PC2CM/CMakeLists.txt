@@ -4,10 +4,12 @@ project(pc2cm)
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  sensor_msgs
-  pcl_ros
+	roscpp
+	std_msgs
+	nav_msgs
+	navigation_msgs
+	sensor_msgs
+	pcl_ros
 )
 
 find_package(OpenCV REQUIRED)
@@ -28,13 +30,14 @@ include_directories (
 	include/pc2_processor/
     ${catkin_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
-    ${GTEST_INCLUDE_DIRS} )
+    ${GTEST_INCLUDE_DIRS}
 
+)
 
 add_library(pc2_processor src/pc2_processor/pc2_processor.cpp)
 
 add_executable(pc2cm_master src/pc2cm_master.cpp)
-target_link_libraries(pc2cm_master pc2_processor ${catkin_LIBRARIES}  ${OpenCV_LIBRARIES} )
+target_link_libraries(pc2cm_master pc2_processor ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} )
 
 catkin_add_gtest(pc2_processor_tests include/pc2_processor/pc2_processor.h src/pc2_processor/test/pc2_processor_tests.cpp)
 if(TARGET pc2_processor_tests)

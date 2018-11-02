@@ -18,25 +18,25 @@ TEST(pc2_processor_points, oneAndDone)
     //     cloud.points[i].z = 1024 * rand() / (RAND_MAX + 1.0);
     // }
 
-    cloud.points[0].x = 5;
-    cloud.points[0].y = 1;
-    cloud.points[0].z = 3;
+    // cloud.points[0].x = 5;
+    // cloud.points[0].y = 1;
+    // cloud.points[0].z = 3;
 
-    cloud.points[1].x = 3;
-    cloud.points[1].y = 1;
-    cloud.points[1].z = 8;
+    // cloud.points[1].x = 3;
+    // cloud.points[1].y = 1;
+    // cloud.points[1].z = 8;
 
-    cloud.points[2].x = 4;
-    cloud.points[2].y = 3;
-    cloud.points[2].z = 4;
+    // cloud.points[2].x = 4;
+    // cloud.points[2].y = 3;
+    // cloud.points[2].z = 4;
 
-    cloud.points[3].x = 7;
-    cloud.points[3].y = 4;
-    cloud.points[3].z = 3;
+    // cloud.points[3].x = 7;
+    // cloud.points[3].y = 4;
+    // cloud.points[3].z = 3;
 
-    std::cerr << "Cloud before filtering: " << std::endl;
-    for (size_t i = 0; i < cloud.points.size (); ++i)
-        std::cerr << "    " << cloud.points[i].x << " " << cloud.points[i].y << " " << cloud.points[i].z << std::endl;
+    // std::cerr << "Cloud before filtering: " << std::endl;
+    // for (size_t i = 0; i < cloud.points.size (); ++i)
+    //     std::cerr << "    " << cloud.points[i].x << " " << cloud.points[i].y << " " << cloud.points[i].z << std::endl;
 
     pc2cmProcessor pcp(.25, 4, 4);
 
