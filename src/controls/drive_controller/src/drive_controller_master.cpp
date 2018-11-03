@@ -57,17 +57,6 @@ SimpleActionServer<FollowPathAction> *server;
 
 void newGoalCallback(const FollowPathGoalConstPtr &goal) //technically called in another thread
 {
-/*
-  curr_path.x1 = 1;
-  curr_path.y1 = 1;
-  curr_path.x2 = 2; 
-  curr_path.y2 = 1;
-  curr_path.x3 = 2.5;
-  curr_path.y3 = .3;
-  curr_path.x4 = 2;
-  curr_path.y4 = -.3;
-  newWaypointHere = true;
-*/
  ROS_INFO("[action_server] Moving toward goal");
   //ros::Rate rate(1.0);
 
