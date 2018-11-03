@@ -12,12 +12,11 @@
 
 using namespace std;
 
-
+// Only do global variables that are necessary for the callback - Jacob
 std::vector<float> *curr_points;
 std::vector<pcl::PointXYZ> copied_points;
 
 bool new_points_here;
-pc2cmProcessor processor;
 double defaultCellWidth = 0.25;
 double defaultMapWidth  = 4.0;
 double defaultMapHeight = 4.0;
@@ -49,14 +48,14 @@ void newPointsCallback(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& cloud_msg
 int main(int argc, char** argv)
 {
     new_points_here = false;
-    processor = pc2cmProcessor(defaultCellWidth, defaultMapWidth, defaultMapHeight);
+    pc2cmProcessor processor = pc2cmProcessor(defaultCellWidth, defaultMapWidth, defaultMapHeight);
 
     ros::init(argc, argv, "pc2cm_master");
     ros::NodeHandle node;
 
     ros::Rate rate(10);
 
-    nav_msgs::OccupancyGrid obsticals ;
+    nav_msgs::OccupancyGrid obstacles;
 
     ros::Subscriber sub = node.subscribe("camera/points", 2, newPointsCallback);
     // ros::Publisher pub = node.advertise<nav_msgs::OccupancyGrid.msg>("costMap", 1, true);
@@ -81,23 +80,27 @@ int main(int argc, char** argv)
                 ROS_INFO("NEW Point: %.4f, %.4f, %.4f", copied_points.at(i).x,copied_points.at(i).y, copied_points.at(i).z);
             }
             std::cout << "making grid" << std::endl;
-            processor.computeOccupancyGrid(&obsticals);
+            // Why are you doing this twice? - Jacob
+            processor.computeOccupancyGrid(&obstacles);
 
-            // pub.publish(obsticals);
+            // pub.publish(obstacles);
 
-            pub->publish(obsticals);
+            pub->publish(obstacles);
             new_points_here = false;
             ros::spinOnce();
             rate.sleep();
 
         }
-        processor.computeOccupancyGrid(&obsticals);
+        // Why are you doing this twice? - Jacob
+        processor.computeOccupancyGrid(&obstacles);
 
         ROS_INFO("CHUNK\n");
         int sum = 0;
 
-        for (int i = 0; i < sizeof(obsticals.data); i++) {
-            sum = sum + obsticals.data[i];
+      // sizeof is for getting the size in bytes of a particular data type, it doesn't work for c arrays, and
+      // obstacles.data is a vector anyways. Use obstacles.data.size() - Jacob
+        for (int i = 0; i < sizeof(obstacles.data); i++) {
+            sum = sum + obstacles.data[i];
         }
         std::cout << sum << std::endl;
         ofstream myfile ("saveData.txt");
@@ -105,12 +108,14 @@ int main(int argc, char** argv)
         {
             // myfile << "This is a line.\n";
             // myfile << "This is another line.\n";
-            for(int count = 0; count < sizeof(obsticals.data); count ++){
-                myfile << obsticals.data[count] << " " ;
+            // sizeof is for getting the size in bytes of a particular data type, it doesn't work for c arrays, and
+            // obstacles.data is a vector anyways. Use obstacles.data.size() - Jacob
+            for(int count = 0; count < sizeof(obstacles.data); count ++){
+                myfile << obstacles.data[count] << " " ;
             }
             myfile.close();
         }
-        pub->publish(obsticals);
+        pub->publish(obstacles);
 
         ros::spinOnce();
         rate.sleep();

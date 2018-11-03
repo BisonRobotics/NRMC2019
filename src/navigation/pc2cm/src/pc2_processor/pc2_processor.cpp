@@ -4,40 +4,27 @@
  * */
 
 #include <pc2_processor/pc2_processor.h>
-
 #include <opencv2/imgproc/imgproc.hpp>
 
+// Don't use macros like this, create a function to do it - Jacob
 #define CLAMP(A, B, C) ((A < B) ? B : ((A>C) ? C : A))
 
-
-cv::Mat map; // a grid of heights defined by Cell_width, Grid_Width, GRID_HEIGHT
-cv::Mat pointCount;
-cv::Mat DoG; // the current DoG cv::Matrix to convulote throught the map
-
-
-double GRID_WIDTH;
-double GRID_HEIGHT;
-double CELL_WIDTH;
-
-pc2cmProcessor::pc2cmProcessor()
-{
-    ;
-}
+// There were a bunch of global variables here, don't do that,
+// make them members of the class - Jacob
 
 
 pc2cmProcessor::pc2cmProcessor(double cell_width, double grid_width, double grid_height)
 {
-    CELL_WIDTH = cell_width;
-    GRID_HEIGHT = grid_height;
-    GRID_WIDTH = grid_width;
+    this->cell_width = cell_width;
+    this->grid_height = grid_height;
+    this->grid_width = grid_width;
 
-
-    map = cv::Mat((int)(GRID_HEIGHT/CELL_WIDTH)+1, (int)(GRID_WIDTH/CELL_WIDTH), CV_64F );
-    pointCount = cv::Mat((int)(GRID_HEIGHT/CELL_WIDTH)+1, (int)(GRID_WIDTH/CELL_WIDTH), CV_64F );
+    map = cv::Mat((int)(grid_height/cell_width)+1, (int)(grid_width/cell_width), CV_64F );
+    point_count = cv::Mat((int)(grid_height/cell_width)+1, (int)(grid_width/cell_width), CV_64F );
 
     // std::cout << "settings it to a thing" << std::endl;
     map.setTo(0);
-    pointCount.setTo(0);
+    point_count.setTo(0);
     takeDoG(9, .8, .2);
 
 }
@@ -74,22 +61,24 @@ bool pc2cmProcessor::addPoints(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& c
 }
 
 bool pc2cmProcessor::addPoint(pcl::PointXYZ point){
-    //point (0,0) should map to index[0][.5*GRID_WIDTH]
-    //point (1,0) should map to index[1/CELL_WIDTH][.5*GRID_WIDTH/CELL_WIDTH]
-    // point (1,1) should map to index(1/CELL_WIDTH][1/CELL_WIDTH + .5*GRID_WIDTH/CELL_WIDTH
+    // point (0,0) should map to index[0][.5*grid_width]
+    // point (1,0) should map to index[1/cell_width][.5*grid_width/cell_width]
+    // point (1,1) should map to index(1/cell_width][1/cell_width + .5*grid_width/cell_width
 
-    std::cout << "adding point" << std::endl;
+    //std::cout << "adding point" << std::endl;
 
-    int x_index = (int)((GRID_HEIGHT - point.z)/CELL_WIDTH );
-    x_index = CLAMP(x_index, 0, GRID_HEIGHT/CELL_WIDTH);
+    int x_index = (int)((grid_height - point.z)/cell_width );
+    x_index = CLAMP(x_index, 0, grid_height/cell_width);
 
-    int y_index = (int)((-point.y)/CELL_WIDTH + (.5*GRID_WIDTH/CELL_WIDTH));
-    y_index = CLAMP(y_index, 0, GRID_WIDTH/CELL_WIDTH);
+    int y_index = (int)((-point.y)/cell_width + (.5*grid_width/cell_width));
+    y_index = CLAMP(y_index, 0, grid_width/cell_width);
+    //std::cout << "x: " << x_index << " y: " << y_index << std::endl;
 
-    // take the avaerage of all the points in that grid cell
-    map.at<double>(x_index, y_index) = map.at<double>(x_index, y_index) +
-                                        (point.x - map.at<double>(x_index, y_index))
-                                        / (++pointCount.at<int>(x_index, y_index));
+    // take the average of all the points in that grid cell
+    // You can't do an average in real time, just sum the points,
+    // you can take the average once you're done adding points - Jacob
+    map.at<double>(x_index, y_index) = map.at<double>(x_index, y_index) + point.x;
+    point_count.at<double>(x_index, y_index)++;
     return true;
 }
 
@@ -113,7 +102,7 @@ double pc2cmProcessor::get_Height(int xindex, int yindex){
 
 void pc2cmProcessor::print_grid(void){
     std::cout << "map = "<< std::endl << " "  << map << std::endl << std::endl;
-    std::cout << "pointcount = "<< std::endl << " "  << pointCount << std::endl << std::endl;
+    std::cout << "pointcount = "<< std::endl << " "  << point_count << std::endl << std::endl;
 }
 
 
@@ -123,7 +112,10 @@ void pc2cmProcessor::computeOccupancyGrid(nav_msgs::OccupancyGrid *costMap){
     {
         std::cerr << "DOG is not initilized!" << std::endl;
     }
-    cv::Mat_<double> out(GRID_WIDTH, GRID_HEIGHT, CV_64F);
+
+    // The width and height of a matrix should be integer values, not doubles
+    // Do something like (int) (grid_height / cell_width) - Jacob
+    cv::Mat_<double> out(grid_width, grid_height, CV_64F);
     cv::filter2D(map, out, -1, DoG);
     // std::cout << "out = "<< std::endl << " "  << out << std::endl << std::endl;
 
@@ -132,5 +124,11 @@ void pc2cmProcessor::computeOccupancyGrid(nav_msgs::OccupancyGrid *costMap){
 
     imwrite( "map1.jpg", map );
     //convert cv::Mat to costmap_2d
+    // costmap_2d is a ros package, we're using occupancy grid message - Jacob
     costMap->data.insert(costMap->data.begin(), out.begin(), out.end());
+}
+
+void pc2cmProcessor::copyMap(cv::Mat *map)
+{
+  this->map.copyTo(*map);
 }

@@ -31,6 +31,8 @@ tmp/
 .coverage
 .pytest_cache/
 htmlcov/
+*.jpg
+*.png
 
 *.old
 emptytests
