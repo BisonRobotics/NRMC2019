@@ -92,7 +92,8 @@ void Server::spinOnce()
     {
       message_counter++;
 
-      rosgraph_msgs::Clock sim_clock = sim->getSimulationTime();
+      rosgraph_msgs::Clock sim_clock;
+      sim_clock.clock = sim->getSimulationTime();
       clock_publisher->publish(sim_clock);
 
       robot->spinOnce();
@@ -118,6 +119,7 @@ void Server::spinOnce()
 void Server::simulationAboutToStart()
 {
   sim_running = true;
+  robot->reset();
 }
 
 void Server::simulationEnded()

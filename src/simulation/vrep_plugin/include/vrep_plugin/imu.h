@@ -3,6 +3,7 @@
 
 #include <vrep_plugin/interface.h>
 #include <ros/ros.h>
+#include <vrep_msgs/IMU.h>
 
 namespace vrep_plugin
 {
@@ -12,17 +13,23 @@ class IMU
   public:
     IMU(Interface *sim_interface, uint8_t id);
 
+    void initialize();
     void updateState();
-    void updateHeader(std_msgs::Header *header);
-
+    void shutdown();
+    void reset();
 
   private:
-    unsigned int seq;
-    tuple3d angular_velocity;
-    tuple3d linear_acceleration;
+    bool initial_pass;
+    Interface *sim;
+    int sensor_handle, link_handle;
+    const std::string sensor_name, link_name;
+    vrep_msgs::IMU imu;
+    ros::Time last_time;
+    double mass;
+    Eigen::Matrix<double, 4, 4> last_matrix;
+
     ros::NodeHandle *nh;
     ros::Publisher *publisher;
-
 };
 
 }

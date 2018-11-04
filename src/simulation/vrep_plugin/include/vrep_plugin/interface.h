@@ -3,8 +3,9 @@
 
 #include <vrep_library/v_repTypes.h>
 #include <string>
-#include <rosgraph_msgs/Clock.h>
 #include <tuple>
+#include <Eigen/Core>
+#include <ros/ros.h>
 
 namespace vrep_plugin
 {
@@ -29,7 +30,7 @@ class Interface
     void removeModel(int handle);
     void disableErrorReporting();
     void resumeErrorReporting();
-    rosgraph_msgs::Clock getSimulationTime();
+    ros::Time getSimulationTime();
     int findObjectInTree(int base_handle, const std::string &name, int type);
     void setObjectPosition(int handle, int relative_to_handle,
         double x, double y, double z);
@@ -38,6 +39,9 @@ class Interface
     tuple3d getObjectPosition(int handle, int relative_to_handle);
     tuple3d getObjectOrientation(int handle, int relative_to_handle);
     tuple3d getObjectSize(int handle);
+    std::pair<tuple3d, tuple3d> readForceSensor(int handle);
+    double getMass(int handle);
+    Eigen::Matrix<double, 4, 4> getObjectMatrix(int handle, int relative_to_handle = -1);
     double getFloatParameter(int handle, int parameter_id);
     void setParameter(int handle, int parameter_id, double value);
     void setParameter(int parameter_id, bool value);
@@ -81,6 +85,11 @@ class Interface
     simInt vSimStopSimulation();
     void vSimQuitSimulator(simBool do_not_display_messages);
     simInt vSimSetBoolParameter(simInt parameter, simBool state);
+    simInt vSimReadForceSensor(simInt handle, simFloat *force, simFloat *torque);
+    simInt vSimGetShapeMassAndInertia(simInt handle, simFloat *mass,
+        simFloat *inertiaMatrix, simFloat *center_of_mass, simFloat *transformation);
+    simInt vSimGetObjectMatrix(simInt handle, simInt relative_to_handle, simFloat *object_matrix);
+
 };
 
 }

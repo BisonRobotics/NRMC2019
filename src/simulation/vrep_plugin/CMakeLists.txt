@@ -11,18 +11,23 @@ find_package(catkin REQUIRED COMPONENTS
   driver_access
 )
 
-catkin_package(CATKIN_DEPENDS
-  roslib
-  rostime
-  rosconsole
-  rospack
-  roscpp
-  roscpp_serialization
-  tf
-  vrep_msgs
+find_package(Eigen3 REQUIRED)
+
+catkin_package(
+  CATKIN_DEPENDS
+    roslib
+    rostime
+    rosconsole
+    rospack
+    roscpp
+    roscpp_serialization
+    tf
+    vrep_msgs
+  DEPENDS
+    EIGEN3
 )
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 add_library(vrep_interface src/vrep_plugin/interface.cpp)
 add_dependencies(vrep_interface ${catkin_EXPORTED_TARGETS})
@@ -34,13 +39,14 @@ target_link_libraries(vrep_drivers ${catkin_LIBRARIES})
 
 add_library(vrep_imu src/vrep_plugin/imu.cpp)
 add_dependencies(vrep_imu ${catkin_EXPORTED_TARGETS})
-target_link_libraries(vrep_imu ${catkin_LIBRARIES})
+target_link_libraries(vrep_imu ${catkin_LIBRARIES} ${Eigen3_LIBRARIES})
 
 add_library(vrep_server src/vrep_plugin/server.cpp src/vrep_plugin/robot.cpp)
 add_dependencies(vrep_server ${catkin_EXPORTED_TARGETS})
 target_link_libraries(vrep_server
   vrep_drivers
   vrep_interface
+  vrep_imu
   pthread
   dl
   boost_system
