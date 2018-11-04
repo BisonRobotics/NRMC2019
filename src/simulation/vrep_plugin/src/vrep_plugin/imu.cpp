@@ -64,29 +64,29 @@ void IMU::updateState()
   {
     Matrix<double, 4, 4> m = last_matrix.inverse() * matrix;
     Matrix<double, 3, 3> m3 = m.block<3,3>(0,0);
-    Eigen::Vector3d angles = m3.eulerAngles(0, 1, 2);
+    Eigen::Vector3d angular_difference = m3.eulerAngles(0, 1, 2);
     // TODO find better way of checking for wrap around
-    //std::cout << std::endl << "Angles1: " << angles(0) << " " << angles(1) << " " << angles(2) << std::endl;
+    //std::cout << std::endl << "Angles1: " << angular_difference(0) << " " << angular_difference(1) << " " << angular_difference(2) << std::endl;
     for (int i = 0; i < 3; i++)
     {
-      if (angles(i) > M_PI / 2.0)
+      if (angular_difference(i) > M_PI / 2.0)
       {
-        angles(i) = angles(i) - M_PI;
+        angular_difference(i) = angular_difference(i) - M_PI;
       }
-      else if (angles(i) < -M_PI / 2.0)
+      else if (angular_difference(i) < -M_PI / 2.0)
       {
-        angles(i) = angles(i) + M_PI;
+        angular_difference(i) = angular_difference(i) + M_PI;
       }
     }
-    //std::cout << "Angles2: " << angles(0) << " " << angles(1) << " " << angles(2) << std::endl;
-    imu.angular_velocity.x = angles(0) / dt;
-    imu.angular_velocity.y = angles(1) / dt;
-    imu.angular_velocity.z = angles(2) / dt;
+    //std::cout << "Angles2: " << angular_difference(0) << " " << angular_difference(1) << " " << angular_difference(2) << std::endl;
+    imu.angular_velocity.x = angular_difference(0) / dt;
+    imu.angular_velocity.y = angular_difference(1) / dt;
+    imu.angular_velocity.z = angular_difference(2) / dt;
   }
   imu.header.stamp = ros::Time::now();
   imu.header.seq++;
-  imu.linear_acceleration.x = get<0>(force) / mass;
-  imu.linear_acceleration.y = get<1>(force) / mass;
+  imu.linear_acceleration.x = -1.0 * get<0>(force) / mass;
+  imu.linear_acceleration.y = -1.0 * get<1>(force) / mass;
   imu.linear_acceleration.z = get<2>(force) / mass;
 
   last_matrix = matrix;

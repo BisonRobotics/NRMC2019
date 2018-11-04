@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   tf2_sensor_msgs
   tf2_geometry_msgs
+  vrep_msgs
 )
 
 link_directories(/usr/src/gmock/build)
@@ -33,7 +34,7 @@ set(GTEST_LIBRARIES gmock_main)
 catkin_package(
   INCLUDE_DIRS include/
   LIBRARIES lpresearch_imu apriltag_tracker_interface
-#  CATKIN_DEPENDS roscpp tf2_geometry_msgs tf2 tf2_ros
+  CATKIN_DEPENDS vrep_msgs
   DEPENDS
 )
 
@@ -47,7 +48,11 @@ include_directories(
  include ${catkin_INCLUDE_DIRS}
 )
 
-
+add_library (vrep_imu_access src/vrep_imu/vrep_imu.cpp)
+add_dependencies(vrep_imu_access ${catkin_EXPORTED_TARGETS})
+target_link_libraries (vrep_imu_access ${catkin_LIBRARIES})
+add_executable(vrep_imu_test_node src/vrep_imu/vrep_imu_test_node.cpp)
+target_link_libraries(vrep_imu_test_node vrep_imu_access ${catkin_LIBRARIES})
 
 add_library (lpresearch_imu src/lp_research/lpresearchimu.cpp)
 target_link_libraries (lpresearch_imu ${catkin_LIBRARIES})
@@ -56,7 +61,6 @@ target_link_libraries (lpresearch_integration_test lpresearch_imu ${catkin_LIBRA
 
 add_library (apriltag_tracker_interface src/apriltag_tracker_interface/apriltag_tracker_interface.cpp)
 target_link_libraries (apriltag_tracker_interface ${catkin_LIBRARIES})
-
 
 add_executable(apriltag_integration_test tests/apriltag_integration.cpp)
 target_link_libraries(apriltag_integration_test apriltag_tracker_interface ${catkin_LIBRARIES})
