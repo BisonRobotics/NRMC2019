@@ -4,3 +4,4 @@ navigation_msgs/Point2D p2
 navigation_msgs/Point2D p3
 float64 path_cost
 float64 min_radius
+byte direction_of_travel

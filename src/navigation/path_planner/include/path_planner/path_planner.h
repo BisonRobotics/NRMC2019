@@ -10,7 +10,6 @@
 
 namespace path_planner
 {
-
 using occupancy_grid::Point;
 using occupancy_grid::OccupancyGrid;
 using occupancy_grid::Bezier;

@@ -10,6 +10,7 @@
 
 #include <vrep_library/v_repLib.h>
 #include <vrep_drivers/driver_wheel.h>
+#include <vrep_plugin/imu.h>
 
 namespace vrep_plugin
 {
@@ -30,7 +31,7 @@ class Robot
 {
   public:
 
-    Robot(Interface *sim_interface);
+    explicit Robot(Interface *sim_interface);
 
     void initialize(std::string model_file);
     void spawnRobot();
@@ -38,9 +39,10 @@ class Robot
     void checkState();
     void loadModel();
     void getPose(geometry_msgs::Pose *pose);
-    void updateWheelHandles();
+    void updateHandles();
     void spinOnce();
     void shutdown();
+    void reset();
 
   private:
     Interface *sim;
@@ -48,6 +50,7 @@ class Robot
     int base_link_handle;
     std::string model_file;
     WheelDriver fl, bl, fr, br;
+    IMU imu;
 
     void loadModelHelper();
 };

@@ -12,7 +12,7 @@ using std::to_string;
 using std::get;
 
 Robot::Robot(Interface *sim) :
-    sim(sim), handle(-1), model_file(""),
+    sim(sim), handle(-1), model_file(""), imu(sim, 1),
     fl(sim, ID::front_left_wheel), fr(sim, ID::front_right_wheel),
     br(sim, ID::back_right_wheel), bl(sim, ID::back_left_wheel) {}
 
@@ -38,7 +38,7 @@ void Robot::spawnRobot(double x, double y, double rotation)
   loadModel();
   sim->setObjectPosition(handle, -1, x, y, 0);
   sim->setObjectOrientation(handle, -1, 0, 0, rotation);
-  updateWheelHandles();
+  updateHandles();
 }
 
 void Robot::checkState()
@@ -84,12 +84,13 @@ void Robot::loadModel()
   }
 }
 
-void Robot::updateWheelHandles()
+void Robot::updateHandles()
 {
   fl.initialize();
   fr.initialize();
   br.initialize();
   bl.initialize();
+  imu.initialize();
 }
 
 void Robot::getPose(geometry_msgs::Pose *pose)
@@ -115,6 +116,7 @@ void Robot::spinOnce()
   fr.updateState();
   br.updateState();
   bl.updateState();
+  imu.updateState();
   fl.setPoint();
   fr.setPoint();
   br.setPoint();
@@ -128,6 +130,11 @@ void Robot::shutdown()
   fr.shutdown();
   br.shutdown();
   bl.shutdown();
+}
+
+void Robot::reset()
+{
+  imu.reset();
 }
 
 

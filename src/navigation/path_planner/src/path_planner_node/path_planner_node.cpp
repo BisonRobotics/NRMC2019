@@ -15,6 +15,7 @@
 #include <navigation_msgs/PlanPath.h>
 #include <navigation_msgs/BezierSegment.h>
 #include <navigation_msgs/FollowPathAction.h>
+#include <navigation_msgs/direction.h>
 #include <occupancy_grid/occupancy_grid.h>
 #include <occupancy_grid_ros/occupancy_grid_ros.h>
 #include <actionlib/client/simple_action_client.h>
@@ -28,6 +29,7 @@ using navigation_msgs::FollowPathGoal;
 using navigation_msgs::FollowPathFeedbackConstPtr;
 using navigation_msgs::FollowPathResultConstPtr;
 using actionlib::SimpleActionClient;
+using navigation_msgs::Direction;
 
 occupancy_grid::OccupancyGrid *map;
 ros::Publisher *path_publisher;
@@ -83,6 +85,7 @@ bool planPath(navigation_msgs::PlanPath::Request &req,
     segment_1.p3.y = best_curve.p3.y;
     segment_1.path_cost = best_curve.path_cost;
     segment_1.min_radius = best_curve.min_radius(20);
+    segment_1.direction_of_travel = static_cast<int8_t>(Direction::forward);
 
     res.path.push_back(segment_1);
 

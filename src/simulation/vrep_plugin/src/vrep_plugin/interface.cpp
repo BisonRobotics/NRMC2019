@@ -6,6 +6,12 @@
 
 using namespace vrep_plugin;
 
+using std::to_string;
+using std::make_tuple;
+using std::make_pair;
+using std::pair;
+using Eigen::Matrix;
+
 Interface::Interface() : last_error_mode(0) {}
 
 void Interface::setJointPosition(int object_handle, double position)
@@ -13,7 +19,7 @@ void Interface::setJointPosition(int object_handle, double position)
   if (vSimSetJointPosition((simInt) object_handle, (simFloat) position) == -1)
   {
     throw vrep_error("[Interface::setPosition]: Unable to set position for object: "
-                     + std::to_string(object_handle));
+                     + to_string(object_handle));
   }
 }
 
@@ -27,7 +33,7 @@ void Interface::setVelocity(int object_handle, double velocity)
   if (vSimSetJointTargetVelocity((simInt) object_handle, (simFloat) velocity) == -1)
   {
     throw vrep_error("[Interface::setVelocity]: Unable to set velocity for object: "
-                     + std::to_string(object_handle));
+                     + to_string(object_handle));
   }
 }
 
@@ -37,7 +43,7 @@ double Interface::getPosition(int object_handle)
   if (vSimGetJointPosition((simInt) object_handle, &position) == -1)
   {
     throw vrep_error("[Interface::getPosition]: Unable to get position for object: "
-                     + std::to_string(object_handle));
+                     + to_string(object_handle));
   }
   return position;
 }
@@ -48,7 +54,7 @@ double Interface::getEffort(int object_handle)
   if (vSimGetJointForce((simInt) object_handle, &effort) == -1)
   {
     throw vrep_error("[Interface::getEffort]: Unable to get effort for object: "
-                     + std::to_string(object_handle));
+                     + to_string(object_handle));
   }
   return effort;
 }
@@ -59,7 +65,7 @@ double Interface::getVelocity(int object_handle)
   if (vSimGetObjectFloatParameter(object_handle, sim_jointfloatparam_velocity, &velocity) == -1)
   {
     throw vrep_error("[Interface::getVelocity]: Unable to get velocity for object: "
-                     + std::to_string(object_handle));
+                     + to_string(object_handle));
   }
   return velocity;
 }
@@ -108,19 +114,15 @@ void Interface::resumeErrorReporting()
   }
 }
 
-rosgraph_msgs::Clock Interface::getSimulationTime()
+ros::Time Interface::getSimulationTime()
 {
-  simFloat sim_time_f = vSimGetSimulationTime();
-  if (sim_time_f < 0.0f)
+  simFloat sim_time = vSimGetSimulationTime();
+  if (sim_time < 0.0f)
   {
     throw vrep_error("[Interface::getSimulationTime]: "
                      "Unable to get simulation time");
   }
-  ros::Time sim_time(sim_time_f);
-  rosgraph_msgs::Clock sim_time_msg;
-  sim_time_msg.clock.nsec = sim_time.nsec;
-  sim_time_msg.clock.sec = sim_time.sec;
-  return sim_time_msg;
+  return ros::Time(sim_time);
 }
 
 void Interface::info(const std::string &message)
@@ -192,7 +194,7 @@ void Interface::removeModel(int object_handle)
   if (vSimRemoveModel(object_handle) == -1)
   {
     throw vrep_error("[Interface::removeModel]: Unable to remove model: " +
-                     std::to_string(object_handle));
+                     to_string(object_handle));
   }
 }
 
@@ -203,7 +205,7 @@ void Interface::setObjectPosition(int handle, int relative_to_handle,
   if (vSimSetObjectPosition((simInt)handle, (simInt)relative_to_handle, position) == -1)
   {
     throw vrep_error("[Interface::setObjectPosition]: "
-                     "Unable to set object position: " + std::to_string(handle));
+                     "Unable to set object position: " + to_string(handle));
   }
 }
 
@@ -213,7 +215,7 @@ void Interface::setObjectOrientation(int handle, int relative_to_handle, double 
   if (vSimSetObjectOrientation((simInt)handle, (simInt)relative_to_handle, orientation) == -1)
   {
     throw vrep_error("[Interface::setObjectOrientation]: "
-                     "Unable to set object orientation: " + std::to_string(handle));
+                     "Unable to set object orientation: " + to_string(handle));
   }
 }
 
@@ -256,9 +258,9 @@ double Interface::getFloatParameter(int handle, int parameter_id)
   if (vSimGetObjectFloatParameter((simInt)handle, (simInt)parameter_id, &parameter) == -1)
   {
     info("[Interface::getFloatParameter]: "
-         "Unable to get parameter: " + std::to_string(parameter_id));
+         "Unable to get parameter: " + to_string(parameter_id));
     throw vrep_error("[Interface::getFloatParameter]: "
-                     "Unable to get parameter: " + std::to_string(parameter_id));
+                     "Unable to get parameter: " + to_string(parameter_id));
   }
   return (double)parameter;
 }
@@ -268,8 +270,8 @@ void Interface::setParameter(int handle, int parameter_id, double value)
   if (vSimSetObjectFloatParameter((simInt) handle, (simInt) parameter_id, (simFloat) value) == -1)
   {
     throw vrep_error("[Interface::setParameter]: "
-                     "Unable to set parameter: " + std::to_string(parameter_id) +
-                     " to: " + std::to_string(value));
+                     "Unable to set parameter: " + to_string(parameter_id) +
+                     " to: " + to_string(value));
   }
 }
 
@@ -278,9 +280,61 @@ void Interface::setParameter(int parameter_id, bool value)
   if (vSimSetBoolParameter((simInt) parameter_id, (simBool) value) == -1)
   {
     throw vrep_error("[Interface::setParameter]: "
-                     "Unable to set parameter: " + std::to_string(parameter_id) +
-                     " to: " + std::to_string(value));
+                     "Unable to set parameter: " + to_string(parameter_id) +
+                     " to: " + to_string(value));
   }
+}
+
+pair<tuple3d, tuple3d> Interface::readForceSensor(int handle)
+{
+  simFloat v_force[3], v_torque[3];
+  if (vSimReadForceSensor((simInt) handle, v_force, v_torque) == -1)
+  {
+    throw vrep_error("[Interface::readForceSensor]: "
+                     "Unable to read sensor: " + to_string(handle));
+  }
+  tuple3d force = make_tuple(v_force[0], v_force[1], v_force[2]);
+  tuple3d torque = make_tuple(v_torque[0], v_torque[1], v_torque[2]);
+  return make_pair(force, torque);
+}
+
+
+double Interface::getMass(int handle)
+{
+  simFloat mass, inertia_matrix[9], center_of_mass[3];
+  if (vSimGetShapeMassAndInertia((simInt)handle, &mass, inertia_matrix, center_of_mass, NULL) == -1)
+  {
+    throw vrep_error("[Interface::getMass]: Unable to get mass for: " + to_string(handle));
+  }
+  return mass;
+}
+
+Matrix<double, 4, 4> Interface::getObjectMatrix(int handle, int relative_to_handle)
+{
+  simFloat sim_object_matrix[12];
+  if (vSimGetObjectMatrix((simInt)handle, (simInt)relative_to_handle, sim_object_matrix) == -1)
+  {
+    throw vrep_error("[Interface::getObjectMatrix]: Unable to get object matrix for: "
+                     + to_string(handle));
+  }
+  Matrix<double, 4, 4> matrix;
+  matrix(0, 0) = (double)sim_object_matrix[0];
+  matrix(0, 1) = (double)sim_object_matrix[1];
+  matrix(0, 2) = (double)sim_object_matrix[2];
+  matrix(0, 3) = (double)sim_object_matrix[3];
+  matrix(1, 0) = (double)sim_object_matrix[4];
+  matrix(1, 1) = (double)sim_object_matrix[5];
+  matrix(1, 2) = (double)sim_object_matrix[6];
+  matrix(1, 3) = (double)sim_object_matrix[7];
+  matrix(2, 0) = (double)sim_object_matrix[8];
+  matrix(2, 1) = (double)sim_object_matrix[9];
+  matrix(2, 2) = (double)sim_object_matrix[10];
+  matrix(2, 3) = (double)sim_object_matrix[11];
+  matrix(3, 0) = 0.0;
+  matrix(3, 1) = 0.0;
+  matrix(3, 2) = 0.0;
+  matrix(3, 3) = 1.0;
+  return matrix;
 }
 
 void Interface::startSimulation()
@@ -453,3 +507,18 @@ simInt Interface::vSimSetBoolParameter(simInt parameter, simBool state)
   return simSetBoolParameter(parameter, state);
 }
 
+simInt Interface::vSimReadForceSensor(simInt handle, simFloat *force, simFloat *torque)
+{
+  return simReadForceSensor(handle, force, torque);
+}
+
+simInt Interface::vSimGetShapeMassAndInertia(simInt handle, simFloat *mass, simFloat *inertiaMatrix,
+                                             simFloat *center_of_mass, simFloat *transformation)
+{
+  return simGetShapeMassAndInertia(handle, mass, inertiaMatrix, center_of_mass, transformation);
+}
+
+simInt Interface::vSimGetObjectMatrix(simInt handle, simInt relative_to_handle, simFloat *object_matrix)
+{
+  return simGetObjectMatrix(handle, relative_to_handle, object_matrix);
+}
