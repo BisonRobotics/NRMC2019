@@ -374,10 +374,10 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
     superLocalizer.updateStateVector(loopTime.toSec());
     stateVector = superLocalizer.getStateVector();
-    DriveController_ns::robot_state_vector sv;
-    sv.x = stateVector.x_pos;
-    sv.y = stateVector.y_pos;
-    sv.theta = stateVector.theta;
+    //DriveController_ns::robot_state_vector sv;
+    //sv.x = stateVector.x_pos;
+    //sv.y = stateVector.y_pos;
+    //sv.theta = stateVector.theta;
 
     tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
 
@@ -389,7 +389,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
        newWaypointHere = false;
    }
     // update controller
-     dc.update(sv, loopTime.toSec());
+     dc.update(stateVector, loopTime.toSec());
 
   ROS_INFO("Paths on Stack: %d", dc.getPPaths());
   if (dc.getPPaths() >=1)
@@ -406,14 +406,14 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
     // Publish result
     FollowPathResult result;
-    result.pose.position.x = sv.x;
-    result.pose.position.y = sv.y;
+    result.pose.position.x = stateVector.x_pos;
+    result.pose.position.y = stateVector.y_pos;
     result.pose.position.z = 0.0;
 
-    result.pose.orientation.w = std::cos(.5*sv.theta);
+    result.pose.orientation.w = std::cos(.5*stateVector.theta);
     result.pose.orientation.x = 0;
     result.pose.orientation.y = 0;
-    result.pose.orientation.z = std::sin(.5*sv.theta);
+    result.pose.orientation.z = std::sin(.5*stateVector.theta);
     result.status = 0;
     server->setSucceeded(result);
     doing_path = false;
