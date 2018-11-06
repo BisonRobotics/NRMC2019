@@ -29,10 +29,15 @@ for t = linspace(0,1,100)
     pathY(index) = (1-t)^3 * P0(2) + 3*(1-t)^2 *t*P1(2) + 3*(1-t)*t^2 *P2(2) + t^3 * P3(2);
 end
 
-[theta,lengths] = getAngleInfo(P0, P1, P2, P3, chopsize);
+
+
+[othertheta,omega, alpha, lengths] = getAngleInfo(P0, P1, P2, P3, chopsize);
+theta(1,:) = othertheta;
+theta(2,:) = omega;
+theta(3,:) = alpha;
 length = sum(lengths(1,:));
 
-robotStates = [1,1.2,0,0,0];
+robotStates = [1,1.2,0,0,0]; %x, y, theta, left, right
 setSpeed = .7;
 speedCmd = 0;
 speedGain = 3;
@@ -99,7 +104,15 @@ for t = 0:dt:totalTime
                                           robotAxelLength, 2);
     
     %TODO add noise and disturbances
-    robotStates = robotdynamics(robotStates, leftCommand, rightCommand, dt, robotAxelLength, 8);
+    disturbanceL = 1;
+    disturbanceR = 1;
+    if (t >= 3 && t <=3.3)
+        disturbanceL = .1;
+    end
+    if (t >= 2.2 && t <=2.6)
+        disturbanceR = 0;
+    end
+    robotStates = robotdynamics(robotStates, disturbanceL*leftCommand, disturbanceR*rightCommand, dt, robotAxelLength, 8);
     
     wheelCmdPlot(:, plotIndex) = [leftCommand, rightCommand];
     wheelVelPlot(:, plotIndex) = [robotStates(4); robotStates(5)];

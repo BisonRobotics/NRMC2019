@@ -12,8 +12,10 @@ time = 0:dt:10;
 
 x_est = x;
 x_mea = zeros(2,1);
-arm_length = .5;
-arm_mass = 5;
+arm_length = .5;%cg at 16 in ~ 14 in if it is uncurled ~18 in
+arm_mass = 5; %9 pounds unloaded 34 pounds loaded
+gravity_torque_est = arm_mass * arm_length * cos(x_est(1));
+
 
 U = 0;
 

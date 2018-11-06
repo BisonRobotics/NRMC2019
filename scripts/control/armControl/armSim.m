@@ -2,7 +2,7 @@
 %theta', theta'') the torque on the motor, dt, and the length and mass of
 %the arm
 
-function [x] = armSim(x_prev, torque, dt, length, m)
+function [x] = armSim(x_prev, torque, dt, length, mass)
 Tg = -mass * length * cos(x_prev(1)); %torque due to gravity
 x(3) = (Tg - torque) / mass;
 x(2) = x_prev(2) + x(3) * dt;
