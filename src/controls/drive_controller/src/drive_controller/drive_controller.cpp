@@ -5,7 +5,7 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
 : front_right_wheel(fr), front_left_wheel (fl), back_left_wheel(bl), back_right_wheel(br),
   p_theta(Gchopsize), p_omega(Gchopsize), p_alpha(Gchopsize), p_lengths(Gchopsize),
   p_x(Gchopsize), p_y(Gchopsize), p_length(0), p_paths(0), p_last_closest_t(0), p_closest_t(0),
-  p_speed_cmd(0)
+  p_speed_cmd(0), p_prev_UlUr(0,0), p_prev_theta(0)
 {
 
 
@@ -103,6 +103,29 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       front_left_wheel->setLinearVelocity(UlUr.first);
       back_left_wheel->setLinearVelocity(UlUr.first);
       back_right_wheel->setLinearVelocity(UlUr.second);
+
+      //Model calculations
+      double m_dxyth[3];
+      firstOrderModel(UlUr, sv.theta, dt, m_dxyth);
+      double temp[3];
+      firstOrderModel(p_prev_UlUr, p_prev_theta, dt, temp);
+      double m_ddxyth[3];
+      for (int index=0;index<3;index++) 
+      {
+         m_ddxyth[index] = m_dxyth[index] - temp[index];
+      }
+      delta.x_pos = m_dxyth[0];
+      delta.y_pos = m_dxyth[1];
+      delta.theta = m_dxyth[2];
+      delta.x_vel = m_ddxyth[0];
+      delta.y_vel = m_ddxyth[1];
+      delta.omega = m_ddxyth[2];
+      delta.x_accel = 0;
+      delta.y_accel = 0;
+      delta.alpha = 0;
+      
+      p_prev_UlUr = UlUr;
+      p_prev_theta = sv.theta;
     }
 
   return true;
@@ -115,6 +138,42 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
     back_right_wheel->setLinearVelocity(0);
     return false;
   }
+}
+
+void DriveController::firstOrderModel(std::pair<double, double> UlUr, double world_theta, double dt, double *xyth)
+{
+
+      double m_r_x_rot1;
+      double m_r_y_rot1;
+      double m_dx;
+      double m_dy;
+      double m_dth;
+      double m_omega = (UlUr.second - UlUr.first)/Axelsize;
+      if (std::abs(m_omega) > .01)
+      {
+        double m_R = Axelsize/2.0 * (UlUr.first + UlUr.second)/(UlUr.second - UlUr.first);
+        m_r_x_rot1 =  m_R * std::sin(m_omega * dt);
+        m_r_y_rot1 = -m_R * std::cos(m_omega * dt) + m_R;
+        m_dx = std::cos(world_theta)*m_r_x_rot1 - std::sin(world_theta)*m_r_y_rot1;
+        m_dy = std::sin(world_theta)*m_r_x_rot1 - std::cos(world_theta)*m_r_y_rot1;
+        m_dth = m_omega * dt;
+      }
+      else
+      {
+        m_r_x_rot1 = .5*(UlUr.first + UlUr.second);
+        m_r_y_rot1 = 0;
+        m_dx = std::cos(world_theta)*m_r_x_rot1 - std::sin(world_theta)*m_r_y_rot1;
+        m_dy = std::sin(world_theta)*m_r_x_rot1 - std::cos(world_theta)*m_r_y_rot1;
+        m_dth = 0;
+      }
+     xyth[0] = m_dx;
+     xyth[1] = m_dy;
+     xyth[2] = m_dth;
+}
+
+LocalizerInterface::stateVector DriveController::getDeltaStateVector()
+{
+  return delta;
 }
 
 double DriveController::getPClosestT()

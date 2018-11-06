@@ -28,6 +28,7 @@ public:
    void addPath(DriveController_ns::bezier_path path);
    void haltAndAbort();
    bool update(LocalizerInterface::stateVector sv, double dt);
+   LocalizerInterface::stateVector getDeltaStateVector();
    double getPClosestT();
    int getPPaths();
 //protected:
@@ -45,6 +46,7 @@ public:
                                          std::vector<double>  &x, 
                                          std::vector<double>  &y,
                                          std::vector<double> &theta, int chopsize);
+   void firstOrderModel(std::pair<double, double> UlUr, double world_theta, double dt, double *xyth);
    
 private:
   static const int Gchopsize = 100;
@@ -63,4 +65,8 @@ private:
   double p_closest_t;
 
   double p_speed_cmd;
+
+  LocalizerInterface::stateVector delta;
+  std::pair<double,double> p_prev_UlUr;
+  double p_prev_theta;
 };
