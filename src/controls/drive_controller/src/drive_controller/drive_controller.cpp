@@ -36,7 +36,7 @@ void DriveController::haltAndAbort()
 }
 
 
-bool DriveController::update(DriveController_ns::robot_state_vector sv, double dt)
+bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
 {
   if (p_paths > 0)
   {
@@ -60,7 +60,7 @@ bool DriveController::update(DriveController_ns::robot_state_vector sv, double d
         {steering = (2/Axelsize) * (right_speed - left_speed)/(left_speed + right_speed);}
   //find closest index and path error
     p_last_closest_t = p_closest_t;
-    std::pair<double, double> par_and_err = findCPP2019(sv.x, sv.y, p_x, p_y, p_theta, Gchopsize);
+    std::pair<double, double> par_and_err = findCPP2019(sv.x_pos, sv.y_pos, p_x, p_y, p_theta, Gchopsize);
     p_closest_t = par_and_err.first;
     double path_error = par_and_err.second;
     if (p_closest_t < p_last_closest_t)

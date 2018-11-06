@@ -57,8 +57,8 @@ include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/inc
 ## Build libraries
 add_library(drive_controller
         src/drive_controller/drive_controller.cpp)
-add_dependencies(drive_controller vesc_access ${catkin_EXPORTED_TARGETS})
-target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access)
+add_dependencies(drive_controller vesc_access localization ${catkin_EXPORTED_TARGETS})
+target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access ${localization_LIBRARIES})
 
 #############
 ## Install ##
