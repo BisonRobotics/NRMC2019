@@ -48,16 +48,16 @@ include_directories(
  include ${catkin_INCLUDE_DIRS}
 )
 
-add_library (vrep_imu_access src/vrep/vrep_imu.cpp)
+add_library (vrep_imu_access src/vrep_access/vrep_imu.cpp)
 add_dependencies(vrep_imu_access ${catkin_EXPORTED_TARGETS})
 target_link_libraries (vrep_imu_access ${catkin_LIBRARIES})
-add_executable(vrep_imu_test_node src/vrep/vrep_imu_test_node.cpp)
+add_executable(vrep_imu_test_node src/vrep_access/vrep_imu_test_node.cpp)
 target_link_libraries(vrep_imu_test_node vrep_imu_access ${catkin_LIBRARIES})
 
-add_library (vrep_position_access src/vrep/vrep_position_sensor.cpp)
+add_library (vrep_position_access src/vrep_access/vrep_position_sensor.cpp)
 add_dependencies(vrep_position_access ${catkin_EXPORTED_TARGETS})
 target_link_libraries (vrep_position_access ${catkin_LIBRARIES})
-add_executable(vrep_position_test_node src/vrep/vrep_position_test_node.cpp)
+add_executable(vrep_position_test_node src/vrep_access/vrep_position_test_node.cpp)
 target_link_libraries(vrep_position_test_node vrep_position_access ${catkin_LIBRARIES})
 
 add_library (lpresearch_imu src/lp_research/lpresearchimu.cpp)
