@@ -13,7 +13,7 @@
 
 function [Ul,Ur] = sscv4(speed, steering, AxelLen, MaxSpeed)
 
-if (abs (steering) < 1000)
+if (abs (steering) < 1000 && abs(steering) > .01)
   Ul = (4*(1/steering)*speed/(AxelLen) - 2*speed)*AxelLen/((1/steering)*4);
   Ur = 2*(speed) - Ul;
   
@@ -23,9 +23,12 @@ if (abs (steering) < 1000)
       Ul = (4*(1/steering)*speed/(AxelLen) - 2*speed)*AxelLen/((1/steering)*4);
       Ur = 2*(speed) - Ul;
   end
-else
+elseif (abs (steering) <= 1000)
   Ul = -.5*speed;
   Ur = .5*speed;
+elseif (abs(steering) <= .01)
+  Ul = speed;
+  Ur = speed;
 end
 
 end
