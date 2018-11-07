@@ -10,11 +10,8 @@
 #include <occupancy_grid/bezier.h>
 
 #include <geometry_msgs/Pose2D.h>
-//#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Empty.h>
-//#include <std_msgs/String.h>
-//#include <std_msgs/Float64.h>
 
 #include <driver_access/driver_access_interface.h>
 #include <vrep_driver_access/vrep_driver_access.h>
@@ -27,7 +24,6 @@
 #include <sensor_msgs/JointState.h>
 
 #include <visualization_msgs/Marker.h>
-//#include <imperio/DriveStatus.h>
 
 #include <sim_robot/sim_robot.h>
 
@@ -374,50 +370,46 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
     superLocalizer.updateStateVector(loopTime.toSec());
     stateVector = superLocalizer.getStateVector();
-    //DriveController_ns::robot_state_vector sv;
-    //sv.x = stateVector.x_pos;
-    //sv.y = stateVector.y_pos;
-    //sv.theta = stateVector.theta;
 
     tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
 
     ros_drivers.publish();
 
-   if (newWaypointHere)
-   {
-       dc.addPath(curr_path);
-       newWaypointHere = false;
-   }
+    if (newWaypointHere)
+    {
+      dc.addPath(curr_path);
+      newWaypointHere = false;
+    }
     // update controller
-     dc.update(stateVector, loopTime.toSec());
+    dc.update(stateVector, loopTime.toSec());
 
-  ROS_INFO("Paths on Stack: %d", dc.getPPaths());
-  if (dc.getPPaths() >=1)
-  {
-    // Provide feedback
-    FollowPathFeedback feedback;
-    feedback.deviation = 0.01;
-    feedback.progress = dc.getPClosestT();
-    server->publishFeedback(feedback);
-    doing_path = true;
-   }
-   else if (doing_path && dc.getPPaths() ==0/*last PPaths was >1 but this one is zero*/)
-  {
+    ROS_INFO("Paths on Stack: %d", dc.getPPaths());
+    if (dc.getPPaths() >=1)
+    {
+      // Provide feedback
+      FollowPathFeedback feedback;
+      feedback.deviation = 0.01;
+      feedback.progress = dc.getPClosestT();
+      server->publishFeedback(feedback);
+      doing_path = true;
+    }
+    else if (doing_path && dc.getPPaths() ==0/*last PPaths was >1 but this one is zero*/)
+    {
 
-    // Publish result
-    FollowPathResult result;
-    result.pose.position.x = stateVector.x_pos;
-    result.pose.position.y = stateVector.y_pos;
-    result.pose.position.z = 0.0;
+      // Publish result
+      FollowPathResult result;
+      result.pose.position.x = stateVector.x_pos;
+      result.pose.position.y = stateVector.y_pos;
+      result.pose.position.z = 0.0;
 
-    result.pose.orientation.w = std::cos(.5*stateVector.theta);
-    result.pose.orientation.x = 0;
-    result.pose.orientation.y = 0;
-    result.pose.orientation.z = std::sin(.5*stateVector.theta);
-    result.status = 0;
-    server->setSucceeded(result);
-    doing_path = false;
-  }
+      result.pose.orientation.w = std::cos(.5*stateVector.theta);
+      result.pose.orientation.x = 0;
+      result.pose.orientation.y = 0;
+      result.pose.orientation.z = std::sin(.5*stateVector.theta);
+      result.status = 0;
+      server->setSucceeded(result);
+      doing_path = false;
+    }
 
     if (halt)
     {
