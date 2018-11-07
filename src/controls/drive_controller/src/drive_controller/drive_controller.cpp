@@ -104,7 +104,9 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       back_left_wheel->setLinearVelocity(UlUr.first);
       back_right_wheel->setLinearVelocity(UlUr.second);
 
-      //Model calculations, what we predict will happen in the next frame
+      //Model calculations: what we predict will happen in the next frame.
+      //TODO: track disturbance on wheels, 
+      //      add estimated disturbance to wheel velocities here.
       double m_dxyth[3];
       firstOrderModel(UlUr, sv.theta, sv.omega, dt, m_dxyth);
       double temp[3];
@@ -112,7 +114,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       double m_ddxyth[3];
       for (int index=0;index<3;index++) 
       {
-         m_ddxyth[index] = m_dxyth[index] - temp[index];
+         m_ddxyth[index] = (m_dxyth[index] - temp[index])/dt;
       }
       delta.x_pos = m_dxyth[0];
       delta.y_pos = m_dxyth[1];
@@ -126,6 +128,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       
       p_prev_UlUr = UlUr;
       p_prev_theta = sv.theta;
+      p_prev_omega = sv.omega;
     }
 
   return true;
@@ -156,7 +159,7 @@ void DriveController::firstOrderModel(std::pair<double, double> UlUr, double wor
         m_r_y_rot1 = -m_R * std::cos(m_omega * dt) + m_R;
         m_dx = std::cos(world_theta)*m_r_x_rot1 - std::sin(world_theta)*m_r_y_rot1;
         m_dy = std::sin(world_theta)*m_r_x_rot1 - std::cos(world_theta)*m_r_y_rot1;
-        m_dth = m_omega * dt;
+        m_dth = ((UlUr.second - UlUr.first)/Axelsize) * dt;
       }
       else
       {
