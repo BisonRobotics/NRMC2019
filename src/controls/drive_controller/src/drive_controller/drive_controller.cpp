@@ -44,7 +44,8 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
                            + back_right_wheel->getLinearVelocity());
   double left_speed  = .5*(front_left_wheel->getLinearVelocity()  
                            + back_left_wheel->getLinearVelocity());
-  double speedMes = .25 * (right_speed + left_speed);
+  p_prev_UlUr.first = left_speed;
+  p_prev_UlUr.second = right_speed;
 
   double speed_gain =  1;  /*DNFW*/
   double set_speed  = .4;  /*DNFW*/
@@ -126,7 +127,6 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       delta.y_accel = 0;
       delta.alpha = 0;
       
-      p_prev_UlUr = UlUr;
       p_prev_theta = sv.theta;
       p_prev_omega = sv.omega;
     }
