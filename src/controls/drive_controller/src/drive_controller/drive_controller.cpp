@@ -5,7 +5,7 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
 : front_right_wheel(fr), front_left_wheel (fl), back_left_wheel(bl), back_right_wheel(br),
   p_theta(Gchopsize), p_omega(Gchopsize), p_alpha(Gchopsize), p_lengths(Gchopsize),
   p_x(Gchopsize), p_y(Gchopsize), p_length(0), p_paths(0), p_last_closest_t(0), p_closest_t(0),
-  p_speed_cmd(0), p_prev_UlUr(0,0), p_prev_theta(0)
+  p_speed_cmd(0), p_prev_UlUr(0,0), p_prev_theta(0), p_prev_omega(0)
 {
 
 
@@ -106,9 +106,9 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
 
       //Model calculations
       double m_dxyth[3];
-      firstOrderModel(UlUr, sv.theta, dt, m_dxyth);
+      firstOrderModel(UlUr, sv.theta, sv.omega, dt, m_dxyth);
       double temp[3];
-      firstOrderModel(p_prev_UlUr, p_prev_theta, dt, temp);
+      firstOrderModel(p_prev_UlUr, p_prev_theta, p_prev_omega, dt, temp);
       double m_ddxyth[3];
       for (int index=0;index<3;index++) 
       {
@@ -140,7 +140,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
   }
 }
 
-void DriveController::firstOrderModel(std::pair<double, double> UlUr, double world_theta, double dt, double *xyth)
+void DriveController::firstOrderModel(std::pair<double, double> UlUr, double world_theta, double omega_est, double dt, double *xyth)
 {
 
       double m_r_x_rot1;
@@ -148,7 +148,7 @@ void DriveController::firstOrderModel(std::pair<double, double> UlUr, double wor
       double m_dx;
       double m_dy;
       double m_dth;
-      double m_omega = (UlUr.second - UlUr.first)/Axelsize;
+      double m_omega = omega_est; //(UlUr.second - UlUr.first)/Axelsize;
       if (std::abs(m_omega) > .01)
       {
         double m_R = Axelsize/2.0 * (UlUr.first + UlUr.second)/(UlUr.second - UlUr.first);

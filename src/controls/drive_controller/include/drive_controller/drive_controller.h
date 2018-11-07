@@ -46,7 +46,7 @@ public:
                                          std::vector<double>  &x, 
                                          std::vector<double>  &y,
                                          std::vector<double> &theta, int chopsize);
-   void firstOrderModel(std::pair<double, double> UlUr, double world_theta, double dt, double *xyth);
+   void firstOrderModel(std::pair<double, double> UlUr, double world_theta, double omega_est, double dt, double *xyth);
    
 private:
   static const int Gchopsize = 100;
@@ -69,4 +69,5 @@ private:
   LocalizerInterface::stateVector delta;
   std::pair<double,double> p_prev_UlUr;
   double p_prev_theta;
+  double p_prev_omega;
 };
