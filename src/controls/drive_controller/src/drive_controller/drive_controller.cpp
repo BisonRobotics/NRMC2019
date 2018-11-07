@@ -104,7 +104,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       back_left_wheel->setLinearVelocity(UlUr.first);
       back_right_wheel->setLinearVelocity(UlUr.second);
 
-      //Model calculations
+      //Model calculations, what we predict will happen in the next frame
       double m_dxyth[3];
       firstOrderModel(UlUr, sv.theta, sv.omega, dt, m_dxyth);
       double temp[3];
