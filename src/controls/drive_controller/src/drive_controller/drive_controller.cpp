@@ -46,10 +46,10 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
                            + back_left_wheel->getLinearVelocity());
   double speedMes = .25 * (right_speed + left_speed);
 
-  double speed_gain = 1; /*DNFW*/
-  double set_speed = .4;   /*DNFW*/
+  double speed_gain =  1;  /*DNFW*/
+  double set_speed  = .4;  /*DNFW*/
   double angle_gain = 10;  /*DNFW*/ 
-  double path_gain = 50;  /*DNFW*/
+  double path_gain  = 50;  /*DNFW*/
   
 
   double steering = 0;
