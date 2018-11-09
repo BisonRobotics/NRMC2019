@@ -1,5 +1,6 @@
 #include <vesc_access/vesc_access.h>
 #include <vesc_access/ivesc_access.h>
+#include <localizer/localizer_interface.h>
 
 #include <vector>
 #include <utility>
@@ -18,19 +19,6 @@ typedef struct path_s
    double x4;
    double y4;
 } bezier_path;
-typedef struct robot_state_s
-{
-   double x;
-   double y;
-   double theta;
-   /*double dx;
-   double dy;
-   double omega;
-   double dx2;
-   double dy2;*/
-   //double l_wheel; //gets these from the VESC layer
-   //double r_wheel;
-} robot_state_vector;
 }
 
 class DriveController
@@ -39,7 +27,8 @@ public:
    DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *bl, iVescAccess *br);
    void addPath(DriveController_ns::bezier_path path);
    void haltAndAbort();
-   bool update(DriveController_ns::robot_state_vector sv, double dt);
+   bool update(LocalizerInterface::stateVector sv, double dt);
+   LocalizerInterface::stateVector getDeltaStateVector();
    double getPClosestT();
    int getPPaths();
 //protected:
@@ -57,6 +46,7 @@ public:
                                          std::vector<double>  &x, 
                                          std::vector<double>  &y,
                                          std::vector<double> &theta, int chopsize);
+   void firstOrderModel(std::pair<double, double> UlUr, double world_theta, double omega_est, double dt, double *xyth);
    
 private:
   static const int Gchopsize = 100;
@@ -75,4 +65,9 @@ private:
   double p_closest_t;
 
   double p_speed_cmd;
+
+  LocalizerInterface::stateVector delta;
+  std::pair<double,double> p_prev_UlUr;
+  double p_prev_theta;
+  double p_prev_omega;
 };
