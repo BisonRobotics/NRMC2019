@@ -7,8 +7,15 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
   p_x(Gchopsize), p_y(Gchopsize), p_length(0), p_paths(0), p_last_closest_t(0), p_closest_t(0),
   p_speed_cmd(0), p_prev_UlUr(0,0), p_prev_theta(0), p_prev_omega(0)
 {
-
-
+  delta.alpha = 0;
+  delta.omega = 0;
+  delta.theta = 0;
+  delta.x_accel = 0;
+  delta.y_accel = 0;
+  delta.x_vel = 0;
+  delta.y_vel = 0;
+  delta.x_pos = 0;
+  delta.y_pos = 0;
 }
 
 void DriveController::addPath(DriveController_ns::bezier_path path)
