@@ -32,7 +32,7 @@ set(GTEST_LIBRARIES gmock_main)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include/ 
-  LIBRARIES localizer_lib super_localizer_lib
+  LIBRARIES localizer_lib super_localizer_lib measurement_manager_lib
 #  CATKIN_DEPENDS nav_msgs roscpp
   DEPENDS EIGEN3 vesc_access sensor_access
 )
@@ -47,6 +47,8 @@ include_directories(
   ${GTEST_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
 )
+
+add_library(measurement_manager_lib src/measurement_manager/measurement_manager.cpp)
 
 add_library(localizer_lib src/localizer/localizer.cpp)
 add_dependencies(localizer_lib vesc_access lpresearch_imu )
