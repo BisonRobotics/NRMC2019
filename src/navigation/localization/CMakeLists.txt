@@ -32,7 +32,7 @@ set(GTEST_LIBRARIES gmock_main)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include/ 
-  LIBRARIES localizer_lib super_localizer_lib measurement_manager_lib
+  LIBRARIES localizer_lib super_localizer_lib ultra_localizer_lib measurement_manager_lib
 #  CATKIN_DEPENDS nav_msgs roscpp
   DEPENDS EIGEN3 vesc_access sensor_access
 )
@@ -61,6 +61,8 @@ add_dependencies(super_localizer_helper_lib localizer_lib apriltag_tracker_inter
 add_library(super_localizer_lib src/super_localizer/super_localizer.cpp)
 add_dependencies(super_localizer_lib localizer_lib apriltag_tracker_interface)
 target_link_libraries(super_localizer_lib localizer_lib super_localizer_helper_lib)
+
+add_library(ultra_localizer_lib src/ultra_localizer/ultra_localizer.cpp)
 
 add_library(PoseEstimateFilter src/pose_estimate_filter/pose_estimate_filter.cpp)
 target_link_libraries(PoseEstimateFilter ${Eigen3_LIBS})
