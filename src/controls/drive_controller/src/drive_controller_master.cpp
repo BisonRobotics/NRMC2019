@@ -35,6 +35,7 @@
 
 #define UPDATE_RATE_HZ 50.0
 bool newWaypointHere = false;
+bool forwardPoint = false;
 bool firstWaypointHere = true;
 bool halt = false;
 bool doing_path = false;
@@ -67,6 +68,7 @@ void newGoalCallback(const FollowPathGoalConstPtr &goal) //technically called in
   curr_path.x4 = segment.p3.x;
   curr_path.y4 = segment.p3.y;
 
+  forwardPoint = (segment.direction_of_travel == 1 ? true : false);
   newWaypointHere = true;
 }
 
@@ -380,13 +382,14 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
     if (newWaypointHere)
     {
-      dc.addPath(curr_path);
+      dc.addPath(curr_path, forwardPoint);
       newWaypointHere = false;
     }
     // update controller //Update lcoalizer or controller? what order?
     dc.update(stateVector, loopTime.toSec());
 
-    ROS_INFO("Paths on Stack: %d", dc.getPPaths());
+    ROS_INFO("Paths on Stack: %d, Current Fwd: %d", dc.getPPaths(), 
+             (forwardPoint ? 1 : 0));
     if (dc.getPPaths() >=1)
     {
       // Provide feedback
@@ -410,7 +413,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       result.pose.orientation.y = 0;
       result.pose.orientation.z = std::sin(.5*stateVector.theta);
       result.status = 0;
-      server->setSucceeded(result);
+      ROS_INFO("SETTING GOAL SUCCESS 111111: %d", dc.getPPaths());
+      if (server->isActive()) server->setSucceeded(result);
       doing_path = false;
     }
 
