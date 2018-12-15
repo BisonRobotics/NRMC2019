@@ -204,6 +204,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   ros::Time lastTime = ros::Time::now();
   ros::Time currTime;
 
+  //Need measurement manager in these if statements
   if (simulating)
   {
     sim = new SimRobot(0, 0, 0, .1);//.5, 1, .7, .1); //axel len, x, y, theta //this is temporary, its needed for the imu and pos
@@ -219,6 +220,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     br = new DriverVescCrossover(dbr, sim->getBRVesc());
     bl = new DriverVescCrossover(dbl, sim->getBLVesc());
 
+    //Use 
     imu = sim->getImu(); //if these can be replaced, we can get rid of the SimRobot
     //pos = sim->getPos();
   }
@@ -368,6 +370,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       tfBroad.sendTransform(create_sim_tf(pos->getX(), pos->getY(), pos->getTheta()));
     }
 
+    //ultra localizer goes here
     superLocalizer.updateStateVector(loopTime.toSec());
     stateVector = superLocalizer.getStateVector();
 
@@ -380,7 +383,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       dc.addPath(curr_path);
       newWaypointHere = false;
     }
-    // update controller
+    // update controller //Update lcoalizer or controller? what order?
     dc.update(stateVector, loopTime.toSec());
 
     ROS_INFO("Paths on Stack: %d", dc.getPPaths());
