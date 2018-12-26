@@ -58,7 +58,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
   double speed_gain =  1;  /*DNFW*/
   double set_speed  = .4;  /*DNFW*/
   double angle_gain = 4;  /*DNFW*/ 
-  double path_gain  = 0*10;  /*DNFW*/
+  double path_gain  = 2;  /*DNFW*/
   
 
   double steering = 0;
@@ -108,7 +108,8 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       std::pair<double, double> UlUr = speedSteeringControl(
                                       p_speed_cmd, 
                                       p_theta.at((int)(index_for_t) + t_jumps)
-                                       - (p_forward_point ? 1.0 : 0.05)*angle_gain*angle_error - path_gain*path_error,
+                                       - (p_forward_point ? 1.0 : -0.0)*angle_gain*angle_error 
+                                       - (p_forward_point ? 1.0 : -0.0)*path_gain*path_error,
                                        Axelsize, 2.0);
 
       if (p_forward_point)
@@ -120,10 +121,16 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       }
       else
       {
+/*
         front_right_wheel->setLinearVelocity((-1.0)*UlUr.second);
         front_left_wheel->setLinearVelocity((-1.0)*UlUr.first);
         back_left_wheel->setLinearVelocity((-1.0)*UlUr.first);
         back_right_wheel->setLinearVelocity((-1.0)*UlUr.second);
+*/
+        front_right_wheel->setLinearVelocity((-1.0)*UlUr.first);
+        front_left_wheel->setLinearVelocity((-1.0)*UlUr.second);
+        back_left_wheel->setLinearVelocity((-1.0)*UlUr.second);
+        back_right_wheel->setLinearVelocity((-1.0)*UlUr.first);
       }
       //Model calculations: what we predict will happen in the next frame.
       //TODO: track disturbance on wheels, 
@@ -135,7 +142,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       double m_ddxyth[3];
       for (int index=0;index<3;index++) 
       {
-         m_ddxyth[index] = (m_dxyth[index] - temp[index])/dt;
+         m_ddxyth[index] = (m_dxyth[index] - temp[index]);
       }
       delta.x_pos = m_dxyth[0];
       delta.y_pos = m_dxyth[1];
