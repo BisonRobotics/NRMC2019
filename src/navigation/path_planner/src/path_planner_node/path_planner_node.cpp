@@ -85,7 +85,9 @@ bool planPath(navigation_msgs::PlanPath::Request &req,
     segment_1.p3.y = best_curve.p3.y;
     segment_1.path_cost = best_curve.path_cost;
     segment_1.min_radius = best_curve.min_radius(20);
-    segment_1.direction_of_travel = static_cast<int8_t>(Direction::forward);
+    segment_1.direction_of_travel = req.goals[1].x > req.goals[0].x ?  //This is temp.
+                                    static_cast<int8_t>(Direction::forward) :
+                                    static_cast<int8_t>(Direction::reverse);
 
     res.path.push_back(segment_1);
 

@@ -20,7 +20,9 @@
 #include <vesc_access/vesc_access.h>
 #include <wheel_params/wheel_params.h>
 
-#include <super_localizer/super_localizer.h>
+//#include <super_localizer/super_localizer.h>
+#include <measurement_manager/measurement_manager.h>
+#include <ultra_localizer/ultra_localizer.h>
 #include <sensor_msgs/JointState.h>
 
 #include <visualization_msgs/Marker.h>
@@ -35,6 +37,7 @@
 
 #define UPDATE_RATE_HZ 50.0
 bool newWaypointHere = false;
+bool forwardPoint = false;
 bool firstWaypointHere = true;
 bool halt = false;
 bool doing_path = false;
@@ -47,7 +50,7 @@ using navigation_msgs::BezierSegment;
 using actionlib::SimpleActionServer;
 using occupancy_grid::Bezier;
 
-DriveController_ns::bezier_path curr_path; //eventually will be a vector of these.
+DriveController_ns::bezier_path curr_path;
 
 SimpleActionServer<FollowPathAction> *server;
 
@@ -67,6 +70,7 @@ void newGoalCallback(const FollowPathGoalConstPtr &goal) //technically called in
   curr_path.x4 = segment.p3.x;
   curr_path.y4 = segment.p3.y;
 
+  forwardPoint = (segment.direction_of_travel == 1 ? true : false);
   newWaypointHere = true;
 }
 
@@ -199,15 +203,16 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   driver_access::VREPDriverAccess *dfl, *dfr, *dbr, *dbl;
   ImuSensorInterface *imu;
   PosSensorInterface *pos;
+  MeasurementManager mm;
 
   // initialize the localizer here
   ros::Time lastTime = ros::Time::now();
   ros::Time currTime;
 
+  //Need measurement manager in these if statements
   if (simulating)
   {
     sim = new SimRobot(0, 0, 0, .1);//.5, 1, .7, .1); //axel len, x, y, theta //this is temporary, its needed for the imu and pos
-    pos = new AprilTagTrackerInterface("/vrep/pose", .1);
 
     driver_access::Limits limits(0, 0, 0, 1, 0, 1);
     dfl = new driver_access::VREPDriverAccess(limits, driver_access::ID::front_left_wheel,  driver_access::Mode::velocity);
@@ -219,8 +224,11 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     br = new DriverVescCrossover(dbr, sim->getBRVesc());
     bl = new DriverVescCrossover(dbl, sim->getBLVesc());
 
+    pos = new AprilTagTrackerInterface("/vrep/pose", .1);
     imu = sim->getImu(); //if these can be replaced, we can get rid of the SimRobot
     //pos = sim->getPos();
+    mm.giveImu(imu, 0, 0, 0);
+    mm.givePos(pos);
   }
   else
   {
@@ -247,7 +255,9 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     //pos = new AprilTagTrackerInterface("/pose_estimate_filter/pose_estimate", .1);
     //imu = new LpResearchImu("imu_base_link");
   }
-
+  
+  //mm.giveImu(imu, 0, 0, 0);
+  //mm.givePos(pos);
 
   std::vector<driver_access::DriverAccess*> drivers = {dfl, dfr, dbr, dbl};
   driver_access::ROSDriverAccess ros_drivers(drivers);
@@ -256,7 +266,9 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   bool firstTime = true;
   tf2_ros::TransformBroadcaster tfBroad;
   std::vector<std::pair<double, double> > waypoint_set;
-  SuperLocalizer superLocalizer(ROBOT_AXLE_LENGTH, 1, .5, 0, fl, fr, br, bl, /*imu,*/ pos, SuperLocalizer_default_gains);
+
+  UltraLocalizer ultraLocalizer(UltraLocalizer_default_gains, UltraLocalizer_initial_estimate);
+  //SuperLocalizer superLocalizer(ROBOT_AXLE_LENGTH, 1, .5, 0, fl, fr, br, bl, /*imu,*/ pos, SuperLocalizer_default_gains);
   
   LocalizerInterface::stateVector stateVector;
   ros::Subscriber haltsub = node.subscribe("halt", 100, haltCallback);
@@ -269,10 +281,11 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   ros::Duration idealLoopTime(1.0 / UPDATE_RATE_HZ);
 
-  while ((!superLocalizer.getIsDataGood() && ros::ok()))
+  lastTime = ros::Time::now ();
+  while (((ros::Time::now() - lastTime).toSec() < 2.0f) && (ros::ok())) //((!superLocalizer.getIsDataGood() && ros::ok()))
   {
     // do initial localization
-    if (firstTime)
+   /* if (firstTime)
     {
       firstTime = false;
       currTime = ros::Time::now();
@@ -284,30 +297,36 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       lastTime = currTime;
       currTime = ros::Time::now();
       loopTime = (currTime - lastTime);
-    }
+    }*/
     if (simulating)
     {
       sim->update((loopTime).toSec());
       tfBroad.sendTransform(create_sim_tf(sim->getX(), sim->getY(), sim->getTheta()));
     }
-    superLocalizer.updateStateVector(loopTime.toSec());
+    //Ultra here
+    ultraLocalizer.updateEstimate(UltraLocalizer_zero_vector, mm.getMeasured(.02));
+    //superLocalizer.updateStateVector(loopTime.toSec());
 
     ros::spinOnce();
     rate.sleep();
-    if (imu->receiveData() == ReadableSensors::ReadStatus::READ_FAILED)
+    //loopTime = 
+    //lastTime = ros::Time::now();
+    /*if (imu->receiveData() == ReadableSensors::ReadStatus::READ_FAILED)
     {
         ROS_WARN ("BAD IMU DATA!");
     }
     if (pos->receiveData()==ReadableSensors::ReadStatus::READ_FAILED)
     {
         ROS_WARN ("BAD POS");
-    }
+    }*/
   }
 
+  ROS_INFO ("Localization Settling Round 2!");
   lastTime = ros::Time::now ();
   while (((ros::Time::now()-lastTime).toSec()<settle_time) && (ros::ok()))
   {
-    superLocalizer.updateStateVector(.02);
+    ultraLocalizer.updateEstimate(UltraLocalizer_zero_vector, mm.getMeasured(.02));
+    //superLocalizer.updateStateVector(.02);
     rate.sleep();
   }
 
@@ -321,7 +340,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   fr->setLinearVelocity(0);
   bl->setLinearVelocity(0);
   br->setLinearVelocity(0);
-  stateVector = superLocalizer.getStateVector();
+  stateVector = ultraLocalizer.getStateVector();
   tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
 
   ros::spinOnce();
@@ -368,8 +387,11 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       tfBroad.sendTransform(create_sim_tf(pos->getX(), pos->getY(), pos->getTheta()));
     }
 
-    superLocalizer.updateStateVector(loopTime.toSec());
-    stateVector = superLocalizer.getStateVector();
+    //ultra localizer goes here
+    ultraLocalizer.updateEstimate(UltraLocalizer_zero_vector/*dc.getDeltaStateVector()*/,
+                                  mm.getMeasured(loopTime.toSec()));
+    //superLocalizer.updateStateVector(loopTime.toSec());
+    stateVector = ultraLocalizer.getStateVector();
 
     tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
 
@@ -377,13 +399,14 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
     if (newWaypointHere)
     {
-      dc.addPath(curr_path);
+      dc.addPath(curr_path, forwardPoint);
       newWaypointHere = false;
     }
-    // update controller
+    // update controller //Update lcoalizer or controller? what order?
     dc.update(stateVector, loopTime.toSec());
 
-    ROS_INFO("Paths on Stack: %d", dc.getPPaths());
+    ROS_INFO("Paths on Stack: %d, Current Fwd: %d", dc.getPPaths(), 
+             (forwardPoint ? 1 : 0));
     if (dc.getPPaths() >=1)
     {
       // Provide feedback
@@ -407,7 +430,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       result.pose.orientation.y = 0;
       result.pose.orientation.z = std::sin(.5*stateVector.theta);
       result.status = 0;
-      server->setSucceeded(result);
+      ROS_INFO("SETTING GOAL SUCCESS 111111: %d", dc.getPPaths());
+      if (server->isActive()) server->setSucceeded(result);
       doing_path = false;
     }
 

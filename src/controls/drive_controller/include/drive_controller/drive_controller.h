@@ -25,7 +25,7 @@ class DriveController
 {
 public:
    DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *bl, iVescAccess *br);
-   void addPath(DriveController_ns::bezier_path path);
+   void addPath(DriveController_ns::bezier_path path, bool forward_point);
    void haltAndAbort();
    bool update(LocalizerInterface::stateVector sv, double dt);
    LocalizerInterface::stateVector getDeltaStateVector();
@@ -60,6 +60,7 @@ private:
   std::vector<double>  p_y;
   double p_length;
   int p_paths;
+  bool p_forward_point;
 
   double p_last_closest_t;
   double p_closest_t;
