@@ -20,14 +20,12 @@
 #include <vesc_access/vesc_access.h>
 #include <wheel_params/wheel_params.h>
 
-//#include <super_localizer/super_localizer.h>
 #include <measurement_manager/measurement_manager.h>
 #include <ultra_localizer/ultra_localizer.h>
 #include <sensor_msgs/JointState.h>
 
 #include <visualization_msgs/Marker.h>
 
-//#include <sim_robot/sim_robot.h>
 #include <vrep_access/vrep_imu.h>
 
 #include <lp_research/lpresearchimu.h>
@@ -136,22 +134,21 @@ class DriverVescCrossover : public iVescAccess
 {
    private:
     driver_access::VREPDriverAccess *face;
-    //iVescAccess *vesc;
    public:
-    DriverVescCrossover(driver_access::VREPDriverAccess *f/*, iVescAccess *v*/)
-    :face(f) /*, vesc(v) */{}
+    DriverVescCrossover(driver_access::VREPDriverAccess *f)
+    :face(f) {}
     void setLinearVelocity(float meters_per_second) 
-      {face->setVelocity(meters_per_second); /*vesc->setLinearVelocity(meters_per_second)*/;}
+      {face->setVelocity(meters_per_second);}
     void setTorque(float current) 
-      {face->setEffort(current); /*vesc->setTorque(current);*/}
+      {face->setEffort(current); }
     float getLinearVelocity(void) 
-      {return (true ? face->getVelocity() : 40/*vesc->getLinearVelocity()*/);} // for now, needs to come from the vesc, o/w the control system doesn't work
+      {return face->getVelocity();} 
     float getTorque(void) {return face->getEffort();}
     nsVescAccess::limitSwitchState getLimitSwitchState(void) 
       {return nsVescAccess::limitSwitchState::inTransit;}
     float getPotPosition(void) 
       {return face->getPosition();}
-    void setDuty(float d) {/*vesc->setDuty(d);*/}
+    void setDuty(float d) {}
 };
 
 int main(int argc, char **argv)
@@ -199,7 +196,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   tf2_ros::Buffer tfBuffer;
   geometry_msgs::TransformStamped transformStamped;
 
-  //SimRobot *sim;
   iVescAccess *fl, *fr, *br, *bl;
   driver_access::VREPDriverAccess *dfl, *dfr, *dbr, *dbl;
   ImuSensorInterface *imu;
@@ -213,29 +209,24 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   //Need measurement manager in these if statements
   if (simulating)
   {
-    //sim = new SimRobot(0, 0, 0, .1);//.5, 1, .7, .1); //axel len, x, y, theta //this is temporary, its needed for the imu and pos
-
     driver_access::Limits limits(0, 0, 0, 1, 0, 1);
     dfl = new driver_access::VREPDriverAccess(limits, driver_access::ID::front_left_wheel,  driver_access::Mode::velocity);
     dfr = new driver_access::VREPDriverAccess(limits, driver_access::ID::front_right_wheel, driver_access::Mode::velocity);
     dbr = new driver_access::VREPDriverAccess(limits, driver_access::ID::back_right_wheel,  driver_access::Mode::velocity);
     dbl = new driver_access::VREPDriverAccess(limits, driver_access::ID::back_left_wheel,   driver_access::Mode::velocity);
-    fl = new DriverVescCrossover(dfl/*, sim->getFLVesc()*/);
-    fr = new DriverVescCrossover(dfr/*, sim->getFRVesc()*/);
-    br = new DriverVescCrossover(dbr/*, sim->getBRVesc()*/);
-    bl = new DriverVescCrossover(dbl/*, sim->getBLVesc()*/);
+    fl = new DriverVescCrossover(dfl);
+    fr = new DriverVescCrossover(dfr);
+    br = new DriverVescCrossover(dbr);
+    bl = new DriverVescCrossover(dbl);
 
     pos = new AprilTagTrackerInterface("/vrep/pose", .1);
     imu = new VrepImu(0, .0001, 0, .0001);
     
-    //imu = sim->getImu(); //if these can be replaced, we can get rid of the SimRobot
-    //pos = sim->getPos();
     mm.giveImu(imu, 0, 0, 0);
     mm.givePos(pos);
   }
   else
   {
-   // sim = NULL;  // Make no reference to the sim if not simulating
     bool no_except = false;
     while (!no_except  && ros::ok()) {
       try {
@@ -290,7 +281,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     // do initial localization
     if (simulating)
     {
-      //sim->update((loopTime).toSec());
       tfBroad.sendTransform(create_sim_tf(pos->getX(), pos->getY(), pos->getTheta()));
     }
     //Ultra here
@@ -371,8 +361,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     ROS_DEBUG("Looptime : %.5f", loopTime.toSec());
     if (simulating)
     {
-      //sim->update(loopTime.toSec());
-      //this would be handled by the new sim? sending tf's to rviz
       tfBroad.sendTransform(create_sim_tf(pos->getX(), pos->getY(), pos->getTheta()));
     }
 
