@@ -22,8 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
   occupancy_grid
   actionlib
   cv_bridge
-  #sensor_access
-  #path_planner
 )
 
 link_directories(/usr/src/gmock/build)
@@ -50,7 +48,6 @@ catkin_package(
 include_directories(${vesc_access_INCLUDE_DIRS})
 include_directories(${driver_access_INCLUDE_DIRS})
 include_directories(${localization_INCLUDE_DIRS})
-#include_directories(${sensor_access_INCLUDE_DIRS})
 include_directories(${new_sim_INCLUDE_DIRS})
 include_directories(${occupancy_grid_INCLUDE_DIRS})
 include_directories(${GTEST_INCLUDE_DIRS})
