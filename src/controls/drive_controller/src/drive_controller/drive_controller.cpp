@@ -108,8 +108,8 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       std::pair<double, double> UlUr = speedSteeringControl(
                                       p_speed_cmd, 
                                       p_theta.at((int)(index_for_t) + t_jumps)
-                                       - (p_forward_point ? 1.0 : -0.0)*angle_gain*angle_error 
-                                       - (p_forward_point ? 1.0 : -0.0)*path_gain*path_error,
+                                       - (p_forward_point ? 2.0 : -0.5)*angle_gain*angle_error 
+                                       - (p_forward_point ? 2.0 : -0.5)*path_gain*path_error,
                                        Axelsize, 2.0);
 
       if (p_forward_point)
