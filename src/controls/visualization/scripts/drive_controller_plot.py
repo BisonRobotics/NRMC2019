@@ -220,13 +220,13 @@ class GraphFrame(wx.Frame):
         self.gs = gridspec.GridSpec(nrows=3, ncols=2, figure=self.fig)
 
         self.axes = self.fig.add_subplot(self.gs[0,0])
-        #self.axes.set_axis_bgcolor('black')
+        self.axes.set_facecolor('black')
         self.axes.set_title('Position', size=12)
-        """
+        
         self.axes2 = self.fig.add_subplot(self.gs[1,0])
-        #self.axes2.set_axis_bgcolor('black')
+        self.axes2.set_facecolor('black')
         self.axes2.set_title('Velocity', size=12)
-
+        """
         self.axes3 = self.fig.add_subplot(self.gs[2,0])
         #self.axes3.set_axis_bgcolor('black')
         self.axes3.set_title('Acceleration', size=12)
@@ -245,9 +245,9 @@ class GraphFrame(wx.Frame):
         """
         pylab.setp(self.axes.get_xticklabels(), fontsize=8)
         pylab.setp(self.axes.get_yticklabels(), fontsize=8)
-        """
         pylab.setp(self.axes2.get_xticklabels(), fontsize=8)
         pylab.setp(self.axes2.get_yticklabels(), fontsize=8)
+        """
         pylab.setp(self.axes3.get_xticklabels(), fontsize=8)
         pylab.setp(self.axes3.get_yticklabels(), fontsize=8)
         pylab.setp(self.axes4.get_xticklabels(), fontsize=8)
@@ -261,6 +261,12 @@ class GraphFrame(wx.Frame):
         # to the plotted line series
         #
         self.plot_data = self.axes.plot(
+            self.data, 
+            linewidth=1,
+            color=(1, 1, 0),
+            )[0]
+
+        self.plot_data2 = self.axes2.plot(
             self.data, 
             linewidth=1,
             color=(1, 1, 0),
@@ -322,6 +328,8 @@ class GraphFrame(wx.Frame):
         
         self.plot_data.set_xdata(np.arange(len(self.data)))
         self.plot_data.set_ydata(np.array(self.data))
+        self.plot_data2.set_xdata(np.arange(len(self.data)))
+        self.plot_data2.set_ydata(np.array(self.data))
         
         self.canvas.draw()
     
