@@ -39,6 +39,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import \
     FigureCanvasWxAgg as FigCanvas, \
     NavigationToolbar2WxAgg as NavigationToolbar
+from matplotlib import gridspec
 import numpy as np
 import pylab
 
@@ -131,7 +132,7 @@ class GraphFrame(wx.Frame):
     def __init__(self):
 
         rospy.init_node('drive_controller_plot', anonymous=False)
-        rospy.Subscriber("/vrep/pose", PoseStamped, callback)
+        self.mysub = rospy.Subscriber("/vrep/pose", PoseStamped, callback)
 
         wx.Frame.__init__(self, None, -1, self.title)
         
@@ -216,13 +217,46 @@ class GraphFrame(wx.Frame):
         self.dpi = 100
         self.fig = Figure((3.0, 3.0), dpi=self.dpi)
 
-        self.axes = self.fig.add_subplot(111)
-        self.axes.set_axis_bgcolor('black')
-        self.axes.set_title('Very important random data', size=12)
-        
+        self.gs = gridspec.GridSpec(nrows=3, ncols=2, figure=self.fig)
+
+        self.axes = self.fig.add_subplot(self.gs[0,0])
+        #self.axes.set_axis_bgcolor('black')
+        self.axes.set_title('Position', size=12)
+        """
+        self.axes2 = self.fig.add_subplot(self.gs[1,0])
+        #self.axes2.set_axis_bgcolor('black')
+        self.axes2.set_title('Velocity', size=12)
+
+        self.axes3 = self.fig.add_subplot(self.gs[2,0])
+        #self.axes3.set_axis_bgcolor('black')
+        self.axes3.set_title('Acceleration', size=12)
+
+        self.axes4 = self.fig.add_subplot(self.gs[0,1])
+        #self.axes4.set_axis_bgcolor('black')
+        self.axes4.set_title('Errors', size=12)
+
+        self.axes5 = self.fig.add_subplot(self.gs[1,1])
+        #self.axes5.set_axis_bgcolor('black')
+        self.axes5.set_title('Wheel Velocities', size=12)
+
+        self.axes6 = self.fig.add_subplot(self.gs[2,1])
+        #self.axes6.set_axis_bgcolor('black')
+        self.axes6.set_title('Planned Wheel Vels', size=12)
+        """
         pylab.setp(self.axes.get_xticklabels(), fontsize=8)
         pylab.setp(self.axes.get_yticklabels(), fontsize=8)
-
+        """
+        pylab.setp(self.axes2.get_xticklabels(), fontsize=8)
+        pylab.setp(self.axes2.get_yticklabels(), fontsize=8)
+        pylab.setp(self.axes3.get_xticklabels(), fontsize=8)
+        pylab.setp(self.axes3.get_yticklabels(), fontsize=8)
+        pylab.setp(self.axes4.get_xticklabels(), fontsize=8)
+        pylab.setp(self.axes4.get_yticklabels(), fontsize=8)
+        pylab.setp(self.axes5.get_xticklabels(), fontsize=8)
+        pylab.setp(self.axes5.get_yticklabels(), fontsize=8)
+        pylab.setp(self.axes6.get_xticklabels(), fontsize=8)
+        pylab.setp(self.axes6.get_yticklabels(), fontsize=8)
+        """
         # plot the data as a line series, and save the reference 
         # to the plotted line series
         #
@@ -330,6 +364,8 @@ class GraphFrame(wx.Frame):
         self.draw_plot()
     
     def on_exit(self, event):
+        matplotlib.pyplot.close('all')
+        self.mysub.unregister()
         self.Destroy()
     
     def flash_status_message(self, msg, flash_len_ms=1500):
