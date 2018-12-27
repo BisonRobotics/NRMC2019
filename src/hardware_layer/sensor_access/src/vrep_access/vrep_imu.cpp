@@ -6,7 +6,7 @@ VrepImu::VrepImu(double accelerometer_offset, double accelerometer_deviation,
   nh(),
   orientation(0,0,0,1)
 {
-  this->subscriber = this->nh.subscribe("/vrep_access/imu", 1, &VrepImu::imuCallback, this);
+  this->subscriber = this->nh.subscribe("/vrep/imu", 1, &VrepImu::imuCallback, this);
   x_acc = 0.0;
   y_acc = 0.0;
   omega = 0.0;
