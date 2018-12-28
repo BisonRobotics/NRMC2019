@@ -21,9 +21,10 @@
 
 import os
 import pprint
-import random
+#import random
 import sys
 import wx
+import math
 
 import rospy
 import geometry_msgs.msg
@@ -44,11 +45,25 @@ import numpy as np
 import pylab
 
 
-plotX = 0
+plotX = []
+plotY = []
+plotTheta = []
+plotTime = []
 
 def callback(data):
   global plotX
-  plotX = data.pose.position.x
+  global plotY
+  global plotTheta
+  global plotTime
+
+  plotTime.append(data.header.stamp.to_sec())
+  plotX.append(data.pose.position.x)
+  plotY.append(data.pose.position.y)
+  plotTheta.append(2*math.atan2(math.sqrt(data.pose.orientation.x**2 
+                                   + data.pose.orientation.y**2
+                                   + data.pose.orientation.z**2),
+                                     data.pose.orientation.w) )
+                             
 
 class DataGen(object):
     """ A silly class that generates pseudo-random data for
@@ -61,7 +76,7 @@ class DataGen(object):
         #self._recalc_data()
         #return self.data
         return plotX
-    
+    """
     def _recalc_data(self):
         delta = random.uniform(-0.5, 0.5)
         r = random.random()
@@ -74,6 +89,7 @@ class DataGen(object):
             self.data += delta
         else:
             self.data += delta
+    """
 
 
 class BoundControlBox(wx.Panel):
@@ -135,9 +151,12 @@ class GraphFrame(wx.Frame):
         self.mysub = rospy.Subscriber("/vrep/pose", PoseStamped, callback)
 
         wx.Frame.__init__(self, None, -1, self.title)
-        
-        self.datagen = DataGen()
-        self.data = [self.datagen.next()]
+        self.first_run = True
+        #self.datagen = DataGen()
+        self.x_data = 0#[self.datagen.next()]
+        self.y_data = 0
+        self.theta_data = 0
+        self.time_data = 0
         self.paused = False
         
         self.create_menu()
@@ -146,7 +165,9 @@ class GraphFrame(wx.Frame):
         
         self.redraw_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_redraw_timer, self.redraw_timer)        
-        self.redraw_timer.Start(100)
+        self.redraw_timer.Start(500)
+
+        #self.sample_timer = wx.Timer(self)
 
     def create_menu(self):
         self.menubar = wx.MenuBar()
@@ -260,17 +281,20 @@ class GraphFrame(wx.Frame):
         # plot the data as a line series, and save the reference 
         # to the plotted line series
         #
+        """
         self.plot_data = self.axes.plot(
-            self.data, 
+            self.time_data,
+            self.x_data, 
             linewidth=1,
             color=(1, 1, 0),
             )[0]
 
         self.plot_data2 = self.axes2.plot(
-            self.data, 
+            self.time_data, 
             linewidth=1,
             color=(1, 1, 0),
             )[0]
+        """
 
     def draw_plot(self):
         """ Redraws the plot
@@ -280,7 +304,7 @@ class GraphFrame(wx.Frame):
         # xmax.
         #
         if self.xmax_control.is_auto():
-            xmax = len(self.data) if len(self.data) > 50 else 50
+            xmax = len(plotTime) if len(plotTime) > 50 else 50
         else:
             xmax = int(self.xmax_control.manual_value())
             
@@ -297,12 +321,12 @@ class GraphFrame(wx.Frame):
         # the whole data set.
         # 
         if self.ymin_control.is_auto():
-            ymin = round(min(self.data), 0) - 1
+            ymin = round(min(plotX), 0) - 1
         else:
             ymin = int(self.ymin_control.manual_value())
         
         if self.ymax_control.is_auto():
-            ymax = round(max(self.data), 0) + 1
+            ymax = round(max(plotX), 0) + 1
         else:
             ymax = int(self.ymax_control.manual_value())
 
@@ -326,11 +350,24 @@ class GraphFrame(wx.Frame):
         pylab.setp(self.axes.get_xticklabels(), 
             visible=self.cb_xlab.IsChecked())
         
-        self.plot_data.set_xdata(np.arange(len(self.data)))
-        self.plot_data.set_ydata(np.array(self.data))
-        self.plot_data2.set_xdata(np.arange(len(self.data)))
-        self.plot_data2.set_ydata(np.array(self.data))
+        #self.plot_data.set_xdata(np.arange(len(self.data)))
+        #self.plot_data.set_ydata(np.array(self.data))
+        #self.plot_data2.set_xdata(np.arange(len(self.data)))
+        #self.plot_data2.set_ydata(np.array(self.data))
         
+        self.plot_data = self.axes.plot(
+            #self.time_data,
+            plotX, 
+            linewidth=1,
+            color=(1, 1, 0),
+            )[0]
+
+        self.plot_data2 = self.axes2.plot(
+            plotTime, 
+            linewidth=1,
+            color=(1, 1, 0),
+            )[0]
+
         self.canvas.draw()
     
     def on_pause_button(self, event):
@@ -363,12 +400,24 @@ class GraphFrame(wx.Frame):
             self.flash_status_message("Saved to %s" % path)
     
     def on_redraw_timer(self, event):
+        #below commont not so valid any more
         # if paused do not add data, but still redraw the plot
         # (to respond to scale modifications, grid change, etc.)
         #
-        if not self.paused:
-            self.data.append(self.datagen.next())
-        
+        """
+        if ((plotTime != 0) and (self.first_run == True)):
+            self.first_run = False
+            self.x_data = [plotX]
+            self.y_data = [plotY]
+            self.theta_data = [plotTheta]
+            self.time_data  = [plotTime]
+        elif not self.paused:
+            self.x_data.append(plotX)
+            self.y_data.append(plotY)
+            self.theta_data.append(plotTheta)
+            self.time_data.append(plotTime)
+            #self.data.append(self.datagen.next())
+        """
         self.draw_plot()
     
     def on_exit(self, event):
