@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package>
-  <name>super_visualization</name>
+  <name>drive_controller_visualization</name>
   <version>0.1.0</version>
   <description>
 
-     super_visualization
+     drive_controller_visualization
 
   </description>
   <maintainer email="fworg64@gmail.com">fworg64</maintainer>

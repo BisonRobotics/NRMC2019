@@ -15,13 +15,13 @@
 #include <string>
 #include <std_msgs/String.h>
 #include <sstream>
-#include "../include/super_visualization/qnode.hpp"
+#include "../include/drive_controller_visualization/qnode.hpp"
 
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
 
-namespace super_visualization {
+namespace drive_controller_visualization {
 
 /*****************************************************************************
 ** Implementation
@@ -41,7 +41,7 @@ QNode::~QNode() {
 }
 
 bool QNode::init() {
-	ros::init(init_argc,init_argv,"super_visualization");
+	ros::init(init_argc,init_argv,"drive_controller_visualization");
 	if ( ! ros::master::check() ) {
 		return false;
 	}
@@ -57,7 +57,7 @@ bool QNode::init(const std::string &master_url, const std::string &host_url) {
 	std::map<std::string,std::string> remappings;
 	remappings["__master"] = master_url;
 	remappings["__hostname"] = host_url;
-	ros::init(remappings,"super_visualization");
+	ros::init(remappings,"drive_controller_visualization");
 	if ( ! ros::master::check() ) {
 		return false;
 	}
@@ -124,4 +124,4 @@ void QNode::log( const LogLevel &level, const std::string &msg) {
 	Q_EMIT loggingUpdated(); // used to readjust the scrollbar
 }
 
-}  // namespace super_visualization
+}  // namespace drive_controller_visualization

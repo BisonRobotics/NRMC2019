@@ -12,13 +12,13 @@
 #include <QtGui>
 #include <QMessageBox>
 #include <iostream>
-#include "../include/super_visualization/main_window.hpp"
+#include "../include/drive_controller_visualization/main_window.hpp"
 
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
 
-namespace super_visualization {
+namespace drive_controller_visualization {
 
 using namespace Qt;
 
@@ -129,7 +129,7 @@ void MainWindow::on_actionAbout_triggered() {
 *****************************************************************************/
 
 void MainWindow::ReadSettings() {
-    QSettings settings("Qt-Ros Package", "super_visualization");
+    QSettings settings("Qt-Ros Package", "drive_controller_visualization");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
     QString master_url = settings.value("master_url",QString("http://192.168.1.2:11311/")).toString();
@@ -150,7 +150,7 @@ void MainWindow::ReadSettings() {
 }
 
 void MainWindow::WriteSettings() {
-    QSettings settings("Qt-Ros Package", "super_visualization");
+    QSettings settings("Qt-Ros Package", "drive_controller_visualization");
     settings.setValue("master_url",ui.line_edit_master->text());
     settings.setValue("host_url",ui.line_edit_host->text());
     //settings.setValue("topic_name",ui.line_edit_topic->text());
@@ -167,5 +167,5 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	QMainWindow::closeEvent(event);
 }
 
-}  // namespace super_visualization
+}  // namespace drive_controller_visualization
 

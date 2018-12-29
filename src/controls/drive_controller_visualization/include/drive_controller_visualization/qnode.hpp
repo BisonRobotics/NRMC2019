@@ -1,5 +1,5 @@
 /**
- * @file /include/super_visualization/qnode.hpp
+ * @file /include/drive_controller_visualization/qnode.hpp
  *
  * @brief Communications central!
  *
@@ -9,8 +9,8 @@
 ** Ifdefs
 *****************************************************************************/
 
-#ifndef super_visualization_QNODE_HPP_
-#define super_visualization_QNODE_HPP_
+#ifndef drive_controller_visualization_QNODE_HPP_
+#define drive_controller_visualization_QNODE_HPP_
 
 /*****************************************************************************
 ** Includes
@@ -30,7 +30,7 @@
 ** Namespaces
 *****************************************************************************/
 
-namespace super_visualization {
+namespace drive_controller_visualization {
 
 /*****************************************************************************
 ** Class
@@ -70,6 +70,6 @@ private:
     QStringListModel logging_model;
 };
 
-}  // namespace super_visualization
+}  // namespace drive_controller_visualization
 
-#endif /* super_visualization_QNODE_HPP_ */
+#endif /* drive_controller_visualization_QNODE_HPP_ */

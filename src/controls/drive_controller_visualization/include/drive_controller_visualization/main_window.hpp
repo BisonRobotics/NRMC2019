@@ -1,12 +1,12 @@
 /**
- * @file /include/super_visualization/main_window.hpp
+ * @file /include/drive_controller_visualization/main_window.hpp
  *
- * @brief Qt based gui for super_visualization.
+ * @brief Qt based gui for drive_controller_visualization.
  *
  * @date November 2010
  **/
-#ifndef super_visualization_MAIN_WINDOW_H
-#define super_visualization_MAIN_WINDOW_H
+#ifndef drive_controller_visualization_MAIN_WINDOW_H
+#define drive_controller_visualization_MAIN_WINDOW_H
 
 /*****************************************************************************
 ** Includes
@@ -20,7 +20,7 @@
 ** Namespace
 *****************************************************************************/
 
-namespace super_visualization {
+namespace drive_controller_visualization {
 
 /*****************************************************************************
 ** Interface [MainWindow]
@@ -59,6 +59,6 @@ private:
 	QNode qnode;
 };
 
-}  // namespace super_visualization
+}  // namespace drive_controller_visualization
 
-#endif // super_visualization_MAIN_WINDOW_H
+#endif // drive_controller_visualization_MAIN_WINDOW_H
