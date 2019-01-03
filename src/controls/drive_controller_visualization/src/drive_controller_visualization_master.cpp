@@ -4,6 +4,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <iostream>
+#include <cmath>
 
 #include <drive_controller_visualization/dcvis_multiplot.h>
 
@@ -16,10 +17,10 @@ int main(int argc, char** argv)
     dcvis_multiplot dcvmp(1, "twenter");
     cv::Mat plotarea1(300,300,CV_8UC3, cv::Scalar(0,0,0));
     
-    for (int idex = 0; idex < 100; idex++)
-    {
-        dcvmp.add_point(idex % 10 - 5, 0);
-    }
+    //for (int idex = 0; idex < 270; idex++)
+    //{
+        //dcvmp.add_point(std::sin(5.0*((double)idex)/200.0 - 5.0), 0);
+    //}
     
     dcvmp.draw(plotarea1);
         
@@ -32,20 +33,33 @@ int main(int argc, char** argv)
     cv::namedWindow("disp", cv::WINDOW_AUTOSIZE);
     cv::imshow("disp", framebuff);
     
-    ros::Rate r(30);
+    //ros::Rate r(30);
     
     std::cout << "Press q (in image window) to quit\n";
     int key_code = 0;
-    
+    int idex = 0;
+    ros::Time last_time, curr_time;
+    ros::Duration loop_time;
+    curr_time = ros::Time::now();
     while( ros::ok())
     {
-        key_code = cv::waitKey(60); //needed to service UI thread
+        last_time = curr_time;
+        curr_time = ros::Time::now();
+        loop_time = curr_time - last_time;
+        //std::cout << "LT: " <<loop_time.toSec() <<'\n';
+        dcvmp.add_point(std::sin(5.0*((double)idex++)/200.0 - 5.0), 0);
+        dcvmp.draw(plotarea1);
+        
+        plotarea1.copyTo(framebuff(cv::Rect(50,50,300,300)));
+        cv::imshow("disp", framebuff);
+
+        key_code = cv::waitKey(30); //needed to service UI thread
         if (key_code == 113 || key_code == 81)
         {
             std::cout << "quit registered" << '\n';
             return 0;
         }
-        r.sleep();
+        //r.sleep(); wait is handled by waitkey
         ros::spinOnce();
         
     }

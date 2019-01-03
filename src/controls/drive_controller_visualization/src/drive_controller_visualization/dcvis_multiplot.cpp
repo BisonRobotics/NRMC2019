@@ -16,8 +16,7 @@ dcvis_multiplot::dcvis_multiplot(int num_series, cv::String title)
 void dcvis_multiplot::add_point(double y, int series)
 {
     cv::Point2d* my_p = series_list.at(series).data();
-    memmove(my_p, my_p+1, dcvis_multiplot::num_samples -1);
-    //cv::Point2d temp_point(my_p[dcvis_multiplot::num_samples-1].x + sample_period, y);
+    memmove(my_p, my_p+1, (dcvis_multiplot::num_samples -1)*sizeof(cv::Point2d));
     my_p[dcvis_multiplot::num_samples-1].x += sample_period;
     my_p[dcvis_multiplot::num_samples-1].y = y;
     xmax = my_p[dcvis_multiplot::num_samples-1].x;
@@ -41,11 +40,11 @@ void dcvis_multiplot::draw(cv::Mat frame)
     //plot
     cv::Point p1, p2;
     p1.x = (series_list.at(0)[start_idex].x - xmin)*xscale;
-    p1.y = (series_list.at(0)[start_idex].y - ymin)*yscale;
+    p1.y = height - (series_list.at(0)[start_idex].y - ymin)*yscale;
     for (int idex = start_idex+1; idex < dcvis_multiplot::num_samples; idex++)
     {
         p2.x = (series_list.at(0)[idex].x - xmin)*xscale;
-        p2.y = (series_list.at(0)[idex].y - ymin)*yscale;
+        p2.y = height - (series_list.at(0)[idex].y - ymin)*yscale;
         cv::line(frame, p1, p2, cv::Scalar(200,200,200), 1, 8, 0);
         p1 = p2;
     }
