@@ -42,18 +42,19 @@ include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/include)
 
 ## Build libraries
-#add_library(drive_controller_visualization
-#        src/drive_controller_visualization/drive_controller_visualization.cpp)
+add_library(drive_controller_visualization_graph
+        src/drive_controller_visualization/dcvis_multiplot.cpp)
 #add_dependencies(drive_controller vesc_access) # ${catkin_EXPORTED_TARGETS})
-#target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access)
+target_link_libraries(drive_controller_visualization_graph  ${OpenCV_LIBS} )
 
 #############
 ## Install ##
 #############
 
 add_executable(drive_controller_visualization_master src/drive_controller_visualization_master.cpp)
-#add_dependencies(drive_controller_master drive_controller vrep_driver_access ros_driver_access driver_access sim_robot ${catkin_EXPORTED_TARGETS}) #navigation_msgs localization
+add_dependencies(drive_controller_visualization_master drive_controller_visualization_graph)
 target_link_libraries (drive_controller_visualization_master 
+ drive_controller_visualization_graph
  ${OpenCV_LIBS} 
  ${catkin_LIBRARIES} 
 )
