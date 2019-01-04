@@ -39,14 +39,9 @@ int main(int argc, char** argv)
 
     cv::Mat plotarea1(300,300,CV_8UC3, cv::Scalar(0,0,0));
     
-    //for (int idex = 0; idex < 270; idex++)
-    //{
-        //dcvmp.add_point(std::sin(5.0*((double)idex)/200.0 - 5.0), 0);
-    //}
-    
     dcvmp.draw(plotarea1);
         
-    cv::Mat framebuff(800, 400, CV_8UC3, cv::Scalar(170,70,70));
+    cv::Mat framebuff(400, 800, CV_8UC3, cv::Scalar(170,70,70));
     cv::Point ppp(2,2);
     cv::circle(framebuff, ppp, 5, cv::Scalar(200,200,200));
     
