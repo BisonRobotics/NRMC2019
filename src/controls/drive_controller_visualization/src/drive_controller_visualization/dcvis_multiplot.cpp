@@ -17,13 +17,13 @@ dcvis_multiplot::dcvis_multiplot(int num_series, cv::String a_title)
     xtick_deque.push_back(0);
 }
 
-void dcvis_multiplot::add_point(double y, int series)
+void dcvis_multiplot::add_point(double y, double t, int series)
 {
     cv::Point2d* my_p = series_list.at(series).data();
     memmove(my_p, my_p+1, (dcvis_multiplot::num_samples -1)*sizeof(cv::Point2d));
-    my_p[dcvis_multiplot::num_samples-1].x += sample_period;
+    my_p[dcvis_multiplot::num_samples-1].x = t;
     my_p[dcvis_multiplot::num_samples-1].y = y;
-    xmax = my_p[dcvis_multiplot::num_samples-1].x;
+    xmax = t;//my_p[dcvis_multiplot::num_samples-1].x;
 }
 
 void dcvis_multiplot::draw(cv::Mat frame)
@@ -78,15 +78,15 @@ void dcvis_multiplot::draw(cv::Mat frame)
                     cv::Point(frame.cols, number_size.height), cv::Scalar(200,200,200));
     cv::line(frame, cv::Point(number_size.width, frame.rows - title_size.height), 
                     cv::Point(frame.cols, frame.rows - title_size.height), cv::Scalar(200,200,200));
+    //transform data and plot
     double height = frame.rows - title_size.height - number_size.height;
     double yscale = height/(ymax - ymin); 
     double xmin = xmax - xwidth;
-    //(data.y - ymin)*yscale is plot row
-    //(data.x - xmin)*xscale is plot col
-    int start_idex;//dcvis_multiplot::num_samples - xwidth/sample_period;
+
+    int start_idex=0;
     //find starting index
     for (start_idex = 0; start_idex <dcvis_multiplot::num_samples && series_list.at(0)[start_idex].x < xmin; start_idex++);
-    //transform data and plot
+    
     cv::Point p1, p2;
     p1.x = (series_list.at(0)[start_idex].x - xmin)*xscale + number_size.width;
     p1.y = height - (series_list.at(0)[start_idex].y - ymin)*yscale + title_size.height;
