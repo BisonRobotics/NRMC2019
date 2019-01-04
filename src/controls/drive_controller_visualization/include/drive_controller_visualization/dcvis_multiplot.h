@@ -1,6 +1,5 @@
 #include <opencv2/opencv.hpp>
 
-
 class dcvis_multiplot
 {
 public:
@@ -19,7 +18,8 @@ private:
     double ymin;
     double ymax;
     double xmax;
-    int xticks;
+    double xtick_period;
     int yticks;
+    std::deque<double> xtick_deque;
     cv::String title;
 };
