@@ -10,13 +10,17 @@
 
 #include <geometry_msgs/PoseStamped.h>
 
-dcvis_multiplot dcvmp(1, "twenter", -5, 5, 5, 30, 5);
+cv::String names[] = {"Xpos", "Ypos"};
+cv::Scalar colors[] = {cv::Scalar(50,0,0), cv::Scalar(0,50,0)};
+dcvis_multiplot dcvmp(2, "twenter", -5, 5, 5, 30, 5, names, colors);
 ros::Time start_time;
 
 void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
 {
     ros::Duration plot_time = msg->header.stamp - start_time;
     dcvmp.add_point(msg->pose.position.x, plot_time.toSec(), 0);
+    dcvmp.add_point(msg->pose.position.y, plot_time.toSec(), 1);
+
 }
 
 int main(int argc, char** argv)

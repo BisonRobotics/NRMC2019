@@ -5,7 +5,9 @@ class dcvis_multiplot
 public:
     dcvis_multiplot(int num_series, cv::String title,
                     double ymin, double ymax, double yticks, 
-                    double xwidth, double xtick_period);
+                    double xwidth, double xtick_period,
+                    cv::String* names,
+                    cv::Scalar* colors);
     //void set_xwidth(double x_width);
     //void set_ylim(double ymin, double ymax);
     void add_point(double y,double t, int series);
@@ -13,7 +15,9 @@ public:
 private:
     static const int num_samples = 1000;
     std::vector<std::array<cv::Point2d, num_samples> > series_list;
-    //std::vector<cv::String> names;
+    cv::String* names;
+    cv::Scalar* colors;
+    int num_series;
     double xwidth;
     double ymin;
     double ymax;
@@ -22,4 +26,6 @@ private:
     double xtick_period;
     std::deque<double> xtick_deque;
     cv::String title;
+    
+    
 };

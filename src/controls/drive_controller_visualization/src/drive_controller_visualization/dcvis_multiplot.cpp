@@ -2,9 +2,13 @@
 
 dcvis_multiplot::dcvis_multiplot(int num_series, cv::String title,
                                  double ymin, double ymax, double yticks, 
-                                 double xwidth, double xtick_period)
-:title(title), ymin(ymin), ymax(ymax), yticks(yticks),
- xwidth(xwidth), xtick_period(xtick_period)
+                                 double xwidth, double xtick_period,
+                                 cv::String* names,
+                                 cv::Scalar* colors)
+:num_series(num_series), title(title),
+ ymin(ymin), ymax(ymax), yticks(yticks),
+ xwidth(xwidth), xtick_period(xtick_period),
+ names(names), colors(colors)
 {
     std::array<cv::Point2d, dcvis_multiplot::num_samples> dummy;
     for (int index=0; index < dcvis_multiplot::num_samples; index++)
@@ -84,15 +88,19 @@ void dcvis_multiplot::draw(cv::Mat frame)
     //find starting index
     for (start_idex = 0; start_idex <dcvis_multiplot::num_samples && series_list.at(0)[start_idex].x < xmin; start_idex++);
     
-    cv::Point p1, p2;
-    p1.x = (series_list.at(0)[start_idex].x - xmin)*xscale + number_size.width;
-    p1.y = height - (series_list.at(0)[start_idex].y - ymin)*yscale + title_size.height;
-    for (int idex = start_idex+1; idex < dcvis_multiplot::num_samples; idex++)
+    for (int odex = 0; odex < num_series; odex++)
     {
-        p2.x = (series_list.at(0)[idex].x - xmin)*xscale + number_size.width;
-        p2.y = height - (series_list.at(0)[idex].y - ymin)*yscale + title_size.height;
-        cv::line(frame, p1, p2, cv::Scalar(200,200,200), 1, 8, 0);
-        p1 = p2;
+        cv::Point p1, p2;
+        p1.x = (series_list.at(odex)[start_idex].x - xmin)*xscale + number_size.width;
+        p1.y = height - (series_list.at(odex)[start_idex].y - ymin)*yscale + title_size.height;
+        for (int idex = start_idex+1; idex < dcvis_multiplot::num_samples; idex++)
+        {
+            p2.x = (series_list.at(odex)[idex].x - xmin)*xscale + number_size.width;
+            p2.y = height - (series_list.at(odex)[idex].y - ymin)*yscale + title_size.height;
+            cv::line(frame, p1, p2, colors[odex], 1, 8, 0);
+            p1 = p2;
+        }
     }
+
     //other stuff
 }
