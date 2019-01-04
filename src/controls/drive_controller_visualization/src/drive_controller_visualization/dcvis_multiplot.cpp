@@ -50,8 +50,6 @@ void dcvis_multiplot::draw(cv::Mat frame)
         title_point.y = (frame.rows - title_size.height - number_size.height) * scale_fact + title_size.height + number_size.height;
         cv::putText(frame, data, title_point, CV_FONT_HERSHEY_SIMPLEX, font_scale, font_color);
     }
-    cv::line(frame, cv::Point(number_size.width, number_size.height), cv::Point(number_size.width, frame.rows - title_size.height),
-             cv::Scalar(200,200,200));
     //draw xticks
     //keep track of which ones are on the screen
     if (xmax > xtick_deque.back() + xtick_period)
@@ -64,32 +62,37 @@ void dcvis_multiplot::draw(cv::Mat frame)
     }
     //draw all the ones in the deque
     title_point.y = frame.rows;
-    double width = frame.cols;
+    double width = frame.cols - number_size.width;
     double xscale = width/xwidth;
     for (const auto &tick : xtick_deque)
     {
         char data[10];
         sprintf(data, "%.0f", tick);
-        title_point.x = frame.cols - (xmax - tick) * xscale;// + number_size.width;
+        title_point.x = width - (xmax - tick) * xscale + number_size.width;
         cv::putText(frame, data, title_point, CV_FONT_HERSHEY_SIMPLEX, font_scale, font_color);
     }
-    
-    //need ymax to be at row 0, ymin to be at last row
-    //need first sample at first col, last at last
+    //draw side, top and bottom lines
+    cv::line(frame, cv::Point(number_size.width, number_size.height), 
+                    cv::Point(number_size.width, frame.rows - title_size.height), cv::Scalar(200,200,200));
+    cv::line(frame, cv::Point(number_size.width, number_size.height), 
+                    cv::Point(frame.cols, number_size.height), cv::Scalar(200,200,200));
+    cv::line(frame, cv::Point(number_size.width, frame.rows - title_size.height), 
+                    cv::Point(frame.cols, frame.rows - title_size.height), cv::Scalar(200,200,200));
     double height = frame.rows - title_size.height - number_size.height;
     double yscale = height/(ymax - ymin); 
     double xmin = xmax - xwidth;
     //(data.y - ymin)*yscale is plot row
     //(data.x - xmin)*xscale is plot col
-    int start_idex = dcvis_multiplot::num_samples - xwidth/sample_period;
-    //transform data
-    //plot
+    int start_idex;//dcvis_multiplot::num_samples - xwidth/sample_period;
+    //find starting index
+    for (start_idex = 0; start_idex <dcvis_multiplot::num_samples && series_list.at(0)[start_idex].x < xmin; start_idex++);
+    //transform data and plot
     cv::Point p1, p2;
-    p1.x = (series_list.at(0)[start_idex].x - xmin)*xscale;
+    p1.x = (series_list.at(0)[start_idex].x - xmin)*xscale + number_size.width;
     p1.y = height - (series_list.at(0)[start_idex].y - ymin)*yscale + title_size.height;
     for (int idex = start_idex+1; idex < dcvis_multiplot::num_samples; idex++)
     {
-        p2.x = (series_list.at(0)[idex].x - xmin)*xscale;
+        p2.x = (series_list.at(0)[idex].x - xmin)*xscale + number_size.width;
         p2.y = height - (series_list.at(0)[idex].y - ymin)*yscale + title_size.height;
         cv::line(frame, p1, p2, cv::Scalar(200,200,200), 1, 8, 0);
         p1 = p2;
