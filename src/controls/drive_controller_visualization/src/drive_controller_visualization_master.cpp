@@ -8,13 +8,23 @@
 
 #include <drive_controller_visualization/dcvis_multiplot.h>
 
+#include <geometry_msgs/PoseStamped.h>
+
+dcvis_multiplot dcvmp(1, "twenter");
+
+
+void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
+{
+    dcvmp.add_point(msg->pose.position.x,0);
+}
+
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "drive_controller_vis");
 
-    ros::NodeHandle n("~");
-    
-    dcvis_multiplot dcvmp(1, "twenter");
+    ros::NodeHandle n;
+    ros::Subscriber posSub = n.subscribe("/vrep/pose", 100, poseCallback);
+
     cv::Mat plotarea1(300,300,CV_8UC3, cv::Scalar(0,0,0));
     
     //for (int idex = 0; idex < 270; idex++)
@@ -47,7 +57,7 @@ int main(int argc, char** argv)
         curr_time = ros::Time::now();
         loop_time = curr_time - last_time;
         //std::cout << "LT: " <<loop_time.toSec() <<'\n';
-        dcvmp.add_point(std::sin(5.0*((double)idex++)/200.0 - 5.0), 0);
+        //dcvmp.add_point(std::sin(5.0*((double)idex++)/200.0 - 5.0), 0);
         dcvmp.draw(plotarea1);
         
         plotarea1.copyTo(framebuff(cv::Rect(50,50,300,300)));

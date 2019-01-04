@@ -29,7 +29,7 @@ generate_messages(DEPENDENCIES actionlib_msgs navigation_msgs)
 catkin_package(
         INCLUDE_DIRS include
 
-        CATKIN_DEPENDS roscpp std_msgs cv_bridge
+        CATKIN_DEPENDS roscpp std_msgs geometry_msgs cv_bridge
 )
 
 ###########
@@ -52,7 +52,10 @@ target_link_libraries(drive_controller_visualization_graph  ${OpenCV_LIBS} )
 #############
 
 add_executable(drive_controller_visualization_master src/drive_controller_visualization_master.cpp)
-add_dependencies(drive_controller_visualization_master drive_controller_visualization_graph)
+add_dependencies(drive_controller_visualization_master 
+  drive_controller_visualization_graph
+  #geometry_msgs
+)
 target_link_libraries (drive_controller_visualization_master 
  drive_controller_visualization_graph
  ${OpenCV_LIBS} 
