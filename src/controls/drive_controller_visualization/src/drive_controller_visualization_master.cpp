@@ -10,17 +10,24 @@
 
 #include <geometry_msgs/PoseStamped.h>
 
-cv::String names[] = {"Xpos", "Ypos"};
-cv::Scalar colors[] = {cv::Scalar(50,0,0), cv::Scalar(0,50,0)};
-dcvis_multiplot dcvmp(2, "twenter", -5, 5, 5, 30, 5, names, colors);
+cv::String names[] = {"Xpos", "Ypos", "Angle"};
+cv::Scalar colors[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60), 
+                       cv::Scalar(120, 60, 180)};
+dcvis_multiplot dcvmp(3, "twenter", -5, 5, 5, 30, 5, names, colors);
 ros::Time start_time;
 
 void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
 {
     ros::Duration plot_time = msg->header.stamp - start_time;
-    dcvmp.add_point(msg->pose.position.x, plot_time.toSec(), 0);
-    dcvmp.add_point(msg->pose.position.y, plot_time.toSec(), 1);
-
+    double t = plot_time.toSec();
+    dcvmp.add_point(msg->pose.position.x, t, 0);
+    dcvmp.add_point(msg->pose.position.y, t, 1);
+    double norm = std::sqrt(msg->pose.orientation.x * msg->pose.orientation.x +
+                            msg->pose.orientation.y * msg->pose.orientation.y +
+                            msg->pose.orientation.z * msg->pose.orientation.z);
+    double theta = 2.0 * std::atan2(norm, msg->pose.orientation.w);
+    int sign = (msg->pose.orientation.z / std::sin(theta/2.0)) > 0 ? 1 : -1;
+    dcvmp.add_point(sign*theta, t, 2);
 }
 
 int main(int argc, char** argv)

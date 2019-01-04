@@ -30,7 +30,7 @@ void dcvis_multiplot::add_point(double y, double t, int series)
 void dcvis_multiplot::draw(cv::Mat frame)
 {
     //clear frame
-    frame.setTo(cv::Scalar(0,50,50));
+    frame.setTo(cv::Scalar(35,50,35));
     //draw title
     int dummy;
     double font_scale = .5;
@@ -79,6 +79,7 @@ void dcvis_multiplot::draw(cv::Mat frame)
                     cv::Point(frame.cols, number_size.height), cv::Scalar(200,200,200));
     cv::line(frame, cv::Point(number_size.width, frame.rows - title_size.height), 
                     cv::Point(frame.cols, frame.rows - title_size.height), cv::Scalar(200,200,200));
+    //TODO draw grid
     //transform data and plot
     double height = frame.rows - title_size.height - number_size.height;
     double yscale = height/(ymax - ymin); 
@@ -87,7 +88,7 @@ void dcvis_multiplot::draw(cv::Mat frame)
     int start_idex=0;
     //find starting index
     for (start_idex = 0; start_idex <dcvis_multiplot::num_samples && series_list.at(0)[start_idex].x < xmin; start_idex++);
-    
+    //plot lines
     for (int odex = 0; odex < num_series; odex++)
     {
         cv::Point p1, p2;
@@ -101,6 +102,11 @@ void dcvis_multiplot::draw(cv::Mat frame)
             p1 = p2;
         }
     }
-
-    //other stuff
+    //draw legend
+    for (int idex = 0; idex < num_series; idex++)
+    {
+        cv::putText(frame, names[idex], 
+                    cv::Point(frame.cols * .7, 2*title_size.height + idex*title_size.height),
+                    CV_FONT_HERSHEY_SIMPLEX, font_scale, colors[idex]);
+    }
 }
