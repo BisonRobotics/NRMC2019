@@ -1,19 +1,16 @@
 #include <drive_controller_visualization/dcvis_multiplot.h>
 
-dcvis_multiplot::dcvis_multiplot(int num_series, cv::String a_title)
-:title(a_title)
+dcvis_multiplot::dcvis_multiplot(int num_series, cv::String title,
+                                 double ymin, double ymax, double yticks, 
+                                 double xwidth, double xtick_period)
+:title(title), ymin(ymin), ymax(ymax), yticks(yticks),
+ xwidth(xwidth), xtick_period(xtick_period)
 {
     std::array<cv::Point2d, dcvis_multiplot::num_samples> dummy;
     for (int index=0; index < dcvis_multiplot::num_samples; index++)
     {
         series_list.push_back(dummy);
     }
-    sample_period = .1;
-    xwidth = 30;
-    ymin = -5;
-    ymax = 5;
-    yticks = 5;
-    xtick_period = 5.0;
     xtick_deque.push_back(0);
 }
 

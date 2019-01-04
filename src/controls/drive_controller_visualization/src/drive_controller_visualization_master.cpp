@@ -10,7 +10,7 @@
 
 #include <geometry_msgs/PoseStamped.h>
 
-dcvis_multiplot dcvmp(1, "twenter");
+dcvis_multiplot dcvmp(1, "twenter", -5, 5, 5, 30, 5);
 ros::Time start_time;
 
 void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
