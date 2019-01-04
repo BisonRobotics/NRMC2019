@@ -4,7 +4,7 @@
 class dcvis_multiplot
 {
 public:
-    dcvis_multiplot(int num_series, cv::String title);
+    dcvis_multiplot(int num_series, cv::String a_title);
     //void set_xwidth(double x_width);
     //void set_sample_period(double period);
     //void set_ylim(double ymin, double ymax);
@@ -19,5 +19,7 @@ private:
     double ymin;
     double ymax;
     double xmax;
-    
+    int xticks;
+    int yticks;
+    cv::String title;
 };
