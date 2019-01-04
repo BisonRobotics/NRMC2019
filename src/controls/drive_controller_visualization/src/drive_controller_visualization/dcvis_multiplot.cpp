@@ -39,16 +39,19 @@ void dcvis_multiplot::draw(cv::Mat frame)
     cv::putText(frame, title, title_point, CV_FONT_HERSHEY_SIMPLEX, font_scale, font_color);
     //draw yticks, largest one has top left corner at bottom height of title, smallest one is at bottom of frame
     //so thats (frame.rows - 2*title_size.height)/yticks spacing
-    title_point.x = 0;
     cv::Size number_size = cv::getTextSize("-2.50", CV_FONT_HERSHEY_SIMPLEX, font_scale, 1, &dummy);
     for (int index = 0; index < yticks; index++)
     {
         double scale_fact = ((double)(index)) / ((double)(yticks - 1.0));
         char data[10];
         sprintf(data, "% .2f", (ymax - ymin) * (1.0-scale_fact) + ymin);
+        cv::Size this_size = cv::getTextSize(data, CV_FONT_HERSHEY_SIMPLEX, font_scale, 1, &dummy);
+        title_point.x = number_size.width - this_size.width;
         title_point.y = (frame.rows - title_size.height - number_size.height) * scale_fact + title_size.height + number_size.height;
         cv::putText(frame, data, title_point, CV_FONT_HERSHEY_SIMPLEX, font_scale, font_color);
     }
+    cv::line(frame, cv::Point(number_size.width, number_size.height), cv::Point(number_size.width, frame.rows - title_size.height),
+             cv::Scalar(200,200,200));
     //draw xticks
     //keep track of which ones are on the screen
     if (xmax > xtick_deque.back() + xtick_period)
