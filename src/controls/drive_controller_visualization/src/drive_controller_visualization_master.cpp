@@ -37,7 +37,11 @@ int main(int argc, char** argv)
     start_time = ros::Time::now();
     ros::Subscriber posSub = n.subscribe("/vrep/pose", 100, poseCallback);
 
-    cv::Mat plotarea1(300,300,CV_8UC3, cv::Scalar(0,0,0));
+    static const int plotsize_width  = 400;
+    static const int plotsize_height = 330;
+    cv::Mat plotarea1(plotsize_height,plotsize_width,CV_8UC3, cv::Scalar(0,0,0));
+    
+
     
     dcvmp.draw(plotarea1);
         
@@ -45,7 +49,7 @@ int main(int argc, char** argv)
     cv::Point ppp(2,2);
     cv::circle(framebuff, ppp, 5, cv::Scalar(200,200,200));
     
-    plotarea1.copyTo(framebuff(cv::Rect(50,50,300,300)));
+    plotarea1.copyTo(framebuff(cv::Rect(50,35,plotsize_width,plotsize_height)));
     
     cv::namedWindow("disp", cv::WINDOW_AUTOSIZE);
     cv::imshow("disp", framebuff);
@@ -67,7 +71,7 @@ int main(int argc, char** argv)
         //dcvmp.add_point(std::sin(5.0*((double)idex++)/200.0 - 5.0), 0);
         dcvmp.draw(plotarea1);
         
-        plotarea1.copyTo(framebuff(cv::Rect(50,50,300,300)));
+        plotarea1.copyTo(framebuff(cv::Rect(50,35,plotsize_width,plotsize_height)));
         cv::imshow("disp", framebuff);
 
         key_code = cv::waitKey(30); //needed to service UI thread
