@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   geometry_msgs
-  tf2
+  tf
   nav_msgs
   navigation_msgs
   cv_bridge
@@ -58,6 +58,7 @@ add_dependencies(drive_controller_visualization_master
 )
 target_link_libraries (drive_controller_visualization_master 
  drive_controller_visualization_graph
+ ${tf_LIBRARIES}
  ${OpenCV_LIBS} 
  ${catkin_LIBRARIES} 
 )
