@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   new_sim
   geometry_msgs
   visualization_msgs
+  drive_controller_msgs
   tf2
   nav_msgs
   navigation_msgs
@@ -30,13 +31,13 @@ set(GTEST_LIBRARIES gmock_main)
 find_package(OpenCV REQUIRED)
 find_package(catkin REQUIRED genmsg actionlib_msgs actionlib)
 add_action_files(DIRECTORY ../../navigation/navigation_msgs/action FILES FollowPath.action)
-generate_messages(DEPENDENCIES actionlib_msgs navigation_msgs)
+generate_messages(DEPENDENCIES actionlib_msgs navigation_msgs drive_controller_msgs)
 
 
 catkin_package(
         INCLUDE_DIRS include
 
-        CATKIN_DEPENDS driver_access roscpp std_msgs navigation_msgs localization cv_bridge
+        CATKIN_DEPENDS driver_access roscpp std_msgs navigation_msgs drive_controller_msgs localization cv_bridge
 )
 
 ###########
@@ -65,7 +66,18 @@ target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access)
 
 add_executable(drive_controller_master src/drive_controller_master.cpp)
 add_dependencies(drive_controller_master drive_controller vrep_driver_access ros_driver_access driver_access sim_robot ${catkin_EXPORTED_TARGETS}) #navigation_msgs localization
-target_link_libraries (drive_controller_master drive_controller  vrep_driver_access ros_driver_access driver_access ${OpenCV_LIBS} ${new_sim_LIBRARIES} ${localization_LIBRARIES} ${navigation_msgs_LIBRARIES} ${catkin_LIBRARIES} )
+target_link_libraries (drive_controller_master 
+  drive_controller
+  vrep_driver_access
+  ros_driver_access
+  driver_access
+  ${OpenCV_LIBS}
+  ${new_sim_LIBRARIES}
+  ${localization_LIBRARIES}
+  ${navigation_msgs_LIBRARIES}
+  ${drive_controller_msgs_LIBRARIES}
+  ${catkin_LIBRARIES} 
+)
 
 
 
