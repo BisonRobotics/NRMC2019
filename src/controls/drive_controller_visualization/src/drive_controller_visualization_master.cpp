@@ -15,30 +15,30 @@
 #include <vrep_msgs/IMU.h>
 #include <drive_controller_msgs/StateVector.h>
 
-#define NUM_SERIES_PLOT1 3
+#define NUM_SERIES_PLOT1 6
 #define Y_MIN_POS_PLOT1 -5.0
 #define Y_MAX_POS_PLOT1 5.0
 #define NUM_Y_TICKS_PLOT1 5
 #define TIME_WINDOW_PLOT1 30.0
 #define TIME_TICK_PERIOD_PLOT1 5.0
 
-#define NUM_SERIES_PLOT2 3
+#define NUM_SERIES_PLOT2 6
 #define Y_MIN_POS_PLOT2 -5.0
 #define Y_MAX_POS_PLOT2 5.0
 #define NUM_Y_TICKS_PLOT2 5
 #define TIME_WINDOW_PLOT2 30.0
 #define TIME_TICK_PERIOD_PLOT2 5.0
 
-#define NUM_SERIES_PLOT3 4
+#define NUM_SERIES_PLOT3 6
 #define Y_MIN_POS_PLOT3 -0.5
 #define Y_MAX_POS_PLOT3 0.5
 #define NUM_Y_TICKS_PLOT3 5
 #define TIME_WINDOW_PLOT3 30.0
 #define TIME_TICK_PERIOD_PLOT3 5.0
 
-cv::String names[] = {"Xpos", "Ypos", "Theta", "Xest", "Yest", "Thetaest"};
-cv::String names2[] = {"Xvel", "Yvel", "Omega", "Xvest", "Yvest", "Omegaest"};
-cv::String names3[] = {"Xaccest", "Yaccest", "Xaccmea", "Yaccmea"};
+cv::String names[] = {"Xposest", "Yposest", "Thetaest", "Xposmea", "Yposmea", "Thetamea"};
+cv::String names2[] = {"Xvelest", "Yvelest", "Omegaest", "Xvelpre", "Yvestpre", "Omegapre"};
+cv::String names3[] = {"Xaccest", "Yaccest", "Xaccmea", "Yaccmea", "Xaccpre", "Yaccpre"};
 cv::Scalar colors6[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60), cv::Scalar(120, 60, 180),
                        cv::Scalar(60, 60,120), cv::Scalar(120,180,60), cv::Scalar(120, 180,180)};
 cv::Scalar colors4[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60),
@@ -51,7 +51,7 @@ dcvis_multiplot dcvmv(NUM_SERIES_PLOT2, "Velocities", Y_MIN_POS_PLOT2, Y_MAX_POS
                       TIME_WINDOW_PLOT2, TIME_TICK_PERIOD_PLOT2, names2, colors6);
                       
 dcvis_multiplot dcvma(NUM_SERIES_PLOT3, "Accelerations", Y_MIN_POS_PLOT3, Y_MAX_POS_PLOT3, NUM_Y_TICKS_PLOT3,
-                      TIME_WINDOW_PLOT3, TIME_TICK_PERIOD_PLOT3, names3, colors4);
+                      TIME_WINDOW_PLOT3, TIME_TICK_PERIOD_PLOT3, names3, colors6);
                       
 ros::Time start_time;
 
@@ -63,44 +63,14 @@ void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
     ros::Duration plot_time = msg->header.stamp - start_time;
     double t = plot_time.toSec();
     //add point to plot
-    dcvmp.add_point(msg->pose.position.x, t, 0);
-    dcvmp.add_point(msg->pose.position.y, t, 1);
+    dcvmp.add_point(msg->pose.position.x, t, 3);
+    dcvmp.add_point(msg->pose.position.y, t, 4);
     double norm = std::sqrt(msg->pose.orientation.x * msg->pose.orientation.x +
                             msg->pose.orientation.y * msg->pose.orientation.y +
                             msg->pose.orientation.z * msg->pose.orientation.z);
     double theta = 2.0 * std::atan2(norm, msg->pose.orientation.w);
     int sign = (msg->pose.orientation.z / std::sin(theta/2.0)) > 0 ? 1 : -1;
-    dcvmp.add_point(sign*theta, t, 2);
-    //get what is believed to be true
-    /*
-    tf::StampedTransform local_transform;
-    double plot_x;
-    double plot_y;
-    try
-    {
-        listener->lookupTransform("/base_link", "/map",
-                                 ros::Time(0), local_transform);
-                                 //note that using msg->header.stamp here makes tf angry
-                                 //this is b/c tf is a little (~.02s) behind.
-        plot_x = local_transform.getOrigin().x();
-        plot_y = local_transform.getOrigin().y();
-        norm = std::sqrt(local_transform.getRotation().x() * local_transform.getRotation().x() +
-                         local_transform.getRotation().y() * local_transform.getRotation().y() +
-                         local_transform.getRotation().z() * local_transform.getRotation().z());
-        theta = 2.0 * std::atan2(norm, msg->pose.orientation.w);
-        sign = (msg->pose.orientation.z / std::sin(theta/2.0)) > 0 ? 1 : -1;
-        theta = sign*theta;
-    }
-    catch (tf::TransformException &ex) {
-      ROS_ERROR("%s",ex.what());
-      plot_x = 0;
-      plot_y = 0;
-      theta  = 0;
-    }
-    dcvmp.add_point(plot_x, t, 3);
-    dcvmp.add_point(plot_y, t, 4);
-    dcvmp.add_point(theta , t, 5);
-    */
+    dcvmp.add_point(sign*theta, t, 5);
 }
 
 void accelerationCallback(const vrep_msgs::IMU::ConstPtr &msg)
@@ -128,15 +98,29 @@ void stateVectorCallback(const drive_controller_msgs::StateVector::ConstPtr &msg
     //dcvma.add_point(msg->alpha,   t, 2); //There is no useful alpha estimate or measurement
 }
 
+void deltaVectorCallback(const drive_controller_msgs::StateVector::ConstPtr &msg)
+{
+    ros::Duration plot_time = msg->header.stamp - start_time;
+    double t = plot_time.toSec();
+    dcvmv.add_point(msg->x_pos, t, 3); //this is predicted vel
+    dcvmv.add_point(msg->y_pos, t, 4);
+    dcvmv.add_point(msg->theta, t, 5); //predicted angular vel
+    
+    dcvma.add_point(msg->x_vel, t, 4); //predicted accel
+    dcvma.add_point(msg->y_vel, t, 5); //this delta vector is the change
+    //dont worry about predicted alpha
+}
+
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "drive_controller_vis");
     ros::NodeHandle n;
     start_time = ros::Time::now();
     //listener = new tf::TransformListener();
-    //ros::Subscriber posSub = n.subscribe("/vrep/pose", 100, poseCallback);
+    ros::Subscriber posSub = n.subscribe("/vrep/pose", 100, poseCallback);
     ros::Subscriber imuSub = n.subscribe("/vrep/imu", 100, accelerationCallback);
     ros::Subscriber svSub  = n.subscribe("/position_controller/state_vector", 100, stateVectorCallback);
+    ros::Subscriber dvSub  = n.subscribe("/position_controller/delta_vector", 100, deltaVectorCallback);
 
     static const int plotsize_width  = 400;
     static const int plotsize_height = 330;
@@ -181,6 +165,8 @@ int main(int argc, char** argv)
         plotarea3.copyTo(framebuff(cv::Rect(500,330 + 2*35,plotsize_width,plotsize_height)));
         cv::imshow("disp", framebuff);
         
+        ros::spinOnce();        
+        ros::spinOnce();        
         ros::spinOnce();        
         ros::spinOnce();        
         ros::spinOnce();        
