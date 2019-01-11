@@ -123,8 +123,8 @@ void stateVectorCallback(const drive_controller_msgs::StateVector::ConstPtr &msg
     dcvmv.add_point(msg->y_vel, t, 1);
     dcvmv.add_point(msg->omega, t, 2);
     
-    dcvma.add_point(msg->x_accel + .2, t, 0);
-    dcvma.add_point(msg->y_accel + .2, t, 1);
+    dcvma.add_point(msg->x_accel, t, 0);
+    dcvma.add_point(msg->y_accel, t, 1);
     //dcvma.add_point(msg->alpha,   t, 2); //There is no useful alpha estimate or measurement
 }
 

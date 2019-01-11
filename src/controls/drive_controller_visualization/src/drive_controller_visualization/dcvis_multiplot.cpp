@@ -95,14 +95,6 @@ void dcvis_multiplot::draw(cv::Mat frame)
         start_idex_vec.at(odex) = start_idex;
     }
     
-    //debug 
-    /*
-    char data[50];
-    sprintf(data, "%.2f %.2f %.2f %.2f", xmin, xmax, xwidth, series_list.at(0)[start_idex].x);
-    cv::putText(frame, data, cv::Point(100,100), CV_FONT_HERSHEY_SIMPLEX, font_scale, font_color);
-    */ 
-    //end debug 
-    
     //plot lines
     for (int odex = 0; odex < num_series; odex++)
     {
