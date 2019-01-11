@@ -33,7 +33,6 @@ find_package(catkin REQUIRED genmsg actionlib_msgs actionlib)
 add_action_files(DIRECTORY ../../navigation/navigation_msgs/action FILES FollowPath.action)
 generate_messages(DEPENDENCIES actionlib_msgs navigation_msgs drive_controller_msgs)
 
-
 catkin_package(
         INCLUDE_DIRS include
 
@@ -65,7 +64,14 @@ target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access)
 #############
 
 add_executable(drive_controller_master src/drive_controller_master.cpp)
-add_dependencies(drive_controller_master drive_controller vrep_driver_access ros_driver_access driver_access sim_robot ${catkin_EXPORTED_TARGETS}) #navigation_msgs localization
+add_dependencies(drive_controller_master 
+  drive_controller 
+  vrep_driver_access
+  ros_driver_access
+  driver_access
+  sim_robot
+  ${catkin_EXPORTED_TARGETS}
+) #navigation_msgs localization
 target_link_libraries (drive_controller_master 
   drive_controller
   vrep_driver_access

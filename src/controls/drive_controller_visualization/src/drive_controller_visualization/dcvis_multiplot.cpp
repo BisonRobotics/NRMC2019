@@ -11,9 +11,10 @@ dcvis_multiplot::dcvis_multiplot(int num_series, cv::String title,
  names(names), colors(colors)
 {
     std::array<cv::Point2d, dcvis_multiplot::num_samples> dummy;
-    for (int index=0; index < dcvis_multiplot::num_samples; index++)
+    for (int index=0; index < num_series; index++)
     {
         series_list.push_back(dummy);
+        start_idex_vec.push_back(0);
     }
     xtick_deque.push_back(0);
 }
@@ -24,7 +25,7 @@ void dcvis_multiplot::add_point(double y, double t, int series)
     memmove(my_p, my_p+1, (dcvis_multiplot::num_samples -1)*sizeof(cv::Point2d));
     my_p[dcvis_multiplot::num_samples-1].x = t;
     my_p[dcvis_multiplot::num_samples-1].y = y;
-    xmax = t;//my_p[dcvis_multiplot::num_samples-1].x;
+    xmax = t > xmax ? t : xmax;//my_p[dcvis_multiplot::num_samples-1].x;
 }
 
 void dcvis_multiplot::draw(cv::Mat frame)
@@ -84,17 +85,31 @@ void dcvis_multiplot::draw(cv::Mat frame)
     double height = frame.rows - title_size.height - number_size.height;
     double yscale = height/(ymax - ymin); 
     double xmin = xmax - xwidth;
-
-    int start_idex=0;
-    //find starting index
-    for (start_idex = 0; start_idex <dcvis_multiplot::num_samples && series_list.at(0)[start_idex].x < xmin; start_idex++);
+    
+    //find starting index for each series, 
+    //maybe in the future we could search starting from the last one
+    for (int odex =0; odex < num_series; odex++)
+    {
+        int start_idex =0;
+        for (start_idex = 0; (start_idex < dcvis_multiplot::num_samples-1) && (series_list.at(odex)[start_idex].x < xmin); start_idex++);
+        start_idex_vec.at(odex) = start_idex;
+    }
+    
+    //debug 
+    /*
+    char data[50];
+    sprintf(data, "%.2f %.2f %.2f %.2f", xmin, xmax, xwidth, series_list.at(0)[start_idex].x);
+    cv::putText(frame, data, cv::Point(100,100), CV_FONT_HERSHEY_SIMPLEX, font_scale, font_color);
+    */ 
+    //end debug 
+    
     //plot lines
     for (int odex = 0; odex < num_series; odex++)
     {
         cv::Point p1, p2;
-        p1.x = (series_list.at(odex)[start_idex].x - xmin)*xscale + number_size.width;
-        p1.y = height - (series_list.at(odex)[start_idex].y - ymin)*yscale + title_size.height;
-        for (int idex = start_idex+1; idex < dcvis_multiplot::num_samples; idex++)
+        p1.x = (series_list.at(odex)[start_idex_vec.at(odex)].x - xmin)*xscale + number_size.width;
+        p1.y = height - (series_list.at(odex)[start_idex_vec.at(odex)].y - ymin)*yscale + title_size.height;
+        for (int idex = start_idex_vec.at(odex)+1; idex < dcvis_multiplot::num_samples; idex++)
         {
             p2.x = (series_list.at(odex)[idex].x - xmin)*xscale + number_size.width;
             p2.y = height - (series_list.at(odex)[idex].y - ymin)*yscale + title_size.height;

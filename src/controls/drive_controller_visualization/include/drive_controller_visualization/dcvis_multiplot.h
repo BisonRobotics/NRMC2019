@@ -13,7 +13,7 @@ public:
     void add_point(double y,double t, int series);
     void draw(cv::Mat frame);
 private:
-    static const int num_samples = 1000;
+    static const int num_samples = 2000;
     std::vector<std::array<cv::Point2d, num_samples> > series_list;
     cv::String* names;
     cv::Scalar* colors;
@@ -24,6 +24,7 @@ private:
     int yticks;
     double xmax;
     double xtick_period;
+    std::vector<int> start_idex_vec;
     std::deque<double> xtick_deque;
     cv::String title;
     

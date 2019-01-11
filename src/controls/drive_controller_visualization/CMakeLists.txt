@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   nav_msgs
   navigation_msgs
+  drive_controller_msgs
   cv_bridge
 )
 
@@ -21,15 +22,14 @@ link_directories(/usr/src/gmock/build)
 set(GTEST_LIBRARIES gmock_main)
 
 find_package(OpenCV REQUIRED)
-find_package(catkin REQUIRED genmsg actionlib_msgs actionlib)
-add_action_files(DIRECTORY ../../navigation/navigation_msgs/action FILES FollowPath.action)
-generate_messages(DEPENDENCIES actionlib_msgs navigation_msgs)
-
+#find_package(catkin REQUIRED genmsg)# actionlib_msgs actionlib)
+#add_action_files(DIRECTORY ../../navigation/navigation_msgs/action FILES FollowPath.action)
+#generate_messages(DEPENDENCIES drive_controller_msgs) #actionlib_msgs navigation_msgs)
 
 catkin_package(
         INCLUDE_DIRS include
 
-        CATKIN_DEPENDS roscpp std_msgs geometry_msgs cv_bridge
+        CATKIN_DEPENDS roscpp std_msgs geometry_msgs drive_controller_msgs cv_bridge
 )
 
 ###########
@@ -54,12 +54,14 @@ target_link_libraries(drive_controller_visualization_graph  ${OpenCV_LIBS} )
 add_executable(drive_controller_visualization_master src/drive_controller_visualization_master.cpp)
 add_dependencies(drive_controller_visualization_master 
   drive_controller_visualization_graph
-  #geometry_msgs
-)
+  drive_controller_msgs
+  ${catkin_EXPORTED_TARGETS}
+) #geometry_msgs
 target_link_libraries (drive_controller_visualization_master 
  drive_controller_visualization_graph
  ${tf_LIBRARIES}
  ${OpenCV_LIBS} 
+ ${drive_controller_msgs_LIBRARIES}
  ${catkin_LIBRARIES} 
 )
 
