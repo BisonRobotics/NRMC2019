@@ -33,7 +33,7 @@ set(GTEST_LIBRARIES gmock_main)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include/
-  LIBRARIES lpresearch_imu apriltag_tracker_interface
+  LIBRARIES lpresearch_imu apriltag_tracker_interface vrep_imu_access
   CATKIN_DEPENDS vrep_msgs
   DEPENDS
 )

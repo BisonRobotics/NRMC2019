@@ -18,13 +18,14 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
   delta.y_pos = 0;
 }
 
-void DriveController::addPath(DriveController_ns::bezier_path path)
+void DriveController::addPath(DriveController_ns::bezier_path path, bool forward_point)
 {
  if (p_paths ==0) //no current paths
  {
     getAngleAndLengthInfo(path, p_theta, p_omega, p_alpha, p_lengths,
                           p_x, p_y, p_length, this->Gchopsize);
     p_paths +=1;
+    p_forward_point = forward_point;
  }
  else return; //one path at a time for now
 
@@ -56,8 +57,8 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
 
   double speed_gain =  1;  /*DNFW*/
   double set_speed  = .4;  /*DNFW*/
-  double angle_gain = 10;  /*DNFW*/ 
-  double path_gain  = 50;  /*DNFW*/
+  double angle_gain = 4;  /*DNFW*/ 
+  double path_gain  = 2;  /*DNFW*/
   
 
   double steering = 0;
@@ -79,6 +80,8 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
     {
       index_for_t = Gchopsize -1;
       p_paths -= 1;
+      p_closest_t = 0;
+      p_last_closest_t = 0;
     }
     else 
     {
@@ -102,16 +105,33 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
           t_jumps = t_jumps+1;
       } */
       //Get wheel velocities
-      std::pair<double, double> UlUr = speedSteeringControl(p_speed_cmd, 
-                                       p_theta.at((int)(index_for_t) + t_jumps)
-                                       - angle_gain*angle_error - path_gain*path_error,
+      std::pair<double, double> UlUr = speedSteeringControl(
+                                      p_speed_cmd, 
+                                      p_theta.at((int)(index_for_t) + t_jumps)
+                                       - (p_forward_point ? 2.0 : -0.5)*angle_gain*angle_error 
+                                       - (p_forward_point ? 2.0 : -0.5)*path_gain*path_error,
                                        Axelsize, 2.0);
 
-      front_right_wheel->setLinearVelocity(UlUr.second);
-      front_left_wheel->setLinearVelocity(UlUr.first);
-      back_left_wheel->setLinearVelocity(UlUr.first);
-      back_right_wheel->setLinearVelocity(UlUr.second);
-
+      if (p_forward_point)
+      {
+        front_right_wheel->setLinearVelocity(UlUr.second);
+        front_left_wheel->setLinearVelocity(UlUr.first);
+        back_left_wheel->setLinearVelocity(UlUr.first);
+        back_right_wheel->setLinearVelocity(UlUr.second);
+      }
+      else
+      {
+/*
+        front_right_wheel->setLinearVelocity((-1.0)*UlUr.second);
+        front_left_wheel->setLinearVelocity((-1.0)*UlUr.first);
+        back_left_wheel->setLinearVelocity((-1.0)*UlUr.first);
+        back_right_wheel->setLinearVelocity((-1.0)*UlUr.second);
+*/
+        front_right_wheel->setLinearVelocity((-1.0)*UlUr.first);
+        front_left_wheel->setLinearVelocity((-1.0)*UlUr.second);
+        back_left_wheel->setLinearVelocity((-1.0)*UlUr.second);
+        back_right_wheel->setLinearVelocity((-1.0)*UlUr.first);
+      }
       //Model calculations: what we predict will happen in the next frame.
       //TODO: track disturbance on wheels, 
       //      add estimated disturbance to wheel velocities here.
@@ -122,7 +142,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       double m_ddxyth[3];
       for (int index=0;index<3;index++) 
       {
-         m_ddxyth[index] = (m_dxyth[index] - temp[index])/dt;
+         m_ddxyth[index] = (m_dxyth[index] - temp[index]);
       }
       delta.x_pos = m_dxyth[0];
       delta.y_pos = m_dxyth[1];

@@ -22,7 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
   occupancy_grid
   actionlib
   cv_bridge
-  #path_planner
 )
 
 link_directories(/usr/src/gmock/build)

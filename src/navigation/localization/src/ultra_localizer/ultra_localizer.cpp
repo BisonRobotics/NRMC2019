@@ -22,9 +22,9 @@ LocalizerInterface::stateVector UltraLocalizer::getResidual()
 
 UltraLocalizer::UpdateStatus  UltraLocalizer::updateStateVector(double dt) 
 {
-  /*not implemented*/
-  /*
-  int * vargin;
+  /*not implemented*/ //This method is here temproarily while interfaces
+  /*                  // are transitioned.
+  int * vargin; 
   int * vargin_2;
   vargin_2 = * vargin;
   memcpy(vargin_2, vargin, vargin);
