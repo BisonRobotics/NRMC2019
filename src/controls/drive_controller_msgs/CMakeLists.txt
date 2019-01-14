@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
 include_directories(${catkin_INCLUDE_DIRS})
 
 add_message_files(FILES StateVector.msg)
+add_message_files(FILES WheelStates.msg)
+add_message_files(FILES ErrorStates.msg)
 generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(

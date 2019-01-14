@@ -14,6 +14,8 @@
 #include <std_msgs/Empty.h>
 
 #include <drive_controller_msgs/StateVector.h>
+#include <drive_controller_msgs/ErrorStates.h>
+#include <drive_controller_msgs/WheelStates.h>
 
 #include <driver_access/driver_access_interface.h>
 #include <vrep_driver_access/vrep_driver_access.h>
@@ -36,6 +38,8 @@
 #include <vector>
 #include <utility>
 
+//rosservice call /plan_path "goals: [{x: 1.0, y: 0.0}, {x: 6.5, y: 0.8}]"
+
 #define UPDATE_RATE_HZ 50.0
 bool newWaypointHere = false;
 bool forwardPoint = false;
@@ -53,6 +57,7 @@ using occupancy_grid::Bezier;
 
 int state_vec_seq = 0;
 int delta_vec_seq = 0;
+int error_states_seq = 0;
 
 #define STATE_VECTOR_ID 0
 #define DELTA_VECTOR_ID 1
@@ -149,6 +154,16 @@ drive_controller_msgs::StateVector localizer_sv_to_msg(LocalizerInterface::state
     sv_msg.y_accel = sv.y_accel;
     sv_msg.alpha   = sv.alpha;
     return sv_msg;
+}
+
+drive_controller_msgs::ErrorStates error_states_to_msg(DriveController_ns::error_state es)
+{
+    drive_controller_msgs::ErrorStates es_msg;
+    es_msg.header.stamp = ros::Time::now();
+    es_msg.header.seq = error_states_seq++;
+    es_msg.path_error = es.path_error;
+    es_msg.angle_error = es.angle_error;
+    return es_msg;
 }
 
 void haltCallback(const std_msgs::Empty::ConstPtr &msg)
@@ -300,12 +315,13 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   ROS_INFO("Going into wait loop for localizer and initial theta...");
   ros::Publisher state_vector_publisher = node.advertise<drive_controller_msgs::StateVector>("state_vector", 1000);
   ros::Publisher delta_vector_publisher = node.advertise<drive_controller_msgs::StateVector>("delta_vector", 1000);
+  ros::Publisher error_states_publisher = node.advertise<drive_controller_msgs::ErrorStates>("error_states", 1000);
+  //ros::Publisher wheel_states_publisher = node.advertise<drive_controller_msgs::WheelStates>("wheel_states", 1000);
 
   ROS_INFO("Made Publishers");
 
   ros::Duration idealLoopTime(1.0 / UPDATE_RATE_HZ);
 
-  
   //Can these two settling rounds be compacted into one?
   lastTime = ros::Time::now ();
   while (((ros::Time::now() - lastTime).toSec() < 2.0f + settle_time) && (ros::ok())) //((!superLocalizer.getIsDataGood() && ros::ok()))
@@ -400,11 +416,10 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     stateVector = ultraLocalizer.getStateVector();
 
     tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
-    //state_vector_msg = localizer_sv_to_msg(ultraLocalizer.getStateVector(), STATE_VECTOR_ID);
-    //delta_vector_msg = localizer_sv_to_msg(UltraLocalizer_zero_vector, DELTA_VECTOR_ID);
     state_vector_publisher.publish(localizer_sv_to_msg(ultraLocalizer.getStateVector(), STATE_VECTOR_ID));
     delta_vector_publisher.publish(localizer_sv_to_msg(dc.getDeltaStateVector(), DELTA_VECTOR_ID));
-    
+    error_states_publisher.publish(error_states_to_msg(dc.getErrorStates()));
+
     ros_drivers.publish();
 
     if (newWaypointHere)
