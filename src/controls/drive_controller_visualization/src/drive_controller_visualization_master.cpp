@@ -14,6 +14,7 @@
 
 #include <vrep_msgs/IMU.h>
 #include <drive_controller_msgs/StateVector.h>
+#include <drive_controller_msgs/ErrorStates.h>
 
 #define NUM_SERIES_PLOT1 6
 #define Y_MIN_POS_PLOT1 -5.0
@@ -36,9 +37,17 @@
 #define TIME_WINDOW_PLOT3 30.0
 #define TIME_TICK_PERIOD_PLOT3 5.0
 
+#define NUM_SERIES_PLOT4 2
+#define Y_MIN_POS_PLOT4 -0.5
+#define Y_MAX_POS_PLOT4 0.5
+#define NUM_Y_TICKS_PLOT4 5
+#define TIME_WINDOW_PLOT4 30.0
+#define TIME_TICK_PERIOD_PLOT4 5.0
+
 cv::String names[] = {"Xposest", "Yposest", "Thetaest", "Xposmea", "Yposmea", "Thetamea"};
 cv::String names2[] = {"Xvelest", "Yvelest", "Omegaest", "Xvelpre", "Yvestpre", "Omegapre"};
 cv::String names3[] = {"Xaccest", "Yaccest", "Xaccmea", "Yaccmea", "Xaccpre", "Yaccpre"};
+cv::String names4[] = {"Patherr", "Angleerr"};
 cv::Scalar colors6[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60), cv::Scalar(120, 60, 180),
                        cv::Scalar(60, 60,120), cv::Scalar(120,180,60), cv::Scalar(120, 180,180)};
 cv::Scalar colors4[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60),
@@ -53,9 +62,10 @@ dcvis_multiplot dcvmv(NUM_SERIES_PLOT2, "Velocities", Y_MIN_POS_PLOT2, Y_MAX_POS
 dcvis_multiplot dcvma(NUM_SERIES_PLOT3, "Accelerations", Y_MIN_POS_PLOT3, Y_MAX_POS_PLOT3, NUM_Y_TICKS_PLOT3,
                       TIME_WINDOW_PLOT3, TIME_TICK_PERIOD_PLOT3, names3, colors6);
                       
+dcvis_multiplot dcerr(NUM_SERIES_PLOT4, "Error States", Y_MIN_POS_PLOT4, Y_MAX_POS_PLOT4, NUM_Y_TICKS_PLOT4,
+                      TIME_WINDOW_PLOT4, TIME_TICK_PERIOD_PLOT4, names4, colors4);
+                      
 ros::Time start_time;
-
-//tf::TransformListener* listener = NULL;
 
 void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
 {
@@ -111,6 +121,14 @@ void deltaVectorCallback(const drive_controller_msgs::StateVector::ConstPtr &msg
     //dont worry about predicted alpha
 }
 
+void errorStatesCallback(const drive_controller_msgs::ErrorStates::ConstPtr &msg)
+{
+    ros::Duration plot_time = msg->header.stamp - start_time;
+    double t = plot_time.toSec();
+    dcerr.add_point(msg->path_error, t, 0);
+    dcerr.add_point(msg->angle_error, t, 1);
+}
+
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "drive_controller_vis");
@@ -121,16 +139,19 @@ int main(int argc, char** argv)
     ros::Subscriber imuSub = n.subscribe("/vrep/imu", 100, accelerationCallback);
     ros::Subscriber svSub  = n.subscribe("/position_controller/state_vector", 100, stateVectorCallback);
     ros::Subscriber dvSub  = n.subscribe("/position_controller/delta_vector", 100, deltaVectorCallback);
+    ros::Subscriber esSub  = n.subscribe("/position_controller/error_states", 100, errorStatesCallback);
 
     static const int plotsize_width  = 400;
     static const int plotsize_height = 330;
     cv::Mat plotarea1(plotsize_height,plotsize_width,CV_8UC3, cv::Scalar(0,0,0));
     cv::Mat plotarea2(plotsize_height,plotsize_width,CV_8UC3, cv::Scalar(0,0,0));
     cv::Mat plotarea3(plotsize_height,plotsize_width,CV_8UC3, cv::Scalar(0,0,0));
+    cv::Mat plotarea4(plotsize_height,plotsize_width,CV_8UC3, cv::Scalar(0,0,0));
     
     dcvmp.draw(plotarea1);
     dcvmv.draw(plotarea2);
     dcvmv.draw(plotarea3);
+    dcvmv.draw(plotarea4);
         
     cv::Mat framebuff(950, 950, CV_8UC3, cv::Scalar(170,70,70));
     //First you draw a circle...
@@ -140,6 +161,7 @@ int main(int argc, char** argv)
     plotarea1.copyTo(framebuff(cv::Rect(50 ,35,plotsize_width,plotsize_height)));
     plotarea2.copyTo(framebuff(cv::Rect(500,35,plotsize_width, plotsize_height)));
     plotarea3.copyTo(framebuff(cv::Rect(500,330 + 2*35,plotsize_width, plotsize_height)));
+    plotarea4.copyTo(framebuff(cv::Rect(50,330 + 2*35,plotsize_width, plotsize_height)));
     
     cv::namedWindow("disp", cv::WINDOW_AUTOSIZE);
     cv::imshow("disp", framebuff);
@@ -159,10 +181,12 @@ int main(int argc, char** argv)
         dcvmp.draw(plotarea1);
         dcvmv.draw(plotarea2);
         dcvma.draw(plotarea3);
+        dcerr.draw(plotarea4);
         
         plotarea1.copyTo(framebuff(cv::Rect(50 ,35,plotsize_width,plotsize_height)));
         plotarea2.copyTo(framebuff(cv::Rect(500,35,plotsize_width,plotsize_height)));
         plotarea3.copyTo(framebuff(cv::Rect(500,330 + 2*35,plotsize_width,plotsize_height)));
+        plotarea4.copyTo(framebuff(cv::Rect(50 ,330 + 2*35,plotsize_width,plotsize_height)));
         cv::imshow("disp", framebuff);
         
         ros::spinOnce();        
