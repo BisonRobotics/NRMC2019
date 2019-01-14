@@ -59,13 +59,13 @@
         <origin xyz="-387.35e-3 0 2.0796e-01" rpy="0 0 0" />
     </joint>
 
-    <xacro:macro name="wheel" params="x_name y_name rot y_dir xdist color">
+    <xacro:macro name="wheel" params="x_name y_name rot r_z y_dir xdist color ">
         <link name="${x_name}_${y_name}_wheel">
             <visual>
                 <geometry>
                     <mesh filename="package://description/meshes/wheel.stl" />
                 </geometry>
-                <origin xyz="0 0 0" rpy="${rot} 0 0"/>
+                <origin xyz="0 0 0" rpy="${rot} 0 ${r_z}" />
                 <material name="${color}"/>
             </visual>
         </link>
@@ -73,63 +73,160 @@
         <joint name="${x_name}_${y_name}_wheel_joint" type="revolute">
             <parent link="frame"/>
             <child link="${x_name}_${y_name}_wheel"/>
-            <origin xyz="${xdist} ${y_dir*0.3109468} -0.0555752" />
+            <origin xyz="${xdist} ${y_dir*0.257109468} -0.5055752" />
             <axis xyz="0 1 0"/>
             <limit effort="1000.0" lower="-1e9" upper="1e9" velocity="1000.0"/>
         </joint>
     </xacro:macro>
-    <xacro:wheel x_name="front" y_name="left"  rot="${-pi/2}" y_dir="1"  xdist="0.73025" color="gold"   />
-    <xacro:wheel x_name="front" y_name="right" rot="${pi/2}"  y_dir="-1" xdist="0.73025" color="gold" />
-    <xacro:wheel x_name="back"  y_name="left"  rot="${-pi/2}" y_dir="1"  xdist="0.0455676" color="gold"   />
-    <xacro:wheel x_name="back"  y_name="right" rot="${pi/2}"  y_dir="-1" xdist="0.0455676" color="gold" />
+    <xacro:wheel x_name="front" y_name="left"  rot="${-pi/2}" r_z="-1.575" y_dir="1.15"  xdist="0.85025" color="gold"    />
+    <xacro:wheel x_name="front" y_name="right" rot="${pi/2}"  r_z="1.575" y_dir="-1.15" xdist="0.85025" color="gold"  />
+    <xacro:wheel x_name="back"  y_name="left"  rot="${-pi/2}" r_z="-1.575" y_dir="1.15"  xdist="0.1655676" color="gold"   />
+    <xacro:wheel x_name="back"  y_name="right" rot="${pi/2}"  r_z="1.575" y_dir="-1.15" xdist="0.1655676" color="gold"  />
+
 
     <link name="central_drive">
         <visual>
             <geometry>
-                <mesh filename="package://description/meshes/central_drive.stl" />
-            </geometry>
-            <origin xyz="0.1121664 -0.098425 -0.05715" rpy="0 ${pi/2} ${pi}" />
-            <material name="black" />
+                    <mesh filename="package://description/meshes/central_drive.stl" />
+                </geometry>
+                <origin xyz="0.125 0.03 -0.375" rpy="0 0 1.57" />
+                <material name="black" />
         </visual>
     </link>
 
     <joint name="frame_to_central_drive" type="fixed">
         <parent link="frame"/>
         <child link="central_drive"/>
-        <origin xyz="0.5291836 0.0 0.079375" rpy="0 0 0" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
     </joint>
 
     <link name="computer_box">
         <visual>
             <geometry>
-                <mesh filename="package://description/meshes/box.stl" />
+                <mesh filename="package://description/meshes/computer_box.stl" />
             </geometry>
-            <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
-            <material name="grey" />
+            <origin xyz="0.5 -0.275 -0.1" rpy="1.57 0 -1.57" />
+            <material name="black" />
         </visual>
     </link>
 
-    <joint name="frame_to_computer_box" type="fixed">
-        <parent link="frame"/>
-        <child link="computer_box"/>
-        <origin xyz="0.858774 -0.093726 0.132461" rpy="0 0 0" />
+    <joint name="computer_box_to_base" type="fixed" >
+        <parent link="base_link" />
+        <child link="computer_box" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
     </joint>
 
     <link name="battery_box">
         <visual>
             <geometry>
-                <mesh filename="package://description/meshes/box.stl" />
+                <mesh filename="package://description/meshes/battery_box.stl" />
             </geometry>
-            <origin xyz="0 0 0" rpy="${pi/2} 0 0" />
+            <origin xyz="0.525 0.275 -0.1" rpy="1.57 0 1.57" />
+            <material name="black" />
+        </visual>
+    </link>
+
+    <joint name="battery_box_to_base" type="fixed" >
+        <parent link="base_link" />
+        <child link="battery_box" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint >
+
+    <link name="backhoe_monoboom">
+        <visual>
+            <geometry>
+                <mesh filename="package://description/meshes/backhoe_monoboom.stl" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <material name="black" />
+        </visual>
+    </link>
+
+    <joint name="monoboom_to_frame" type="revolute">
+        <origin xyz="0.98 0 -0.365" rpy="1.57 0 3.14" />
+        <axis xyz="0 0 -1" />
+        <parent link="frame" />
+        <child link="backhoe_monoboom" />
+        <limit effort="1000.0" lower="-1" upper="0.85" velocity="1.0" />
+
+    </joint>
+
+    <link name="bucket_backhoe">
+        <visual>
+            <geometry>
+                <mesh filename="package://description/meshes/backhoe_bucket.stl" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <material name="grey" />
         </visual>
     </link>
 
-    <joint name="frame_to_battery_box" type="fixed">
+    <joint name="bucket_to_monoboom" type="revolute">
+        <origin xyz="0.55 0 0" rpy="0 0 3.14" />
+        <axis xyz="0 0 1" />
+        <parent link="backhoe_monoboom" />
+        <child link="bucket_backhoe" />
+        <limit effort="1000.0" lower="0" upper="2.25" velocity="1" />
+    </joint>    
+
+    <link name="gravel_bucket">
+        <visual>
+            <geometry>
+                <mesh filename="package://description/meshes/gravel_bucket.stl" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="1.57 0 0" />
+            <material name="black" />
+        </visual>
+    </link>
+
+    <joint name="frame_to_gravel_bucket" type="revolute">
+
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <axis xyz="0 -1 0" />
         <parent link="frame"/>
-        <child link="battery_box"/>
-        <origin xyz="0.858774 0.093726 0.132461" rpy="0 0 0" />
+        <child link="gravel_bucket" />        
+        <limit effort="1000.0" lower="0" upper="1.25" velocity="1.0" />
     </joint>
+
+    <link name="left_flap">
+        <visual>
+            <geometry>
+                <mesh filename="package://description/meshes/left_flap.stl"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <material name="grey" />
+        </visual>
+    </link>
+
+    <joint name="left_flap_joint" type="revolute">
+        <origin xyz="0.53 0.125 -0.2" rpy="1.57 0 -1.57" />
+        <axis xyz="0 0 1" />
+        <parent link="frame" />
+        <child link="left_flap" />
+        <limit effort="1000.0" lower="-1.55" upper="1.25" velocity="1.0" />
+
+    </joint>
+
+
+    <link name="right_flap">
+        <visual>
+            <geometry>
+                <mesh filename="package://description/meshes/right_flap.stl" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 3.14 0" />
+            <material name="grey" />
+        </visual>
+    </link>
+
+    <joint name="right_flap_joint" type="revolute">
+        <origin xyz="0.53 -0.125 -0.2" rpy="1.57 0 -1.57" />
+        <axis xyz="0 0 -1" />
+        <parent link="frame" />
+        <child link="right_flap" />
+        <limit effort="1000.0" lower="-1.55" upper="1.25" velocity="1.0" />
+    </joint>
+
+    
 
     <!-- Add a few static transforms for testing -->
     <xacro:arg name="test_urdf" default="false"/>
