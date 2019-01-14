@@ -18,7 +18,14 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
   delta.y_pos = 0;
   
   es.angle_error = 0;
-  es.path_error = 0;
+  es.path_error  = 0;
+  
+  ws.left_wheel_planned  = 0;
+  ws.right_wheel_planned = 0;
+  ws.left_wheel_actual   = 0;
+  ws.right_wheel_actual  = 0;
+  ws.left_wheel_command  = 0;
+  ws.right_wheel_command = 0;
 }
 
 void DriveController::addPath(DriveController_ns::bezier_path path, bool forward_point)
@@ -114,6 +121,18 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
                                        - (p_forward_point ? 2.0 : -0.5)*angle_gain*es.angle_error 
                                        - (p_forward_point ? 2.0 : -0.5)*path_gain*es.path_error,
                                        Axelsize, 2.0);
+                                       
+      std::pair<double, double> UlUrIdeal = speedSteeringControl(
+                                      p_speed_cmd, 
+                                      p_theta.at((int)(index_for_t) + t_jumps),
+                                      Axelsize, 2.0);
+                                       
+      ws.left_wheel_command  = UlUr.first;
+      ws.right_wheel_command = UlUr.second;
+      ws.left_wheel_planned  = UlUrIdeal.first;
+      ws.right_wheel_planned = UlUrIdeal.second;
+      ws.left_wheel_actual  = .5 * (front_left_wheel->getLinearVelocity() + back_left_wheel->getLinearVelocity());
+      ws.right_wheel_actual = .5 * (front_right_wheel->getLinearVelocity() + back_right_wheel->getLinearVelocity());
 
       if (p_forward_point)
       {
@@ -124,12 +143,6 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       }
       else
       {
-/*
-        front_right_wheel->setLinearVelocity((-1.0)*UlUr.second);
-        front_left_wheel->setLinearVelocity((-1.0)*UlUr.first);
-        back_left_wheel->setLinearVelocity((-1.0)*UlUr.first);
-        back_right_wheel->setLinearVelocity((-1.0)*UlUr.second);
-*/
         front_right_wheel->setLinearVelocity((-1.0)*UlUr.first);
         front_left_wheel->setLinearVelocity((-1.0)*UlUr.second);
         back_left_wheel->setLinearVelocity((-1.0)*UlUr.second);
@@ -180,8 +193,15 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
     delta.y_accel = 0;
     delta.alpha = 0;
     
-    es.path_error = 0;
+    es.path_error  = 0;
     es.angle_error = 0;
+    
+    ws.left_wheel_planned  = 0;
+    ws.right_wheel_planned = 0;
+    ws.left_wheel_actual   = 0;
+    ws.right_wheel_actual  = 0;
+    ws.left_wheel_command  = 0;
+    ws.right_wheel_command = 0;
     
     return false;
   }
@@ -375,3 +395,7 @@ DriveController_ns::error_state DriveController::getErrorStates()
     return es;
 }
 
+DriveController_ns::wheel_state DriveController::getWheelStates()
+{
+    return ws;
+}

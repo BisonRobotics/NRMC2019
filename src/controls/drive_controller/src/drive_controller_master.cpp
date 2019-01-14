@@ -58,6 +58,8 @@ using occupancy_grid::Bezier;
 int state_vec_seq = 0;
 int delta_vec_seq = 0;
 int error_states_seq = 0;
+int wheel_states_seq = 0;
+
 
 #define STATE_VECTOR_ID 0
 #define DELTA_VECTOR_ID 1
@@ -164,6 +166,20 @@ drive_controller_msgs::ErrorStates error_states_to_msg(DriveController_ns::error
     es_msg.path_error = es.path_error;
     es_msg.angle_error = es.angle_error;
     return es_msg;
+}
+
+drive_controller_msgs::WheelStates wheel_states_to_msg(DriveController_ns::wheel_state ws)
+{
+    drive_controller_msgs::WheelStates ws_msg;
+    ws_msg.header.stamp = ros::Time::now();
+    ws_msg.header.seq = wheel_states_seq++;
+    ws_msg.left_wheel_planned = ws.left_wheel_planned;
+    ws_msg.right_wheel_planned = ws.right_wheel_planned;
+    ws_msg.left_wheel_command = ws.left_wheel_command;
+    ws_msg.right_wheel_command = ws.right_wheel_command;
+    ws_msg.left_wheel_actual = ws.left_wheel_actual;
+    ws_msg.right_wheel_actual = ws.right_wheel_actual;
+    return ws_msg;
 }
 
 void haltCallback(const std_msgs::Empty::ConstPtr &msg)
@@ -316,7 +332,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   ros::Publisher state_vector_publisher = node.advertise<drive_controller_msgs::StateVector>("state_vector", 1000);
   ros::Publisher delta_vector_publisher = node.advertise<drive_controller_msgs::StateVector>("delta_vector", 1000);
   ros::Publisher error_states_publisher = node.advertise<drive_controller_msgs::ErrorStates>("error_states", 1000);
-  //ros::Publisher wheel_states_publisher = node.advertise<drive_controller_msgs::WheelStates>("wheel_states", 1000);
+  ros::Publisher wheel_states_publisher = node.advertise<drive_controller_msgs::WheelStates>("wheel_states", 1000);
 
   ROS_INFO("Made Publishers");
 
@@ -419,6 +435,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     state_vector_publisher.publish(localizer_sv_to_msg(ultraLocalizer.getStateVector(), STATE_VECTOR_ID));
     delta_vector_publisher.publish(localizer_sv_to_msg(dc.getDeltaStateVector(), DELTA_VECTOR_ID));
     error_states_publisher.publish(error_states_to_msg(dc.getErrorStates()));
+    wheel_states_publisher.publish(wheel_states_to_msg(dc.getWheelStates()));
 
     ros_drivers.publish();
 
