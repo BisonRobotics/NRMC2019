@@ -67,8 +67,8 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
 
   double speed_gain =  1;  /*DNFW*/
   double set_speed  = .4;  /*DNFW*/
-  double angle_gain = 4;  /*DNFW*/ 
-  double path_gain  = 2;  /*DNFW*/
+  double angle_gain = 0;  /*DNFW*/ 
+  double path_gain  = 0;  /*DNFW*/
   
 
   double steering = 0;
@@ -105,15 +105,15 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd - set_speed)*dt;
 
       //interpolate point to take steering from slightly ahead
-      double meters_to_jump = p_speed_cmd * dt;
+      double meters_to_jump = .9;//4.0*p_speed_cmd * dt;
       double jumped_meters =0;
       int t_jumps = 0;
-      /* Skip for now, but does improve accuracy
-      while (jumped_meters < meters_to_jump && ((int)(p_closest_t*Gchopsize) + t_jumps) < Gchopsize)
+      // Skip for now, but does improve accuracy
+      while ((jumped_meters < meters_to_jump) && (((int)(p_closest_t*Gchopsize) + t_jumps + 1) < Gchopsize))
       {
           jumped_meters = jumped_meters + p_lengths.at((int)(p_closest_t*Gchopsize) + t_jumps);
           t_jumps = t_jumps+1;
-      } */
+      } 
       //Get wheel velocities
       std::pair<double, double> UlUr = speedSteeringControl(
                                       p_speed_cmd, 

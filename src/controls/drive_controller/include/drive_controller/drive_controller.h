@@ -65,7 +65,7 @@ public:
    
 private:
   static const int Gchopsize = 100;
-  static constexpr double Axelsize = .5;
+  static constexpr double Axelsize = 1.0;
   iVescAccess *front_left_wheel, *front_right_wheel, *back_right_wheel, *back_left_wheel;
   std::vector<double>  p_theta;
   std::vector<double>  p_omega;
