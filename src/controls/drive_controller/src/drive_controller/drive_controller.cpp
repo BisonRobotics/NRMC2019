@@ -16,6 +16,16 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
   delta.y_vel = 0;
   delta.x_pos = 0;
   delta.y_pos = 0;
+  
+  es.angle_error = 0;
+  es.path_error  = 0;
+  
+  ws.left_wheel_planned  = 0;
+  ws.right_wheel_planned = 0;
+  ws.left_wheel_actual   = 0;
+  ws.right_wheel_actual  = 0;
+  ws.left_wheel_command  = 0;
+  ws.right_wheel_command = 0;
 }
 
 void DriveController::addPath(DriveController_ns::bezier_path path, bool forward_point)
@@ -71,7 +81,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
     p_last_closest_t = p_closest_t;
     std::pair<double, double> par_and_err = findCPP2019(sv.x_pos, sv.y_pos, p_x, p_y, p_theta, Gchopsize);
     p_closest_t = par_and_err.first;
-    double path_error = par_and_err.second;
+    es.path_error = par_and_err.second;
     if (p_closest_t < p_last_closest_t)
         {p_closest_t = p_last_closest_t;}
 
@@ -90,7 +100,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
          index_for_t = 0;
       }
 
-      double angle_error = angleDiff(sv.theta,p_theta.at((int)(index_for_t)));
+      es.angle_error = angleDiff(sv.theta,p_theta.at((int)(index_for_t)));
 
       p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd - set_speed)*dt;
 
@@ -108,9 +118,21 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       std::pair<double, double> UlUr = speedSteeringControl(
                                       p_speed_cmd, 
                                       p_theta.at((int)(index_for_t) + t_jumps)
-                                       - (p_forward_point ? 2.0 : -0.5)*angle_gain*angle_error 
-                                       - (p_forward_point ? 2.0 : -0.5)*path_gain*path_error,
+                                       - (p_forward_point ? 2.0 : -0.5)*angle_gain*es.angle_error 
+                                       - (p_forward_point ? 2.0 : -0.5)*path_gain*es.path_error,
                                        Axelsize, 2.0);
+                                       
+      std::pair<double, double> UlUrIdeal = speedSteeringControl(
+                                      p_speed_cmd, 
+                                      p_theta.at((int)(index_for_t) + t_jumps),
+                                      Axelsize, 2.0);
+                                       
+      ws.left_wheel_command  = UlUr.first;
+      ws.right_wheel_command = UlUr.second;
+      ws.left_wheel_planned  = UlUrIdeal.first;
+      ws.right_wheel_planned = UlUrIdeal.second;
+      ws.left_wheel_actual  = .5 * (front_left_wheel->getLinearVelocity() + back_left_wheel->getLinearVelocity());
+      ws.right_wheel_actual = .5 * (front_right_wheel->getLinearVelocity() + back_right_wheel->getLinearVelocity());
 
       if (p_forward_point)
       {
@@ -121,12 +143,6 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       }
       else
       {
-/*
-        front_right_wheel->setLinearVelocity((-1.0)*UlUr.second);
-        front_left_wheel->setLinearVelocity((-1.0)*UlUr.first);
-        back_left_wheel->setLinearVelocity((-1.0)*UlUr.first);
-        back_right_wheel->setLinearVelocity((-1.0)*UlUr.second);
-*/
         front_right_wheel->setLinearVelocity((-1.0)*UlUr.first);
         front_left_wheel->setLinearVelocity((-1.0)*UlUr.second);
         back_left_wheel->setLinearVelocity((-1.0)*UlUr.second);
@@ -166,6 +182,27 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
     front_left_wheel->setLinearVelocity(0);
     back_left_wheel->setLinearVelocity(0);
     back_right_wheel->setLinearVelocity(0);
+    
+    delta.x_pos = 0;
+    delta.y_pos = 0;
+    delta.theta = 0;
+    delta.x_vel = 0;
+    delta.y_vel = 0;
+    delta.omega = 0;
+    delta.x_accel = 0;
+    delta.y_accel = 0;
+    delta.alpha = 0;
+    
+    es.path_error  = 0;
+    es.angle_error = 0;
+    
+    ws.left_wheel_planned  = 0;
+    ws.right_wheel_planned = 0;
+    ws.left_wheel_actual   = 0;
+    ws.right_wheel_actual  = 0;
+    ws.left_wheel_command  = 0;
+    ws.right_wheel_command = 0;
+    
     return false;
   }
 }
@@ -353,3 +390,12 @@ std::pair<double, double> DriveController::findCPP2019(double rx, double ry,
   return par_and_err;
 }
 
+DriveController_ns::error_state DriveController::getErrorStates()
+{
+    return es;
+}
+
+DriveController_ns::wheel_state DriveController::getWheelStates()
+{
+    return ws;
+}

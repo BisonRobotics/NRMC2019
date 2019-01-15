@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>drive_controller</name>
+  <name>drive_controller_visualization</name>
   <version>0.0.0</version>
-  <description>The drive_controller package</description>
+  <description>The drive_controller_visualization package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -51,26 +51,15 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>vesc_access</build_depend>
-  <build_depend>driver_access</build_depend>
-  <build_depend>localization</build_depend>
-  <build_depend>new_sim</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
-  <build_depend>navigation_msgs</build_depend>
-  <build_depend>actionlib</build_depend>
-  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <depend>tf</depend>
   <depend>drive_controller_msgs</depend>
-  <exec_depend>actionlib</exec_depend>
-  <exec_depend>actionlib_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>navigation_msgs</exec_depend>
-  <exec_depend>vesc_access</exec_depend>
-  <exec_depend>driver_access</exec_depend>
-  <exec_depend>localization</exec_depend>
-  <exec_depend>new_sim</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
 
 

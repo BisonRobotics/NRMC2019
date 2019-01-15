@@ -13,6 +13,10 @@
 #include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Empty.h>
 
+#include <drive_controller_msgs/StateVector.h>
+#include <drive_controller_msgs/ErrorStates.h>
+#include <drive_controller_msgs/WheelStates.h>
+
 #include <driver_access/driver_access_interface.h>
 #include <vrep_driver_access/vrep_driver_access.h>
 #include <ros_driver_access/ros_driver_access.h>
@@ -34,6 +38,8 @@
 #include <vector>
 #include <utility>
 
+//rosservice call /plan_path "goals: [{x: 1.0, y: 0.0}, {x: 6.5, y: 0.8}]"
+
 #define UPDATE_RATE_HZ 50.0
 bool newWaypointHere = false;
 bool forwardPoint = false;
@@ -48,6 +54,15 @@ using navigation_msgs::FollowPathResult;
 using navigation_msgs::BezierSegment;
 using actionlib::SimpleActionServer;
 using occupancy_grid::Bezier;
+
+int state_vec_seq = 0;
+int delta_vec_seq = 0;
+int error_states_seq = 0;
+int wheel_states_seq = 0;
+
+
+#define STATE_VECTOR_ID 0
+#define DELTA_VECTOR_ID 1
 
 DriveController_ns::bezier_path curr_path;
 
@@ -125,6 +140,48 @@ geometry_msgs::TransformStamped create_sim_tf(double x, double y, double theta)
   return tfStamp;
 }
 
+drive_controller_msgs::StateVector localizer_sv_to_msg(LocalizerInterface::stateVector sv, int which)
+{
+    drive_controller_msgs::StateVector sv_msg;
+    sv_msg.header.stamp = ros::Time::now();
+    sv_msg.header.seq = (which == DELTA_VECTOR_ID) ? delta_vec_seq++ : state_vec_seq++;
+    sv_msg.id = which;
+    sv_msg.x_pos = sv.x_pos;
+    sv_msg.y_pos = sv.y_pos;
+    sv_msg.theta = sv.theta;
+    sv_msg.x_vel = sv.x_vel;
+    sv_msg.y_vel = sv.y_vel;
+    sv_msg.omega = sv.omega;
+    sv_msg.x_accel = sv.x_accel;
+    sv_msg.y_accel = sv.y_accel;
+    sv_msg.alpha   = sv.alpha;
+    return sv_msg;
+}
+
+drive_controller_msgs::ErrorStates error_states_to_msg(DriveController_ns::error_state es)
+{
+    drive_controller_msgs::ErrorStates es_msg;
+    es_msg.header.stamp = ros::Time::now();
+    es_msg.header.seq = error_states_seq++;
+    es_msg.path_error = es.path_error;
+    es_msg.angle_error = es.angle_error;
+    return es_msg;
+}
+
+drive_controller_msgs::WheelStates wheel_states_to_msg(DriveController_ns::wheel_state ws)
+{
+    drive_controller_msgs::WheelStates ws_msg;
+    ws_msg.header.stamp = ros::Time::now();
+    ws_msg.header.seq = wheel_states_seq++;
+    ws_msg.left_wheel_planned = ws.left_wheel_planned;
+    ws_msg.right_wheel_planned = ws.right_wheel_planned;
+    ws_msg.left_wheel_command = ws.left_wheel_command;
+    ws_msg.right_wheel_command = ws.right_wheel_command;
+    ws_msg.left_wheel_actual = ws.left_wheel_actual;
+    ws_msg.right_wheel_actual = ws.right_wheel_actual;
+    return ws_msg;
+}
+
 void haltCallback(const std_msgs::Empty::ConstPtr &msg)
 {
   halt = true;
@@ -160,7 +217,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 }
 
   ros::NodeHandle node("~");
-  ros::NodeHandle globalNode;
+  ros::NodeHandle global_node;
   ros::Rate rate(UPDATE_RATE_HZ);
   ros::Rate vesc_init_rate (10);
   bool simulating;
@@ -184,7 +241,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   ros::Subscriber sub = node.subscribe("additional_path", 100, newGoalCallback);
 
-  ros::Publisher jspub = globalNode.advertise<sensor_msgs::JointState>("joint_states", 500);
+  ros::Publisher jspub = global_node.advertise<sensor_msgs::JointState>("joint_states", 500);
 
   double settle_time;
   if(!node.getParam("localization_settling_time", settle_time))
@@ -272,11 +329,18 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   geometry_msgs::Point vis_point;
   // hang here until someone knows where we are
   ROS_INFO("Going into wait loop for localizer and initial theta...");
+  ros::Publisher state_vector_publisher = node.advertise<drive_controller_msgs::StateVector>("state_vector", 1000);
+  ros::Publisher delta_vector_publisher = node.advertise<drive_controller_msgs::StateVector>("delta_vector", 1000);
+  ros::Publisher error_states_publisher = node.advertise<drive_controller_msgs::ErrorStates>("error_states", 1000);
+  ros::Publisher wheel_states_publisher = node.advertise<drive_controller_msgs::WheelStates>("wheel_states", 1000);
+
+  ROS_INFO("Made Publishers");
 
   ros::Duration idealLoopTime(1.0 / UPDATE_RATE_HZ);
 
+  //Can these two settling rounds be compacted into one?
   lastTime = ros::Time::now ();
-  while (((ros::Time::now() - lastTime).toSec() < 2.0f) && (ros::ok())) //((!superLocalizer.getIsDataGood() && ros::ok()))
+  while (((ros::Time::now() - lastTime).toSec() < 2.0f + settle_time) && (ros::ok())) //((!superLocalizer.getIsDataGood() && ros::ok()))
   {
     // do initial localization
     if (simulating)
@@ -287,6 +351,9 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     ultraLocalizer.updateEstimate(UltraLocalizer_zero_vector, mm.getMeasured(.02));
     //superLocalizer.updateStateVector(loopTime.toSec());
 
+    state_vector_publisher.publish(localizer_sv_to_msg(ultraLocalizer.getStateVector(), STATE_VECTOR_ID));
+    delta_vector_publisher.publish(localizer_sv_to_msg(UltraLocalizer_zero_vector, DELTA_VECTOR_ID));
+    
     ros::spinOnce();
     rate.sleep();
     //loopTime = 
@@ -300,7 +367,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
         ROS_WARN ("BAD POS");
     }*/
   }
-
+/*
   ROS_INFO ("Localization Settling Round 2!");
   lastTime = ros::Time::now ();
   while (((ros::Time::now()-lastTime).toSec()<settle_time) && (ros::ok()))
@@ -308,34 +375,28 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     ultraLocalizer.updateEstimate(UltraLocalizer_zero_vector, mm.getMeasured(.02));
     rate.sleep();
   }
-
+*/
   ROS_INFO ("Localization Settled!");
   ros::spinOnce ();
 
   double init_angle = pos->getTheta();
   int init_y = (pos->getY() > 0) ? 1 : -1;
 
-  fl->setLinearVelocity(0);
-  fr->setLinearVelocity(0);
-  bl->setLinearVelocity(0);
-  br->setLinearVelocity(0);
-  stateVector = ultraLocalizer.getStateVector();
-  tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
-
-  ros::spinOnce();
-
-  fr->setLinearVelocity(0);
-  br->setLinearVelocity(0);
-  bl->setLinearVelocity(0);
-  fl->setLinearVelocity(0);
-
-  tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
-  ros::spinOnce ();
+  for(int index =0; index <2; index++) //really make sure that tf gets out there
+  {
+      fl->setLinearVelocity(0);
+      fr->setLinearVelocity(0);
+      bl->setLinearVelocity(0);
+      br->setLinearVelocity(0);
+      stateVector = ultraLocalizer.getStateVector();
+      tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
+      ros::spinOnce();
+  }
 
   DriveController dc = DriveController(fr, fl, bl, br);
   ROS_INFO("DC Init");
 
-  server = new SimpleActionServer<FollowPathAction>(globalNode, "follow_path", &newGoalCallback, false);
+  server = new SimpleActionServer<FollowPathAction>(global_node, "follow_path", &newGoalCallback, false);
   server->start();
   ROS_INFO("[action_server] Started");
 
@@ -371,6 +432,10 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     stateVector = ultraLocalizer.getStateVector();
 
     tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
+    state_vector_publisher.publish(localizer_sv_to_msg(ultraLocalizer.getStateVector(), STATE_VECTOR_ID));
+    delta_vector_publisher.publish(localizer_sv_to_msg(dc.getDeltaStateVector(), DELTA_VECTOR_ID));
+    error_states_publisher.publish(error_states_to_msg(dc.getErrorStates()));
+    wheel_states_publisher.publish(wheel_states_to_msg(dc.getWheelStates()));
 
     ros_drivers.publish();
 

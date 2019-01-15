@@ -7,7 +7,6 @@
 
 namespace DriveController_ns
 {
-//TODO add robot_state vector as data type
 typedef struct path_s
 {
    double x1;
@@ -19,6 +18,20 @@ typedef struct path_s
    double x4;
    double y4;
 } bezier_path;
+typedef struct error_states_s
+{
+    double path_error;
+    double angle_error;
+} error_state;
+typedef struct wheel_states_s
+{
+    double left_wheel_planned;
+    double right_wheel_planned;
+    double left_wheel_actual;
+    double right_wheel_actual;
+    double left_wheel_command;
+    double right_wheel_command;
+} wheel_state;
 }
 
 class DriveController
@@ -31,6 +44,8 @@ public:
    LocalizerInterface::stateVector getDeltaStateVector();
    double getPClosestT();
    int getPPaths();
+   DriveController_ns::error_state getErrorStates();
+   DriveController_ns::wheel_state getWheelStates();
 //protected:
    double angleDiff(double angle1,double angle2);
    std::pair<double, double> speedSteeringControl(double speed, double steering, 
@@ -71,4 +86,6 @@ private:
   std::pair<double,double> p_prev_UlUr;
   double p_prev_theta;
   double p_prev_omega;
+  DriveController_ns::error_state es;
+  DriveController_ns::wheel_state ws;
 };
