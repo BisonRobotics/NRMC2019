@@ -67,8 +67,8 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
 
   double speed_gain =  1;  /*DNFW*/
   double set_speed  = .4;  /*DNFW*/
-  double angle_gain = 0;  /*DNFW*/ 
-  double path_gain  = 0;  /*DNFW*/
+  double angle_gain = 1.5;  /*DNFW*/ 
+  double path_gain  = 1.3;  /*DNFW*/
   
 
   double steering = 0;
@@ -99,36 +99,36 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       {
          index_for_t = 0;
       }
-
-      es.angle_error = angleDiff(sv.theta,p_theta.at((int)(index_for_t)));
-
-      p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd - set_speed)*dt;
-
+    
       //interpolate point to take steering from slightly ahead
-      double meters_to_jump = .9;//4.0*p_speed_cmd * dt;
+      double meters_to_jump = 0.0;//4.0*p_speed_cmd * dt;
       double jumped_meters =0;
       int t_jumps = 0;
-      // Skip for now, but does improve accuracy
+      //Take steering from a little bit ahead
       while ((jumped_meters < meters_to_jump) && (((int)(p_closest_t*Gchopsize) + t_jumps + 1) < Gchopsize))
       {
           jumped_meters = jumped_meters + p_lengths.at((int)(p_closest_t*Gchopsize) + t_jumps);
           t_jumps = t_jumps+1;
       } 
+      
+      es.angle_error = angleDiff(sv.theta,p_theta.at((int)(index_for_t) + t_jumps));
+      p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd - set_speed)*dt;
+      
       //Get wheel velocities
       std::pair<double, double> UlUr = speedSteeringControl(
                                       p_speed_cmd, 
-                                      p_theta.at((int)(index_for_t) + t_jumps)
+                                      p_omega.at((int)(index_for_t) + t_jumps)
                                        - (p_forward_point ? 2.0 : -0.5)*angle_gain*es.angle_error 
                                        - (p_forward_point ? 2.0 : -0.5)*path_gain*es.path_error,
                                        Axelsize, 2.0);
                                        
       std::pair<double, double> UlUrIdeal = speedSteeringControl(
                                       p_speed_cmd, 
-                                      p_theta.at((int)(index_for_t) + t_jumps),
+                                      p_omega.at((int)(index_for_t) + t_jumps),
                                       Axelsize, 2.0);
                                        
-      ws.left_wheel_command  = UlUr.first;
-      ws.right_wheel_command = UlUr.second;
+      ws.left_wheel_command  = p_closest_t < .95 ? UlUr.first : UlUrIdeal.first;
+      ws.right_wheel_command = p_closest_t < .95 ? UlUr.second: UlUrIdeal.second;
       ws.left_wheel_planned  = UlUrIdeal.first;
       ws.right_wheel_planned = UlUrIdeal.second;
       ws.left_wheel_actual  = .5 * (front_left_wheel->getLinearVelocity() + back_left_wheel->getLinearVelocity());
