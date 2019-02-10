@@ -16,6 +16,7 @@
 #include <drive_controller_msgs/StateVector.h>
 #include <drive_controller_msgs/ErrorStates.h>
 #include <drive_controller_msgs/WheelStates.h>
+#include <drive_controller_msgs/PathInfo.h>
 
 #include <driver_access/driver_access_interface.h>
 #include <vrep_driver_access/vrep_driver_access.h>
@@ -55,10 +56,11 @@ using navigation_msgs::BezierSegment;
 using actionlib::SimpleActionServer;
 using occupancy_grid::Bezier;
 
-int state_vec_seq = 0;
-int delta_vec_seq = 0;
+int state_vec_seq    = 0;
+int delta_vec_seq    = 0;
 int error_states_seq = 0;
 int wheel_states_seq = 0;
+int path_info_seq    = 0;
 
 
 #define STATE_VECTOR_ID 0
@@ -180,6 +182,16 @@ drive_controller_msgs::WheelStates wheel_states_to_msg(DriveController_ns::wheel
     ws_msg.left_wheel_actual = ws.left_wheel_actual;
     ws_msg.right_wheel_actual = ws.right_wheel_actual;
     return ws_msg;
+}
+
+drive_controller_msgs::PathInfo path_info_to_msg(DriveController_ns::path_info path_i)
+{
+    drive_controller_msgs::PathInfo pi_msg;
+    pi_msg.header.stamp = ros::Time::now();
+    pi_msg.header.seq = path_info_seq++;
+    pi_msg.path_theta = path_i.path_theta;
+    pi_msg.path_omega = path_i.path_omega;
+    return pi_msg;
 }
 
 void haltCallback(const std_msgs::Empty::ConstPtr &msg)
@@ -329,10 +341,11 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   geometry_msgs::Point vis_point;
   // hang here until someone knows where we are
   ROS_INFO("Going into wait loop for localizer and initial theta...");
-  ros::Publisher state_vector_publisher = node.advertise<drive_controller_msgs::StateVector>("state_vector", 1000);
-  ros::Publisher delta_vector_publisher = node.advertise<drive_controller_msgs::StateVector>("delta_vector", 1000);
-  ros::Publisher error_states_publisher = node.advertise<drive_controller_msgs::ErrorStates>("error_states", 1000);
-  ros::Publisher wheel_states_publisher = node.advertise<drive_controller_msgs::WheelStates>("wheel_states", 1000);
+  ros::Publisher state_vector_publisher = node.advertise<drive_controller_msgs::StateVector>("state_vector", 100);
+  ros::Publisher delta_vector_publisher = node.advertise<drive_controller_msgs::StateVector>("delta_vector", 100);
+  ros::Publisher error_states_publisher = node.advertise<drive_controller_msgs::ErrorStates>("error_states", 100);
+  ros::Publisher wheel_states_publisher = node.advertise<drive_controller_msgs::WheelStates>("wheel_states", 100);
+  ros::Publisher path_info_publisher    = node.advertise<drive_controller_msgs::PathInfo>("path_info", 100);
 
   ROS_INFO("Made Publishers");
 
@@ -436,6 +449,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     delta_vector_publisher.publish(localizer_sv_to_msg(dc.getDeltaStateVector(), DELTA_VECTOR_ID));
     error_states_publisher.publish(error_states_to_msg(dc.getErrorStates()));
     wheel_states_publisher.publish(wheel_states_to_msg(dc.getWheelStates()));
+    path_info_publisher.publish(path_info_to_msg(dc.getPathInfo()));
 
     ros_drivers.publish();
 

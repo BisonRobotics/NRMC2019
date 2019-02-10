@@ -11,6 +11,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 add_message_files(FILES StateVector.msg)
 add_message_files(FILES WheelStates.msg)
 add_message_files(FILES ErrorStates.msg)
+add_message_files(FILES PathInfo.msg)
 generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(

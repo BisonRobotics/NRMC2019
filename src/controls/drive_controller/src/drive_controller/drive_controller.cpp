@@ -105,11 +105,13 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       double jumped_meters =0;
       int t_jumps = 0;
       //Take steering from a little bit ahead
+      /* but not really
       while ((jumped_meters < meters_to_jump) && (((int)(p_closest_t*Gchopsize) + t_jumps + 1) < Gchopsize))
       {
           jumped_meters = jumped_meters + p_lengths.at((int)(p_closest_t*Gchopsize) + t_jumps);
           t_jumps = t_jumps+1;
       } 
+      */
       
       es.angle_error = angleDiff(sv.theta,p_theta.at((int)(index_for_t) + t_jumps));
       p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd - set_speed)*dt;
@@ -398,4 +400,25 @@ DriveController_ns::error_state DriveController::getErrorStates()
 DriveController_ns::wheel_state DriveController::getWheelStates()
 {
     return ws;
+}
+
+DriveController_ns::path_info DriveController::getPathInfo()
+{
+    DriveController_ns::path_info path_i;
+    int index = p_closest_t*Gchopsize;
+    if (index >= Gchopsize)
+    {
+        index = Gchopsize-1;
+    }
+    if (p_paths >0)
+    {
+      path_i.path_theta = p_theta.at(index);
+      path_i.path_omega = p_omega.at(index);
+    }
+    else
+    {
+      path_i.path_theta = 0;
+      path_i.path_omega = 0;
+    }
+    return path_i;
 }

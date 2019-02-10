@@ -32,6 +32,11 @@ typedef struct wheel_states_s
     double left_wheel_command;
     double right_wheel_command;
 } wheel_state;
+typedef struct path_info_s
+{
+    double path_theta;
+    double path_omega;
+} path_info;
 }
 
 class DriveController
@@ -46,6 +51,7 @@ public:
    int getPPaths();
    DriveController_ns::error_state getErrorStates();
    DriveController_ns::wheel_state getWheelStates();
+   DriveController_ns::path_info getPathInfo();
 //protected:
    double angleDiff(double angle1,double angle2);
    std::pair<double, double> speedSteeringControl(double speed, double steering, 

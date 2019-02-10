@@ -16,8 +16,9 @@
 #include <drive_controller_msgs/StateVector.h>
 #include <drive_controller_msgs/ErrorStates.h>
 #include <drive_controller_msgs/WheelStates.h>
+#include <drive_controller_msgs/PathInfo.h>
 
-#define NUM_SERIES_PLOT1 6
+#define NUM_SERIES_PLOT1 7
 #define Y_MIN_POS_PLOT1 -5.0
 #define Y_MAX_POS_PLOT1 5.0
 #define NUM_Y_TICKS_PLOT1 5
@@ -52,7 +53,7 @@
 #define TIME_WINDOW_PLOT5 30.0
 #define TIME_TICK_PERIOD_PLOT5 5.0
 
-cv::String names[] = {"Xposest", "Yposest", "Thetaest", "Xposmea", "Yposmea", "Thetamea"};
+cv::String names[] = {"Xposest", "Yposest", "Thetaest", "Xposmea", "Yposmea", "Thetamea", "ThetaPath"};
 cv::String names2[] = {"Xvelest", "Yvelest", "Omegaest", "Xvelpre", "Yvestpre", "Omegapre"};
 cv::String names3[] = {"Xaccest", "Yaccest", "Xaccmea", "Yaccmea", "Xaccpre", "Yaccpre"};
 cv::String names4[] = {"Patherr", "Angleerr"};
@@ -60,11 +61,14 @@ cv::String names5[] = {"Leftcmd", "Rightcmd", "Leftact", "Rightact", "Leftideal"
 
 cv::Scalar colors6[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60), cv::Scalar(120, 60, 180),
                        cv::Scalar(60, 60,120), cv::Scalar(120,180,60), cv::Scalar(120, 180,180)};
+cv::Scalar colors7[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60), cv::Scalar(120, 60, 180),
+                       cv::Scalar(60, 60,120), cv::Scalar(120,180,60), cv::Scalar(120, 180,180),
+                       cv::Scalar(240, 180,180)};
 cv::Scalar colors4[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60),
                        cv::Scalar(60, 60,120), cv::Scalar(120,180,60)};
                        
 dcvis_multiplot dcvmp(NUM_SERIES_PLOT1, "Positions", Y_MIN_POS_PLOT1, Y_MAX_POS_PLOT1, NUM_Y_TICKS_PLOT1,
-                      TIME_WINDOW_PLOT1, TIME_TICK_PERIOD_PLOT1, names, colors6);
+                      TIME_WINDOW_PLOT1, TIME_TICK_PERIOD_PLOT1, names, colors7);
                       
 dcvis_multiplot dcvmv(NUM_SERIES_PLOT2, "Velocities", Y_MIN_POS_PLOT2, Y_MAX_POS_PLOT2, NUM_Y_TICKS_PLOT2,
                       TIME_WINDOW_PLOT2, TIME_TICK_PERIOD_PLOT2, names2, colors6);
@@ -154,6 +158,13 @@ void wheelStatesCallback(const drive_controller_msgs::WheelStates::ConstPtr &msg
     dcwhe.add_point(msg->right_wheel_planned, t, 5);
 }
 
+void pathInfoCallback(const drive_controller_msgs::PathInfo::ConstPtr &msg)
+{
+    ros::Duration plot_time = msg->header.stamp - start_time;
+    double t = plot_time.toSec();
+    dcvmp.add_point(msg->path_theta, t, 6);
+}
+
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "drive_controller_vis");
@@ -166,6 +177,7 @@ int main(int argc, char** argv)
     ros::Subscriber dvSub  = n.subscribe("/position_controller/delta_vector", 100, deltaVectorCallback);
     ros::Subscriber esSub  = n.subscribe("/position_controller/error_states", 100, errorStatesCallback);
     ros::Subscriber wsSub  = n.subscribe("/position_controller/wheel_states", 100, wheelStatesCallback);
+    ros::Subscriber piSub  = n.subscribe("/position_controller/path_info", 100, pathInfoCallback);
 
     static const int plotsize_width  = 400;
     static const int plotsize_height = 330;
