@@ -46,7 +46,7 @@
 #define TIME_WINDOW_PLOT4 30.0
 #define TIME_TICK_PERIOD_PLOT4 5.0
 
-#define NUM_SERIES_PLOT5 6
+#define NUM_SERIES_PLOT5 7
 #define Y_MIN_POS_PLOT5 -0.8
 #define Y_MAX_POS_PLOT5 0.8
 #define NUM_Y_TICKS_PLOT5 5
@@ -57,13 +57,13 @@ cv::String names[] = {"Xposest", "Yposest", "Thetaest", "Xposmea", "Yposmea", "T
 cv::String names2[] = {"Xvelest", "Yvelest", "Omegaest", "Xvelpre", "Yvestpre", "Omegapre"};
 cv::String names3[] = {"Xaccest", "Yaccest", "Xaccmea", "Yaccmea", "Xaccpre", "Yaccpre"};
 cv::String names4[] = {"Patherr", "Angleerr"};
-cv::String names5[] = {"Leftcmd", "Rightcmd", "Leftact", "Rightact", "Leftideal", "Rightideal"};
+cv::String names5[] = {"Leftcmd", "Rightcmd", "Leftact", "Rightact", "Leftideal", "Rightideal", "OmegaPath"};
 
 cv::Scalar colors6[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60), cv::Scalar(120, 60, 180),
                        cv::Scalar(60, 60,120), cv::Scalar(120,180,60), cv::Scalar(120, 180,180)};
 cv::Scalar colors7[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60), cv::Scalar(120, 60, 180),
                        cv::Scalar(60, 60,120), cv::Scalar(120,180,60), cv::Scalar(120, 180,180),
-                       cv::Scalar(240, 180,180)};
+                       cv::Scalar(200, 140,140)};
 cv::Scalar colors4[] = {cv::Scalar(60,180,120), cv::Scalar(240,180,60),
                        cv::Scalar(60, 60,120), cv::Scalar(120,180,60)};
                        
@@ -80,7 +80,7 @@ dcvis_multiplot dcerr(NUM_SERIES_PLOT4, "Error States", Y_MIN_POS_PLOT4, Y_MAX_P
                       TIME_WINDOW_PLOT4, TIME_TICK_PERIOD_PLOT4, names4, colors4);
                       
 dcvis_multiplot dcwhe(NUM_SERIES_PLOT5, "Wheel States", Y_MIN_POS_PLOT5, Y_MAX_POS_PLOT5, NUM_Y_TICKS_PLOT5,
-                      TIME_WINDOW_PLOT5, TIME_TICK_PERIOD_PLOT5, names5, colors6);
+                      TIME_WINDOW_PLOT5, TIME_TICK_PERIOD_PLOT5, names5, colors7);
                       
 ros::Time start_time;
 
@@ -163,6 +163,7 @@ void pathInfoCallback(const drive_controller_msgs::PathInfo::ConstPtr &msg)
     ros::Duration plot_time = msg->header.stamp - start_time;
     double t = plot_time.toSec();
     dcvmp.add_point(msg->path_theta, t, 6);
+    dcwhe.add_point(msg->path_omega, t, 6);
 }
 
 int main(int argc, char** argv)

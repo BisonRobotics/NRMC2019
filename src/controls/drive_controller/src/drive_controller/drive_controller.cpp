@@ -33,7 +33,7 @@ void DriveController::addPath(DriveController_ns::bezier_path path, bool forward
  if (p_paths ==0) //no current paths
  {
     getAngleAndLengthInfo(path, p_theta, p_omega, p_alpha, p_lengths,
-                          p_x, p_y, p_length, this->Gchopsize);
+                          p_x, p_y, p_length, this->Gchopsize, forward_point);
     p_paths +=1;
     p_forward_point = forward_point;
  }
@@ -120,8 +120,8 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       std::pair<double, double> UlUr = speedSteeringControl(
                                       p_speed_cmd, 
                                       p_omega.at((int)(index_for_t) + t_jumps)
-                                       - (p_forward_point ? 2.0 : -0.5)*angle_gain*es.angle_error 
-                                       - (p_forward_point ? 2.0 : -0.5)*path_gain*es.path_error,
+                                       - (p_forward_point ? 2.0 : 2.0)*angle_gain*es.angle_error 
+                                       - (p_forward_point ? 2.0 : 2.0)*path_gain*es.path_error,
                                        Axelsize, 2.0);
                                        
       std::pair<double, double> UlUrIdeal = speedSteeringControl(
@@ -129,10 +129,6 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
                                       p_omega.at((int)(index_for_t) + t_jumps),
                                       Axelsize, 2.0);
                                        
-      ws.left_wheel_command  = p_closest_t < .95 ? UlUr.first : UlUrIdeal.first;
-      ws.right_wheel_command = p_closest_t < .95 ? UlUr.second: UlUrIdeal.second;
-      ws.left_wheel_planned  = UlUrIdeal.first;
-      ws.right_wheel_planned = UlUrIdeal.second;
       ws.left_wheel_actual  = .5 * (front_left_wheel->getLinearVelocity() + back_left_wheel->getLinearVelocity());
       ws.right_wheel_actual = .5 * (front_right_wheel->getLinearVelocity() + back_right_wheel->getLinearVelocity());
 
@@ -142,6 +138,10 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
         front_left_wheel->setLinearVelocity(UlUr.first);
         back_left_wheel->setLinearVelocity(UlUr.first);
         back_right_wheel->setLinearVelocity(UlUr.second);
+        ws.left_wheel_planned  = UlUrIdeal.first;
+        ws.right_wheel_planned = UlUrIdeal.second;
+        ws.left_wheel_command  = UlUr.first;
+        ws.right_wheel_command = UlUr.second;
       }
       else
       {
@@ -149,6 +149,10 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
         front_left_wheel->setLinearVelocity((-1.0)*UlUr.second);
         back_left_wheel->setLinearVelocity((-1.0)*UlUr.second);
         back_right_wheel->setLinearVelocity((-1.0)*UlUr.first);
+        ws.left_wheel_planned  = -UlUrIdeal.second;
+        ws.right_wheel_planned = -UlUrIdeal.first;
+        ws.left_wheel_command  = -UlUr.second;
+        ws.right_wheel_command = -UlUr.first;
       }
       //Model calculations: what we predict will happen in the next frame.
       //TODO: track disturbance on wheels, 
@@ -312,7 +316,7 @@ bool DriveController::getAngleAndLengthInfo(DriveController_ns::bezier_path path
                            std::vector<double>  &theta, std::vector<double>  &omega, 
                            std::vector<double>  &alpha, std::vector<double>  &lengths, 
                            std::vector<double>  &x, std::vector<double>  &y, double &length, 
-                           int chopsize) 
+                           int chopsize, bool forward_path) 
 {
     //int chopsize = 100;
     if (theta.size() < chopsize ||
@@ -332,7 +336,7 @@ bool DriveController::getAngleAndLengthInfo(DriveController_ns::bezier_path path
         //since we will need it
         x.at(index) = (1-t)*(1-t)*(1-t) * path.x1 + 3*(1-t)*(1-t) *t*path.x2 + 3*(1-t)*t*t *path.x3 + t*t*t * path.x4;
         y.at(index) = (1-t)*(1-t)*(1-t) * path.y1 + 3*(1-t)*(1-t) *t*path.y2 + 3*(1-t)*t*t *path.y3 + t*t*t * path.y4;
-        theta.at(index) = atan2(yd1, xd1);
+        theta.at(index) = angleDiff(atan2(yd1, xd1), (forward_path ? 0.0 : -M_PI));
 
         t += dt;
     }
@@ -346,7 +350,7 @@ bool DriveController::getAngleAndLengthInfo(DriveController_ns::bezier_path path
     
     for (int index = 0;index <(chopsize-2);index++)
     {
-        omega.at(index) = (theta.at(index+1) - theta.at(index))*chopsize/length; 
+        omega.at(index) = (forward_path ? 1.0 : 1.0)*(theta.at(index+1) - theta.at(index))*chopsize/length; 
         //normalized by path length, 
         //TODO: should probably use estimate from at that point
     }  
@@ -355,7 +359,7 @@ bool DriveController::getAngleAndLengthInfo(DriveController_ns::bezier_path path
     
     for (int index = 0; index <(chopsize-3);index++)
     { 
-        alpha.at(index) = (omega.at(index+1) - omega.at(index))*chopsize/length;
+        alpha.at(index) = (forward_path ? 1.0 : 1.0)*(omega.at(index+1) - omega.at(index))*chopsize/length;
     }
     //repeat final values, TODO:what happens if we shift?
     alpha.at(chopsize-2) = alpha.at( chopsize-3);

@@ -60,7 +60,7 @@ public:
                            std::vector<double>  &theta, std::vector<double>  &omega, 
                            std::vector<double>  &alpha, std::vector<double>  &lengths, 
                            std::vector<double>  &x, std::vector<double>  &y, double &length,
-                           int chopsize);
+                           int chopsize, bool forward_path);
    //findCPP2019 finds the closest point on the path described by x and y vectors and 
    // returns the parameter value in [0,1] followed by the signed path error as a pair.
    std::pair<double, double> findCPP2019(double rx, double ry, 
