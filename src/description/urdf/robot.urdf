@@ -151,7 +151,7 @@
         </visual>
     </link>
 
-    <joint name="monoboom_to_frame" type="${central_drive_joints_type}">
+    <joint name="frame_to_monoboom" type="${central_drive_joints_type}">
         <origin xyz="0.98 0 -0.365" rpy="1.57 ${monoboom_angle} 3.14" />
         <axis xyz="0 0 -1" />
         <parent link="frame" />
@@ -169,7 +169,7 @@
         </visual>
     </link>
 
-    <joint name="bucket_to_monoboom" type="${central_drive_joints_type}">
+    <joint name="monoboom_to_bucket" type="${central_drive_joints_type}">
         <origin xyz="0.55 0 0" rpy="0 0 3.14" />
         <axis xyz="0 0 1" />
         <parent link="backhoe_monoboom" />
