@@ -56,7 +56,7 @@
     <joint name="base_link_to_frame" type="fixed">
         <parent link="base_link"/>
         <child link="frame"/>
-        <origin xyz="-387.35e-3 0 2.0796e-01" rpy="0 0 0" />
+        <origin xyz="-0.5 0 0.65" rpy="0 0 0" />
     </joint>
 
     <xacro:macro name="wheel" params="x_name y_name rot r_z y_dir xdist color ">
@@ -110,10 +110,10 @@
         </visual>
     </link>
 
-    <joint name="computer_box_to_base" type="fixed" >
-        <parent link="base_link" />
+    <joint name="frame_to_computer_box" type="fixed" >
+        <parent link="frame" />
         <child link="computer_box" />
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="387.35e-3 0 -2.0796e-01" rpy="0 0 0" />
     </joint>
 
     <link name="battery_box">
@@ -126,10 +126,10 @@
         </visual>
     </link>
 
-    <joint name="battery_box_to_base" type="fixed" >
-        <parent link="base_link" />
+    <joint name="frame_to_battery_box" type="fixed" >
+        <parent link="frame" />
         <child link="battery_box" />
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="387.35e-3 0 -2.0796e-01" rpy="0 0 0" />
     </joint >
 
     <link name="backhoe_monoboom">
