@@ -1,5 +1,4 @@
 #include <vrep_access/vrep_imu.h>
-#include <random>
 
 VrepImu::VrepImu(double accelerometer_offset, double accelerometer_deviation,
                  double gyroscope_offset,     double gyroscope_deviation) :

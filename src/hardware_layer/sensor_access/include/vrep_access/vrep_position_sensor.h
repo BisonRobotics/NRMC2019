@@ -4,6 +4,7 @@
 #include <sensor_access/pos_sensor_interface.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <ros/ros.h>
+#include <random>
 
 class VrepPositionSensor : public PosSensorInterface
 {
