@@ -30,6 +30,7 @@ tmp/
 htmlcov/
 *.png
 vrep/
+src/CMakeLists.txt
 
 *.old
 emptytests
