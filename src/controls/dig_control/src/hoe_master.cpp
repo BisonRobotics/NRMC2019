@@ -212,13 +212,16 @@ int main(int argc, char **argv)
 
       robotAngles.name.push_back("frame_to_monoboom");
       robotAngles.position.push_back(backhoeSimulation->getShTheta());
+      
+      robotAngles.name.push_back("frame_to_gravel_bucket");
+      robotAngles.position.push_back(backhoeSimulation->getShTheta());
 
       robotAngles.name.push_back("monoboom_to_bucket"); //digging bucket
       robotAngles.position.push_back(3.0*backhoeSimulation->getWrTheta());
       
-      robotAngles.name.push_back("left_flap_joint"); //digging bucket
+      robotAngles.name.push_back("left_flap_joint"); 
       robotAngles.position.push_back(3.0*backhoeSimulation->getWrTheta());
-      robotAngles.name.push_back("right_flap_joint"); //digging bucket
+      robotAngles.name.push_back("right_flap_joint"); 
       robotAngles.position.push_back(3.0*backhoeSimulation->getWrTheta());
 
       JsPub.publish(robotAngles);
