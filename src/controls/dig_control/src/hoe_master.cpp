@@ -32,10 +32,15 @@ void callback (const std_msgs::Empty::ConstPtr &msg)
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "the_backhoe_master");
+  
+  if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) 
+  {
+   ros::console::notifyLoggerLevelsChanged();
+  }
 
   ros::NodeHandle node("~");
   ros::NodeHandle globalNode;
-  ros::Rate rate(DIGGING_CONTROL_RATE_HZ);  // should be 50 Hz
+  ros::WallRate rate(DIGGING_CONTROL_RATE_HZ);  // should be 50 Hz
 
   ros::Subscriber initializeSub = globalNode.subscribe("init_digging",100,callback);
 
@@ -67,7 +72,7 @@ int main(int argc, char **argv)
   iVescAccess *backhoeShoulderVesc;
   iVescAccess *backhoeWristVesc;
   ros::Time lastTime=ros::Time::now();
-  ros::Rate vesc_init_rate (10);
+  ros::WallRate vesc_init_rate (10);
   // these should not be initialized if we are not simulating
   SimBucket *bucketSimulation;
 
@@ -120,11 +125,14 @@ int main(int argc, char **argv)
  LinearSafetyController linearSafety(linear_joint_params, backhoeWristVesc);
   BackhoeSafetyController backhoeSafety(central_joint_params, backhoeShoulderVesc);
   ROS_INFO ("WAITING for init");
-  while (ros::ok() && !should_initialize)
+  /*while (ros::ok() && !should_initialize)
   {
     ros::spinOnce();
     rate.sleep();
-  }
+  }*/
+  
+  ROS_INFO("Going to INIT backhoeSafety");
+  ROS_DEBUG("Debug info shown");
     
   backhoeSafety.init();
 
@@ -140,14 +148,17 @@ int main(int argc, char **argv)
       ROS_DEBUG("Linear from vesc at %.4f", backhoeSimulation->getWristVesc()->getPotPosition());
       ROS_DEBUG("Linear Limit state %d", backhoeSimulation->getWristVesc()->getLimitSwitchState());
       ROS_DEBUG("Linear vel set to  %.4f", backhoeSimulation->getWristVesc()->getLinearVelocity());
-      if (((SimVesc *)backhoeSimulation->getWristVesc())->ableToHitGround())
-        ROS_INFO("Linear able to hit ground");
+      //if (((SimVesc *)backhoeSimulation->getWristVesc())->ableToHitGround())
+      //  ROS_INFO("Linear able to hit ground");
     }
     isLinearInit = linearSafety.init();
+    ROS_DEBUG("Called linearSafetyinit");
     rate.sleep();
+    ROS_DEBUG("slept");
     ros::spinOnce();
+    ROS_DEBUG("spun");
   }
-
+  ROS_INFO("Going to move central monoboom");
   backhoeSafety.setPositionSetpoint(CENTRAL_TRANSPORT_ANGLE);
   while (ros::ok () && !backhoeSafety.isAtSetpoint())
   {
@@ -160,6 +171,8 @@ int main(int argc, char **argv)
     rate.sleep();
     ros::spinOnce();
   }
+  ROS_INFO("Going init controllers");
+
   BucketController bucketC(bucketBigConveyorVesc, bucketLittleConveyorVesc, bucketSifterVesc);
   BackhoeController backhoeC(&backhoeSafety, &linearSafety);
 
@@ -197,12 +210,16 @@ int main(int argc, char **argv)
     {
       robotAngles.header.stamp = ros::Time::now();
 
-      robotAngles.name.push_back("central_drive_to_monoboom");
-
+      robotAngles.name.push_back("frame_to_monoboom");
       robotAngles.position.push_back(backhoeSimulation->getShTheta());
 
-      robotAngles.name.push_back("monoboom_actuator");
-      robotAngles.position.push_back(backhoeSimulation->getWrTheta());
+      robotAngles.name.push_back("monoboom_to_bucket"); //digging bucket
+      robotAngles.position.push_back(3.0*backhoeSimulation->getWrTheta());
+      
+      robotAngles.name.push_back("left_flap_joint"); //digging bucket
+      robotAngles.position.push_back(3.0*backhoeSimulation->getWrTheta());
+      robotAngles.name.push_back("right_flap_joint"); //digging bucket
+      robotAngles.position.push_back(3.0*backhoeSimulation->getWrTheta());
 
       JsPub.publish(robotAngles);
       ROS_DEBUG("shoulder joint state published with angle %f \n", backhoeSimulation->getShTheta());

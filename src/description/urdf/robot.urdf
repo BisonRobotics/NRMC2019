@@ -31,7 +31,7 @@
     <xacro:property name="central_drive_joints_type" value="revolute" />
     <xacro:property name="monoboom_angle" value="0" />
     <xacro:if value="$(arg fixed_central_drive)">
-        <xacro:property name="central_drive_joints_type" value="fixed" />
+        <xacro:property name="central_drive_joints_type" value="revolute" />
         <xacro:property name="monoboom_angle" value="${-pi*0.28}" />
     </xacro:if>
 
