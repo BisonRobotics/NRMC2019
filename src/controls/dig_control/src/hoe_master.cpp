@@ -214,15 +214,15 @@ int main(int argc, char **argv)
       robotAngles.position.push_back(backhoeSimulation->getShTheta());
       
       robotAngles.name.push_back("frame_to_gravel_bucket");
-      robotAngles.position.push_back(backhoeSimulation->getShTheta());
+      robotAngles.position.push_back(std::abs(backhoeSimulation->getShTheta()));
 
       robotAngles.name.push_back("monoboom_to_bucket"); //digging bucket
-      robotAngles.position.push_back(3.0*backhoeSimulation->getWrTheta());
+      robotAngles.position.push_back(backhoeSimulation->getWrTheta());
       
       robotAngles.name.push_back("left_flap_joint"); 
-      robotAngles.position.push_back(3.0*backhoeSimulation->getWrTheta());
+      robotAngles.position.push_back(backhoeSimulation->getShTheta()+1.4);
       robotAngles.name.push_back("right_flap_joint"); 
-      robotAngles.position.push_back(3.0*backhoeSimulation->getWrTheta());
+      robotAngles.position.push_back(backhoeSimulation->getShTheta()+1.4);
 
       JsPub.publish(robotAngles);
       ROS_DEBUG("shoulder joint state published with angle %f \n", backhoeSimulation->getShTheta());
