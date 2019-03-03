@@ -54,7 +54,7 @@ void SimVesc::update(double dt)
   vel += (-vesc_Pgain) * err * dt;
   if (hitsGround)
   {
-    if (pot_pos < groundPos && vel < 0)  // ground is towards negative position
+    if (pot_pos > groundPos && vel > 0)  // ground is towards positive position
     {
       vel = 0;
       onGround = true;
@@ -127,7 +127,7 @@ float SimVesc::getTorque(void)
 
 void SimVesc::setTorque(float current)
 {
-  this->setLinearVelocity(.0005 * current);
+  this->setLinearVelocity(.001 * current);
 }
 
 void SimVesc::setLimitSwitchState(nsVescAccess::limitSwitchState state)

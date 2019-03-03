@@ -60,13 +60,13 @@ void DigDumpAction::digExecuteCB(const dig_control::DigGoalConstPtr &goal)
         case dig_state_enum::moving_to_ground:  // state 2
           // integrate work moving from measurement start to where we think the ground is
           //weightMetric += 1.0;//backhoe->getShoulderTorque() * backhoe->getShoulderVelocity() * .02;  //.02 is dt
-          ground_metric = 10;
+          ground_metric = -10;
           if (backhoe->shoulderAtSetpoint())
           {
-            backhoe->setShoulderSetpoint(0);  // send it into the ground
+            backhoe->setShoulderSetpoint(MAXIMUM_CENTRAL_ANGLE - .01);  // send it into the ground, which is at max this year
             digging_state = finding_ground;
             dig_result.weight_harvested = weightMetric;// / 100;
-            prev_backhoe_position = 3*CENTRAL_MEASUREMENT_STOP_ANGLE;
+            prev_backhoe_position = 0;//3*CENTRAL_MEASUREMENT_STOP_ANGLE; // needs to be different enough to preload filter
           }
           break;
         case dig_state_enum::finding_ground:  // state 3 //going to find the ground
@@ -76,7 +76,8 @@ void DigDumpAction::digExecuteCB(const dig_control::DigGoalConstPtr &goal)
           ground_metric = GROUND_ALPHA * (prev_backhoe_position - backhoe->getPositionEstimate())/.02 
                     + (1 - GROUND_ALPHA) * ground_metric;
           prev_backhoe_position = backhoe->getPositionEstimate();
-          if (ground_metric < .05 /*backhoe->hasHitGround()*/)
+          ROS_WARN("ground_metric: %.3f", ground_metric);
+          if (ground_metric > -.05 /*backhoe->hasHitGround()*/)
           {
             backhoe->abandonShoulderPositionSetpointAndSetTorqueWithoutStopping(CENTRAL_HOLD_TORQUE);
             backhoe->setWristSetpoint(LINEAR_EXTENDED_POINT);  // curl it in

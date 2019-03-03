@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     bucketLittleConveyorVesc = bucketSimulation->getLittleConveyorVesc();
     bucketSifterVesc = bucketSimulation->getSifterVesc();
     // SimBackhoe
-    backhoeSimulation = new SimBackhoe(2.0, .1, central_joint_params.lower_limit_position, central_joint_params.upper_limit_position,
+    backhoeSimulation = new SimBackhoe(0.3, 0.1, central_joint_params.lower_limit_position, central_joint_params.upper_limit_position,
                                        linear_joint_params.lower_limit_position, linear_joint_params.upper_limit_position);  // shoulder and wrist angle, limits
     backhoeShoulderVesc = backhoeSimulation->getShoulderVesc();
     backhoeWristVesc = backhoeSimulation->getWristVesc();
@@ -152,11 +152,11 @@ int main(int argc, char **argv)
       //  ROS_INFO("Linear able to hit ground");
     }
     isLinearInit = linearSafety.init();
-    ROS_DEBUG("Called linearSafetyinit");
+    //ROS_DEBUG("Called linearSafetyinit");
     rate.sleep();
-    ROS_DEBUG("slept");
+    //ROS_DEBUG("slept");
     ros::spinOnce();
-    ROS_DEBUG("spun");
+    //ROS_DEBUG("spun");
   }
   ROS_INFO("Going to move central monoboom");
   backhoeSafety.setPositionSetpoint(CENTRAL_TRANSPORT_ANGLE);
