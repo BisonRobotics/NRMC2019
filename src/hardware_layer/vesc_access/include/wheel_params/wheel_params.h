@@ -78,21 +78,22 @@
 #define ROBOT_AXLE_LENGTH 0.64f
 #define ROBOT_MAX_SPEED 0.5f
 
-#define LINEAR_ACTUATOR_LENGTH 1.5 //radians
-#define MINIMUM_CENTRAL_ANGLE -0.8
-#define MAXIMUM_CENTRAL_ANGLE 2.96
-#define SAFE_CENTRAL_ANGLE 4.55 //should never exceed
-#define SAFE_LINEAR_DISTANCE .04985
+//GROUND IS TOWARDS MINIMUM CENTRAL ANGLE
+#define LINEAR_ACTUATOR_LENGTH 1.5  //radians
+#define MINIMUM_CENTRAL_ANGLE -0.92 //extend for more ground (but not too far!)
+#define MAXIMUM_CENTRAL_ANGLE 1.98  //extend for more dump? (maybe already maxed)
+#define SAFE_CENTRAL_ANGLE 4.55     //LEGACY'D
+#define SAFE_LINEAR_DISTANCE .04985 //LEGACY'D
 
-#define LINEAR_RETRACTED_POINT 1.4 //radians
-#define LINEAR_EXTENDED_POINT .1 //radians
-#define CENTRAL_MEASUREMENT_START_ANGLE .3 //these need to be starting away and
-#define CENTRAL_MEASUREMENT_STOP_ANGLE .5 //moving towards the ground without hitting anything
-#define CENTRAL_HOLD_TORQUE 1          //increase the magintude
-#define CENTRAL_TRANSPORT_ANGLE 0.05                 // move this up
-#define CENTRAL_MOVE_ROCKS_INTO_HOPPER_ANGLE  0.03 // move this up
-#define CENTRAL_DUMP_ANGLE -0.1        // must be below safety point, where backhoe dumps into bucket
-#define CENTRAL_DEPOSITION_ANGLE -0.2 // must be below min position, where bucket transfers to hopper
+#define LINEAR_RETRACTED_POINT 1.4          //radians
+#define LINEAR_EXTENDED_POINT .1            //radians
+#define CENTRAL_MEASUREMENT_START_ANGLE .6 //these need to be starting away and
+#define CENTRAL_MEASUREMENT_STOP_ANGLE .5   //moving towards the ground without hitting anything
+#define CENTRAL_HOLD_TORQUE -1              //increase the magnitude MUST AGREE WITH SIGN OF MIN - MAX
+#define CENTRAL_TRANSPORT_ANGLE 0.7               // move this up
+#define CENTRAL_MOVE_ROCKS_INTO_HOPPER_ANGLE  .9 // move this up
+#define CENTRAL_DUMP_ANGLE .6        // must be below safety point, where backhoe dumps into bucket
+#define CENTRAL_DEPOSITION_ANGLE 1.2  // must be below min position, where bucket transfers to hopper
 
 nsVescAccess::vesc_param_struct_t front_left_param = {.max_velocity = MAX_WHEEL_VELOCITY,
                                                       .max_torque = MAX_WHEEL_TORQUE,

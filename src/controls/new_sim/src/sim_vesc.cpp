@@ -54,7 +54,7 @@ void SimVesc::update(double dt)
   vel += (-vesc_Pgain) * err * dt;
   if (hitsGround)
   {
-    if (pot_pos > groundPos && vel > 0)  // ground is towards positive position
+    if (pot_pos < groundPos && vel < 0)  // ground is towards negative position
     {
       vel = 0;
       onGround = true;
@@ -106,7 +106,7 @@ void SimVesc::update(double dt)
   }
   if (onGround)
   {
-    torque = 70;
+    torque = -70;
   }
 }
 

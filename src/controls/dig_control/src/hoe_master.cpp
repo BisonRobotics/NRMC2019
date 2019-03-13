@@ -20,12 +20,32 @@
 
 #define DIGGING_CONTROL_RATE_HZ 50.0
 
+#define FLAP_START_ANGLE
+#define FLAP_END_ANGLE
+#define FLAP_RANGE
+
+#define POLYFIT_RANK 5
+double monoboom_c[] = {-.0808, -0.0073,  0.0462,  0.9498,  -0.0029};
+
 
 bool should_initialize = false;
 
 void callback (const std_msgs::Empty::ConstPtr &msg)
 {
   should_initialize = true;
+}
+
+/* It shall be known that the angles are defined as such:
+Backhoe.Shoulder angle is the Central Drive angle.
+Central Drive Angle =0 When monoboom angle =0
+
+
+*/
+
+double nrmc_polyfit(double* c, double x)
+{
+    double ret = c[0]*x*x*x*x + c[1]*x*x*x + c[2]*x*x + c[3] *x + c[4];
+    return ret;
 }
 
 
@@ -211,22 +231,26 @@ int main(int argc, char **argv)
       robotAngles.header.stamp = ros::Time::now();
 
       robotAngles.name.push_back("frame_to_monoboom");
-      robotAngles.position.push_back(backhoeSimulation->getShTheta());
+      double urdf_monoboom = -(-M_PI_4 + nrmc_polyfit(monoboom_c,backhoeSimulation->getShTheta()));
+      robotAngles.position.push_back(urdf_monoboom);
       
       robotAngles.name.push_back("frame_to_gravel_bucket");
-      robotAngles.position.push_back(std::abs(backhoeSimulation->getShTheta()));
+      robotAngles.position.push_back(0*std::abs(backhoeSimulation->getShTheta()));
 
       robotAngles.name.push_back("monoboom_to_bucket"); //digging bucket
       robotAngles.position.push_back(backhoeSimulation->getWrTheta());
       
       robotAngles.name.push_back("left_flap_joint"); 
-      robotAngles.position.push_back(backhoeSimulation->getShTheta()+1.4);
+      robotAngles.position.push_back(0*backhoeSimulation->getShTheta()+1.4);
       robotAngles.name.push_back("right_flap_joint"); 
-      robotAngles.position.push_back(backhoeSimulation->getShTheta()+1.4);
+      robotAngles.position.push_back(0*backhoeSimulation->getShTheta()+1.4);
 
       JsPub.publish(robotAngles);
-      ROS_DEBUG("shoulder joint state published with angle %f \n", backhoeSimulation->getShTheta());
       ROS_DEBUG("wrist joint state published with angle %f \n", backhoeSimulation->getWrTheta());
+      ROS_DEBUG("shoulder joint stat: %f \n", backhoeSimulation->getShTheta());
+      ROS_DEBUG("monoboom angle     : %f \n", nrmc_polyfit(monoboom_c,backhoeSimulation->getShTheta()));
+      ROS_DEBUG("URDF monoboom angle: %f \n", urdf_monoboom);
+      
     }
     else  // display output for physical
     {

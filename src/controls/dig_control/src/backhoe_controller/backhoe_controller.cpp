@@ -72,7 +72,7 @@ void BackhoeController::update(double dt)
 {
   if (getIsInit())
   {
-    safetyCheck();
+    //safetyCheck();
     backhoe_safety->update(dt);
     linear_safety->update(dt);
   }
@@ -84,9 +84,13 @@ void BackhoeController::update(double dt)
 
 void BackhoeController::safetyCheck()
 {
-
+  //2018
   // if were are greater than the safety distance and we want to move up on the central, stop it.
   // if we are greater than the safety distance on the linear and the central is above its safety distance, stop the linear
+  
+  //2019
+  //Must be curled on the way up from the ground
+  //Cannot be curled when central angle is too great
 
   if (backhoe_safety->getPositionEstimate() > backhoe_safety->getSafetyPosition () &&
       (backhoe_safety->getCommandedTorque() > .001 || backhoe_safety->getCommandedVelocity() > .001)
