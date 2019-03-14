@@ -91,9 +91,11 @@
 #define CENTRAL_MEASUREMENT_STOP_ANGLE .5   //moving towards the ground without hitting anything
 #define CENTRAL_HOLD_TORQUE -1              //increase the magnitude MUST AGREE WITH SIGN OF MIN - MAX
 #define CENTRAL_TRANSPORT_ANGLE 1.4               // move this up
-#define CENTRAL_MOVE_ROCKS_INTO_HOPPER_ANGLE  1.5 // move this up
-#define CENTRAL_DUMP_ANGLE 1.3        // must be below safety point, where backhoe dumps into bucket
-#define CENTRAL_DEPOSITION_ANGLE 1.7  // must be below min position, where bucket transfers to hopper
+#define CENTRAL_MOVE_ROCKS_INTO_HOPPER_ANGLE  1.6 // move this up
+#define CENTRAL_DUMP_ANGLE 1.3         // must be below safety point, where backhoe dumps into bucket
+#define CENTRAL_DEPOSITION_ANGLE 1.95  // must be below max position, where bucket transfers to hopper
+#define TIME_TO_EMPTY_INTO_HOPPER 20.0 //was set to 90 for competition
+#define TIME_TO_MOVE_ROCKS_INTO_BUCKET 1.0
 
 nsVescAccess::vesc_param_struct_t front_left_param = {.max_velocity = MAX_WHEEL_VELOCITY,
                                                       .max_torque = MAX_WHEEL_TORQUE,

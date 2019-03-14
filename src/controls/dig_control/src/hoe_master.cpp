@@ -236,7 +236,8 @@ int main(int argc, char **argv)
       robotAngles.position.push_back(urdf_monoboom);
       
       robotAngles.name.push_back("frame_to_gravel_bucket");
-      robotAngles.position.push_back(0*std::abs(backhoeSimulation->getShTheta()));
+      double urdf_bucket = (backhoeSimulation->getShTheta() - 1.484) > 0 ? 3.0613 * (backhoeSimulation->getShTheta() - 1.484) : 0;
+      robotAngles.position.push_back(urdf_bucket);
 
       robotAngles.name.push_back("monoboom_to_bucket"); //digging bucket
       robotAngles.position.push_back(backhoeSimulation->getWrTheta());
