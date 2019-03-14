@@ -43,7 +43,7 @@ void DigDumpAction::digExecuteCB(const dig_control::DigGoalConstPtr &goal)
       {
         case dig_state_enum::dig_idle:  // state 0//not digging, should start here
           bucket->turnSifterOn();
-          bucket->turnLittleConveyorOn();
+          //bucket->turnLittleConveyorOn(); //LEAGACY'D
           backhoe->setShoulderSetpoint(CENTRAL_MEASUREMENT_START_ANGLE);  // put system in known starting config
           backhoe->setWristSetpoint(LINEAR_RETRACTED_POINT);
           digging_state = ensure_at_measurement_start;
@@ -63,10 +63,10 @@ void DigDumpAction::digExecuteCB(const dig_control::DigGoalConstPtr &goal)
           ground_metric = 10;
           if (backhoe->shoulderAtSetpoint())
           {
-            backhoe->setShoulderSetpoint(0);  // send it into the ground
+            backhoe->setShoulderSetpoint(MINIMUM_CENTRAL_ANGLE + .01);  // send it into the ground, which is at min
             digging_state = finding_ground;
             dig_result.weight_harvested = weightMetric;// / 100;
-            prev_backhoe_position = 3*CENTRAL_MEASUREMENT_STOP_ANGLE;
+            prev_backhoe_position = 0;// needs to be different enough to keep filter preloaded
           }
           break;
         case dig_state_enum::finding_ground:  // state 3 //going to find the ground
@@ -76,7 +76,7 @@ void DigDumpAction::digExecuteCB(const dig_control::DigGoalConstPtr &goal)
           ground_metric = GROUND_ALPHA * (prev_backhoe_position - backhoe->getPositionEstimate())/.02 
                     + (1 - GROUND_ALPHA) * ground_metric;
           prev_backhoe_position = backhoe->getPositionEstimate();
-          if (ground_metric < .05 /*backhoe->hasHitGround()*/)
+          if (std::abs(ground_metric) < .05 /*backhoe->hasHitGround()*/)
           {
             backhoe->abandonShoulderPositionSetpointAndSetTorqueWithoutStopping(CENTRAL_HOLD_TORQUE);
             backhoe->setWristSetpoint(LINEAR_EXTENDED_POINT);  // curl it in
@@ -128,7 +128,7 @@ void DigDumpAction::digExecuteCB(const dig_control::DigGoalConstPtr &goal)
         case dig_state_enum::returning_backhoe_to_initial:  // state 9 //moving back to same position as dig idle
           if (backhoe->shoulderAtSetpoint())
           {
-            bucket->turnLittleConveyorOff();
+            //bucket->turnLittleConveyorOff();
             bucket->turnSifterOff();
             is_digging = false;
             digging_state = dig_idle;
@@ -138,7 +138,7 @@ void DigDumpAction::digExecuteCB(const dig_control::DigGoalConstPtr &goal)
         case dig_state_enum::dig_error:
         default:
           bucket->turnSifterOff();
-          bucket->turnLittleConveyorOff();
+          //bucket->turnLittleConveyorOff();
           dig_as_.setAborted();
           is_digging = false;
           break;
@@ -170,7 +170,7 @@ void DigDumpAction::dumpExecuteCB(const dig_control::DumpGoalConstPtr &goal)
         case dump_state_enum::moving_bucket_to_setpoint: //state 1
           if (backhoe->shoulderAtSetpoint())
           {
-            bucket->turnBigConveyorOn();
+            //bucket->turnBigConveyorOn();
             initial_time = 0;//ros::Time::now();
             dumping_state = actuating_conveyor;
           }
@@ -180,7 +180,7 @@ void DigDumpAction::dumpExecuteCB(const dig_control::DumpGoalConstPtr &goal)
           initial_time += .02;
           if(/*ros::Time::now()-initial_time).toSec()*/ initial_time > dump_time)
           {
-            bucket->turnBigConveyorOff();
+            //bucket->turnBigConveyorOff();
             bucket->turnSifterOff();
             backhoe->setShoulderSetpoint(CENTRAL_TRANSPORT_ANGLE);
             dumping_state = moving_bucket_to_initial;

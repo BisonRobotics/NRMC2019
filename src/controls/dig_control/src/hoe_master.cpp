@@ -20,6 +20,14 @@
 
 #define DIGGING_CONTROL_RATE_HZ 50.0
 
+#define FLAP_START_ANGLE
+#define FLAP_END_ANGLE
+#define FLAP_RANGE
+
+#define POLYFIT_RANK 5
+double monoboom_c[] = {-.0808, -0.0073,  0.0462,  0.9498,  -0.0029};
+double flap_c[]     = {85.0010, -376.8576, 620.7329, -453.8172,  126.0475};
+
 
 bool should_initialize = false;
 
@@ -28,14 +36,32 @@ void callback (const std_msgs::Empty::ConstPtr &msg)
   should_initialize = true;
 }
 
+/* It shall be known that the angles are defined as such:
+Backhoe.Shoulder angle is the Central Drive angle.
+Central Drive Angle =0 When monoboom angle =0
+
+
+*/
+
+double nrmc_polyfit(double* c, double x)
+{
+    double ret = c[0]*x*x*x*x + c[1]*x*x*x + c[2]*x*x + c[3] *x + c[4];
+    return ret;
+}
+
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "the_backhoe_master");
+  
+  if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) 
+  {
+   ros::console::notifyLoggerLevelsChanged();
+  }
 
   ros::NodeHandle node("~");
   ros::NodeHandle globalNode;
-  ros::Rate rate(DIGGING_CONTROL_RATE_HZ);  // should be 50 Hz
+  ros::WallRate rate(DIGGING_CONTROL_RATE_HZ);  // should be 50 Hz
 
   ros::Subscriber initializeSub = globalNode.subscribe("init_digging",100,callback);
 
@@ -67,7 +93,7 @@ int main(int argc, char **argv)
   iVescAccess *backhoeShoulderVesc;
   iVescAccess *backhoeWristVesc;
   ros::Time lastTime=ros::Time::now();
-  ros::Rate vesc_init_rate (10);
+  ros::WallRate vesc_init_rate (10);
   // these should not be initialized if we are not simulating
   SimBucket *bucketSimulation;
 
@@ -80,7 +106,7 @@ int main(int argc, char **argv)
     bucketLittleConveyorVesc = bucketSimulation->getLittleConveyorVesc();
     bucketSifterVesc = bucketSimulation->getSifterVesc();
     // SimBackhoe
-    backhoeSimulation = new SimBackhoe(2.0, .1, central_joint_params.lower_limit_position, central_joint_params.upper_limit_position,
+    backhoeSimulation = new SimBackhoe(0.3, 0.1, central_joint_params.lower_limit_position, central_joint_params.upper_limit_position,
                                        linear_joint_params.lower_limit_position, linear_joint_params.upper_limit_position);  // shoulder and wrist angle, limits
     backhoeShoulderVesc = backhoeSimulation->getShoulderVesc();
     backhoeWristVesc = backhoeSimulation->getWristVesc();
@@ -120,11 +146,14 @@ int main(int argc, char **argv)
  LinearSafetyController linearSafety(linear_joint_params, backhoeWristVesc);
   BackhoeSafetyController backhoeSafety(central_joint_params, backhoeShoulderVesc);
   ROS_INFO ("WAITING for init");
-  while (ros::ok() && !should_initialize)
+  /*while (ros::ok() && !should_initialize)
   {
     ros::spinOnce();
     rate.sleep();
-  }
+  }*/
+  
+  ROS_INFO("Going to INIT backhoeSafety");
+  ROS_DEBUG("Debug info shown");
     
   backhoeSafety.init();
 
@@ -140,14 +169,17 @@ int main(int argc, char **argv)
       ROS_DEBUG("Linear from vesc at %.4f", backhoeSimulation->getWristVesc()->getPotPosition());
       ROS_DEBUG("Linear Limit state %d", backhoeSimulation->getWristVesc()->getLimitSwitchState());
       ROS_DEBUG("Linear vel set to  %.4f", backhoeSimulation->getWristVesc()->getLinearVelocity());
-      if (((SimVesc *)backhoeSimulation->getWristVesc())->ableToHitGround())
-        ROS_INFO("Linear able to hit ground");
+      //if (((SimVesc *)backhoeSimulation->getWristVesc())->ableToHitGround())
+      //  ROS_INFO("Linear able to hit ground");
     }
     isLinearInit = linearSafety.init();
+    //ROS_DEBUG("Called linearSafetyinit");
     rate.sleep();
+    //ROS_DEBUG("slept");
     ros::spinOnce();
+    //ROS_DEBUG("spun");
   }
-
+  ROS_INFO("Going to move central monoboom");
   backhoeSafety.setPositionSetpoint(CENTRAL_TRANSPORT_ANGLE);
   while (ros::ok () && !backhoeSafety.isAtSetpoint())
   {
@@ -160,6 +192,8 @@ int main(int argc, char **argv)
     rate.sleep();
     ros::spinOnce();
   }
+  ROS_INFO("Going init controllers");
+
   BucketController bucketC(bucketBigConveyorVesc, bucketLittleConveyorVesc, bucketSifterVesc);
   BackhoeController backhoeC(&backhoeSafety, &linearSafety);
 
@@ -197,16 +231,32 @@ int main(int argc, char **argv)
     {
       robotAngles.header.stamp = ros::Time::now();
 
-      robotAngles.name.push_back("central_drive_to_monoboom");
+      robotAngles.name.push_back("frame_to_monoboom");
+      double urdf_monoboom = -(-M_PI_4 + nrmc_polyfit(monoboom_c,backhoeSimulation->getShTheta()));
+      robotAngles.position.push_back(urdf_monoboom);
+      
+      robotAngles.name.push_back("frame_to_gravel_bucket");
+      double urdf_bucket = (backhoeSimulation->getShTheta() - 1.484) > 0 ? 3.0613 * (backhoeSimulation->getShTheta() - 1.484) : 0;
+      robotAngles.position.push_back(urdf_bucket);
 
-      robotAngles.position.push_back(backhoeSimulation->getShTheta());
-
-      robotAngles.name.push_back("monoboom_actuator");
+      robotAngles.name.push_back("monoboom_to_bucket"); //digging bucket
       robotAngles.position.push_back(backhoeSimulation->getWrTheta());
+      
+      robotAngles.name.push_back("left_flap_joint"); 
+      double urdf_flap = (backhoeSimulation->getShTheta() < 1.275 && backhoeSimulation->getShTheta() > 0.785 ) ? 
+                         nrmc_polyfit(flap_c, backhoeSimulation->getShTheta()) : (backhoeSimulation->getShTheta() >= 1.275 ? 0 : 2.424);
+      robotAngles.position.push_back(urdf_flap);
+      robotAngles.name.push_back("right_flap_joint"); 
+      robotAngles.position.push_back(urdf_flap);
 
       JsPub.publish(robotAngles);
-      ROS_DEBUG("shoulder joint state published with angle %f \n", backhoeSimulation->getShTheta());
       ROS_DEBUG("wrist joint state published with angle %f \n", backhoeSimulation->getWrTheta());
+      ROS_DEBUG("monoboom angle     : %f \n", nrmc_polyfit(monoboom_c,backhoeSimulation->getShTheta()));
+      ROS_DEBUG("URDF monoboom angle: %f \n", urdf_monoboom);
+      ROS_DEBUG("shoulder joint stat: %f \n", backhoeSimulation->getShTheta());
+      ROS_DEBUG("urdf flap angle    : %f \n", urdf_flap);
+
+      
     }
     else  // display output for physical
     {

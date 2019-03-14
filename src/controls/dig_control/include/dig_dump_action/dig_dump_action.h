@@ -9,6 +9,7 @@
 #include <backhoe_controller/backhoe_controller.h>
 
 #include <std_msgs/Empty.h>
+#include "wheel_params/wheel_params.h"
 
 
 enum dig_state_enum
@@ -55,8 +56,8 @@ private:
   bool is_digging;
   bool is_dumping;
   double initial_time;
-  static constexpr float dump_time = 90;
-  static constexpr float time_to_move_rocks_to_holder=1;
+  static constexpr float dump_time = TIME_TO_EMPTY_INTO_HOPPER;
+  static constexpr float time_to_move_rocks_to_holder=TIME_TO_MOVE_ROCKS_INTO_BUCKET;
   void digExecuteCB(const dig_control::DigGoalConstPtr &goal);
   void dumpExecuteCB(const dig_control::DumpGoalConstPtr &goal);
   BackhoeController *backhoe;
