@@ -26,6 +26,7 @@
 
 #define POLYFIT_RANK 5
 double monoboom_c[] = {-.0808, -0.0073,  0.0462,  0.9498,  -0.0029};
+double flap_c[]     = {85.0010, -376.8576, 620.7329, -453.8172,  126.0475};
 
 
 bool should_initialize = false;
@@ -241,15 +242,19 @@ int main(int argc, char **argv)
       robotAngles.position.push_back(backhoeSimulation->getWrTheta());
       
       robotAngles.name.push_back("left_flap_joint"); 
-      robotAngles.position.push_back(0*backhoeSimulation->getShTheta()+1.4);
+      double urdf_flap = (backhoeSimulation->getShTheta() < 1.275 && backhoeSimulation->getShTheta() > 0.785 ) ? 
+                         nrmc_polyfit(flap_c, backhoeSimulation->getShTheta()) : (backhoeSimulation->getShTheta() >= 1.275 ? 0 : 2.424);
+      robotAngles.position.push_back(urdf_flap);
       robotAngles.name.push_back("right_flap_joint"); 
-      robotAngles.position.push_back(0*backhoeSimulation->getShTheta()+1.4);
+      robotAngles.position.push_back(urdf_flap);
 
       JsPub.publish(robotAngles);
       ROS_DEBUG("wrist joint state published with angle %f \n", backhoeSimulation->getWrTheta());
-      ROS_DEBUG("shoulder joint stat: %f \n", backhoeSimulation->getShTheta());
       ROS_DEBUG("monoboom angle     : %f \n", nrmc_polyfit(monoboom_c,backhoeSimulation->getShTheta()));
       ROS_DEBUG("URDF monoboom angle: %f \n", urdf_monoboom);
+      ROS_DEBUG("shoulder joint stat: %f \n", backhoeSimulation->getShTheta());
+      ROS_DEBUG("urdf flap angle    : %f \n", urdf_flap);
+
       
     }
     else  // display output for physical
