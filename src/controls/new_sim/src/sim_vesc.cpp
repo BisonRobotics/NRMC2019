@@ -106,7 +106,7 @@ void SimVesc::update(double dt)
   }
   if (onGround)
   {
-    torque = -70;
+    torque = -70; //Pushing into ground
   }
 }
 
