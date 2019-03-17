@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(frosty_autonomy)
+
+add_compile_options(-std=c++11)
+
+# Get the information about this package's buildtime dependencies
+find_package(catkin REQUIRED
+  COMPONENTS roscpp message_generation std_msgs)
+
+# Declare that this catkin package's runtime dependencies
+  catkin_package(
+   INCLUDE_DIRS include
+   CATKIN_DEPENDS roscpp message_runtime std_msgs
+  )
+
+include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/include)
+#build libraries
+
+# define executable not using any messages/services provided by this package
+  add_executable(frosty src/frosty.cpp)
+  add_dependencies(frosty ${catkin_EXPORTED_TARGETS})
+  target_link_libraries(frosty ${catkin_LIBRARIES})
