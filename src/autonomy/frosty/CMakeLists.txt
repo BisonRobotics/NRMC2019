@@ -15,8 +15,10 @@ find_package(catkin REQUIRED
 
 include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/include)
 #build libraries
+add_library(frosty_state_machine src/frosty_state_machine/frosty_state_machine.cpp)
+#target_link_libraries(frosty_state_machine ${catkin_LIBRARIES})
 
 # define executable not using any messages/services provided by this package
   add_executable(frosty src/frosty.cpp)
-  add_dependencies(frosty ${catkin_EXPORTED_TARGETS})
-  target_link_libraries(frosty ${catkin_LIBRARIES})
+  add_dependencies(frosty frosty_state_machine ${catkin_EXPORTED_TARGETS})
+  target_link_libraries(frosty frosty_state_machine ${catkin_LIBRARIES})
