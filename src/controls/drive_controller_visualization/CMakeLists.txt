@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   navigation_msgs
   drive_controller_msgs
   cv_bridge
+  vrep_msgs
 )
 
 link_directories(/usr/src/gmock/build)
@@ -27,9 +28,13 @@ find_package(OpenCV REQUIRED)
 #generate_messages(DEPENDENCIES drive_controller_msgs) #actionlib_msgs navigation_msgs)
 
 catkin_package(
-        INCLUDE_DIRS include
-
-        CATKIN_DEPENDS roscpp std_msgs geometry_msgs drive_controller_msgs cv_bridge
+  INCLUDE_DIRS include
+  CATKIN_DEPENDS 
+  	roscpp 
+		std_msgs 
+		geometry_msgs 
+		drive_controller_msgs 
+		cv_bridge
 )
 
 ###########
