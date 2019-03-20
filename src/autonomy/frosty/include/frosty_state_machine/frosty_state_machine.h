@@ -9,6 +9,13 @@ State 5 . Dump
 State 6 . Check Time/Conditions 
           and GOTO 2.
 */
+#include <ros/ros.h>
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
+#include <navigation_msgs/FollowPathAction.h>
+#include <dig_control/DumpAction.h>
+#include <dig_control/DigAction.h>
+
 
 namespace Frosty_ns 
 {
@@ -25,13 +32,19 @@ public:
     int getState();
     Frosty_ns::StateResult update(double dt);
 private:
+    //need path planning actionlib client
+    SimpleActionClient<FollowPathAction> *path_alc;
+    //need dig/dump actionlib client
+    SimpleActionClient<DigAction> *dig_alc;
+    SimpleActionClient<DumpAction> *dump_alc;
     double time;
     int state;
     bool dig_sim, drive_sim;
     double dig_time, dump_time;
     void state1StartInit(double t);
     Frosty_ns::StateResult state1CheckInit();
-    //Frosty_ns::StateResult state2GoToDig();
+    void state2StartGoToDig();
+    Frosty_ns::StateResult state2CheckGoToDig();
     //Frosty_ns::StateResult state3Dig();
     //Frosty_ns::StateResult state4GoToHopper();
     //Frosty_ns::StateResult state5Dump();

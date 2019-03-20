@@ -17,6 +17,7 @@ dig_sim(dig_sim), drive_sim(drive_sim), dig_time(dig_time_sec), dump_time(dump_t
 {
     state = 0;
     time = 0;
+    //initialize actionlib clients
 }
 
 int FrostyStateMachine::getState()
@@ -63,6 +64,7 @@ Frosty_ns::StateResult FrostyStateMachine::update(double dt)
 void FrostyStateMachine::state1StartInit(double t)
 {
     ROS_DEBUG("Init called at time = %.4f", t);
+        
 }
 
 Frosty_ns::StateResult FrostyStateMachine::state1CheckInit()
@@ -70,6 +72,19 @@ Frosty_ns::StateResult FrostyStateMachine::state1CheckInit()
     if (time > 10)
         return Frosty_ns::StateResult::SUCCESS;
     else return Frosty_ns::StateResult::IN_PROCESS;
+    //TODO: check driving and digging nodes to make sure they are up and ready
+}
+
+void FrostyStateMachine::state2StartGoToDig()
+{ 
+    //post static path (and implicit starting zero point turn) 
+    // to path actionlib server from path_alc actionlib client 
+        
+}
+
+Frosty_ns::StateResult FrostyStateMachine::state2CheckGoToDig()
+{
+    //check progress from actinlib feedback
 }
     //Frosty_ns::StateResult state2GoToDig();
     //Frosty_ns::StateResult state3Dig();
