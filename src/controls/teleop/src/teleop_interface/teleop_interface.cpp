@@ -29,7 +29,18 @@ TeleopInterface::TeleopInterface(Mode mode, float velocity)
 
 void TeleopInterface::setMax(float max_value)
 {
-  this->max_value = std::abs(max_value);
+  if (mode == velocity)
+  {
+    this->max_value = std::abs(max_value);
+  }
+  else if (mode == duty)
+  {
+    this->max_value = std::abs(clamp(max_value, 0.95f, -0.95f));
+  }
+  else
+  {
+    this->max_value = 0.0f;
+  }
 }
 
 float TeleopInterface::getMax()
@@ -40,6 +51,10 @@ float TeleopInterface::getMax()
 void TeleopInterface::setMode(TeleopInterface::Mode mode)
 {
   this->mode = mode;
+  if (mode == duty)
+  {
+    this->max_value = std::abs(clamp(max_value, 0.95f, -0.95f));
+  }
 }
 
 TeleopInterface::Mode TeleopInterface::getMode()
@@ -49,10 +64,10 @@ TeleopInterface::Mode TeleopInterface::getMode()
 
 void TeleopInterface::stopMotors()
 {
-  fl->setLinearVelocity(0.0f);
-  fr->setLinearVelocity(0.0f);
-  br->setLinearVelocity(0.0f);
-  bl->setLinearVelocity(0.0f);
+  fl->setTorque(0.0f);
+  fr->setTorque(0.0f);
+  br->setTorque(0.0f);
+  bl->setTorque(0.0f);
 }
 
 float TeleopInterface::clamp(float number, float max, float min)
@@ -66,8 +81,8 @@ void TeleopInterface::update(float left, float right)
   {
     if (mode == velocity)
     {
-      fl->setLinearVelocity(left * max_value);
-      bl->setLinearVelocity(left * max_value);
+      fl->setLinearVelocity(clamp(left*max_value, max_value, -max_value));
+      bl->setLinearVelocity(clamp(left*max_value, max_value, -max_value));
     }
     else if (mode == duty)
     {
@@ -90,13 +105,13 @@ void TeleopInterface::update(float left, float right)
   {
     if (mode == velocity)
     {
-      fr->setLinearVelocity(right * max_value);
-      br->setLinearVelocity(right * max_value);
+      fr->setLinearVelocity(clamp(right*max_value, max_value, -max_value));
+      br->setLinearVelocity(clamp(right*max_value, max_value, -max_value));
     }
     else if (mode == duty)
     {
-      fr->setDuty(clamp(left*max_value, 0.95f, -0.95f));
-      br->setDuty(clamp(left*max_value, 0.95f, -0.95f));
+      fr->setDuty(clamp(right*max_value, 0.95f, -0.95f));
+      br->setDuty(clamp(right*max_value, 0.95f, -0.95f));
     }
     else
     {

@@ -37,3 +37,10 @@ target_link_libraries (teleop_interface ${catkin_LIBRARIES})
 add_executable(teleop src/teleop.cpp)
 target_link_libraries (teleop teleop_interface)
 
+########
+# Test #
+########
+catkin_add_gtest(teleop_interface_tests src/teleop_interface/tests/teleop_interface_tests.cpp)
+if(TARGET teleop_interface_tests)
+ target_link_libraries(teleop_interface_tests  teleop_interface ${catkin_LIBRARIES} gmock_main)
+endif()
