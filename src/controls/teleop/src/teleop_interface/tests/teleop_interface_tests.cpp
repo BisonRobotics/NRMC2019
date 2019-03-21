@@ -1,7 +1,7 @@
 
 // Bring in gtest
 #include <gtest/gtest.h>
-#include <teleop/teleop.h>
+#include <teleop_interface/teleop_interface.h>
 #include <vesc_access/mock_vesc_access.h>
 #include <gmock/gmock.h>
 
