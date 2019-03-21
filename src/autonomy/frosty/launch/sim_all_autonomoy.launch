@@ -1,4 +1,10 @@
 <launch>
+  <node pkg="aliencontrol" type="aliencontrol" name="aliencontrol_vrep">
+    <param name="cmd" value="'echo Attempting vrep -h; vrep -h'"/>
+  </node>
+  <node pkg="aliencontrol" type="aliencontrol" name="aliencontrol_rviz">
+    <param name="cmd" value="'echo Attempting rviz; rviz'"/>
+  </node>
   <node name="map_server" pkg="occupancy_grid" type="map_server" />
   <include file="$(find description)/launch/load_robot_and_arena.launch" />
   <node name="path_planner_node" pkg="path_planner" type="path_planner_node" />

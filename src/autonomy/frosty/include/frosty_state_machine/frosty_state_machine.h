@@ -33,10 +33,10 @@ public:
     Frosty_ns::StateResult update(double dt);
 private:
     //need path planning actionlib client
-    SimpleActionClient<FollowPathAction> *path_alc;
-    //need dig/dump actionlib client
-    SimpleActionClient<DigAction> *dig_alc;
-    SimpleActionClient<DumpAction> *dump_alc;
+    actionlib::SimpleActionClient<navigation_msgs::FollowPathAction> *path_alc;
+    //need dig/dump actionlib client //wait
+    //SimpleActionClient<DigAction> *dig_alc;
+    //SimpleActionClient<DumpAction> *dump_alc;
     double time;
     int state;
     bool dig_sim, drive_sim;
