@@ -1,15 +1,16 @@
 <launch>
   <node pkg="aliencontrol" type="aliencontrol" name="aliencontrol_vrep">
-    <param name="cmd" value="'whoami'; 'pwd';source devel/setup.bash; echo 'Attempting vrep -h'; /opt/VREP/vrep.sh -h"/>
+    <param name="cmd" value="'whoami'; 'pwd'; echo 'Attempting vrep -h'; /opt/VREP/vrep.sh -h"/>
   </node>
   <node pkg="aliencontrol" type="aliencontrol" name="aliencontrol_rviz">
     <param name="cmd" value="echo 'Attempting rviz'; rviz"/>
   </node>
   <node name="map_server" pkg="occupancy_grid" type="map_server" />
   <include file="$(find description)/launch/load_robot_and_arena.launch" />
-  <node name="path_planner_node" pkg="path_planner" type="path_planner_node" />
+  <!--<node name="path_planner_node" pkg="path_planner" type="path_planner_node" />-->
   <node name="position_controller" pkg="drive_controller" type="drive_controller_master">
     <param name="simulating_driving" type="bool" value="true"/>
     <param name="localization_settle_time" type="double" value="5"/>
   </node>
+  <node name="frosty_node" pkg="frosty_autonomy" type="frosty" />
 </launch>

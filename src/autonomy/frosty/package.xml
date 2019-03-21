@@ -17,6 +17,8 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>actionlib_msgs</build_depend>
+  <build_depend>vrep_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
 
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>roscpp</exec_depend>
@@ -25,6 +27,8 @@
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>actionlib</exec_depend>
   <exec_depend>actionlib_msgs</exec_depend>
+  <exec_depend>vrep_msgs</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
 
 
 

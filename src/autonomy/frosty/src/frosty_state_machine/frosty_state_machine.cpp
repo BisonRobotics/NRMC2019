@@ -100,6 +100,7 @@ Frosty_ns::StateResult FrostyStateMachine::state1CheckInit()
     else return Frosty_ns::StateResult::IN_PROCESS;
     
     //TODO: check driving and digging nodes to make sure they are up and ready
+    // if actionlib server connects, they are ready?
 }
 
 void FrostyStateMachine::state2StartGoToDig()
