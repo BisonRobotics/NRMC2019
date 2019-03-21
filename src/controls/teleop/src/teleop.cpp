@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::Subscriber joy_sub = n.subscribe("joy", 2, callback);
   ros::Rate rate(50);
-  TeleopInterface teleop(TeleopInterface::duty, 0.2f);
+  TeleopInterface teleop(TeleopInterface::duty, 0.8f);
 
   while (ros::ok())
   {
