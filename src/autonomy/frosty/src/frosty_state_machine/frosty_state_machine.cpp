@@ -86,6 +86,10 @@ Frosty_ns::StateResult FrostyStateMachine::update(double dt)
 void FrostyStateMachine::state1StartInit(double t)
 {
     ROS_DEBUG("Init called at time = %.4f", t);
+    if (drive_sim)
+    {
+        //start vrep via rosservice call
+    }
         
 }
 
