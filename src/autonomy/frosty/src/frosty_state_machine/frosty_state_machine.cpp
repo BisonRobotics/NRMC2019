@@ -18,12 +18,14 @@ State 6 . Check Time/Conditions
 */
 
 FrostyStateMachine::FrostyStateMachine(bool dig_sim, bool drive_sim, double dig_time_sec, double dump_time_sec):
-dig_sim(dig_sim), drive_sim(drive_sim), dig_time(dig_time_sec), dump_time(dump_time_sec)
+dig_sim(dig_sim), drive_sim(drive_sim), min_dig_time(dig_time_sec), min_dump_time(dump_time_sec)
 {
     state = 0;
     time = 0;
+    dig_timer = 0;
     //initialize actionlib clients
     path_alc = new actionlib::SimpleActionClient<navigation_msgs::FollowPathAction> ("follow_path", true);
+    dig_alc  = new actionlib::SimpleActionClient<dig_control::DigAction> ("dig_server", true);
     //dig one here too
     //and dump
 }
@@ -60,24 +62,45 @@ Frosty_ns::StateResult FrostyStateMachine::update(double dt)
         state = 3;
     break;
     case 3:
-        res = state2CheckGoToDig();
+        res = state3CheckGoToDig();
         if (res == Frosty_ns::StateResult::SUCCESS)
         {
             state = 4;
+            dig_timer = 0;
         }
         else
         {
-            ROS_DEBUG("Init Check: %s", (res == Frosty_ns::StateResult::FAILED) ? "FAILED": "IN PROGRESS");
+            ROS_DEBUG("Path Check: %s", (res == Frosty_ns::StateResult::FAILED) ? "FAILED": "IN PROGRESS");
         }
 
     break;
     case 4:
         ROS_DEBUG("IN STATE 4");
-
+        res = state4Dig(dt);
+        if (res == Frosty_ns::StateResult::SUCCESS)
+        {
+            state = 5;
+        }
+        else
+        {
+            ROS_DEBUG("Dig Start: %s", (res == Frosty_ns::StateResult::FAILED) ? "FAILED": "IN PROGRESS");
+        }
     break;
     case 5:
+        ROS_DEBUG("IN STATE 5");
+        state5StartGoToHopper();
+        state = 6;
     break;
     case 6:
+        res = state6CheckGoToHopper();
+        if (res == Frosty_ns::StateResult::SUCCESS)
+        {
+            state = 2; //start again (havent dumped ever tho)
+        }
+        else
+        {
+            ROS_DEBUG("return Path Check: %s", (res == Frosty_ns::StateResult::FAILED) ? "FAILED": "IN PROGRESS");
+        }
     break;
   }
   time += dt;
@@ -86,18 +109,19 @@ Frosty_ns::StateResult FrostyStateMachine::update(double dt)
 void FrostyStateMachine::state1StartInit(double t)
 {
     ROS_DEBUG("Init called at time = %.4f", t);
-    if (drive_sim)
-    {
-        //start vrep via rosservice call
-    }
         
 }
 
 Frosty_ns::StateResult FrostyStateMachine::state1CheckInit()
 {
-    if (time > 10 || path_alc->isServerConnected())
+    if (time > 10 || (path_alc->isServerConnected() && dig_alc->isServerConnected()))
+    {
         return Frosty_ns::StateResult::SUCCESS;
-    else return Frosty_ns::StateResult::IN_PROCESS;
+    }
+    else 
+    {
+        return Frosty_ns::StateResult::IN_PROCESS;
+    }
     
     //TODO: check driving and digging nodes to make sure they are up and ready
     // if actionlib server connects, they are ready?
@@ -122,7 +146,7 @@ void FrostyStateMachine::state2StartGoToDig()
     segment_1.min_radius = .1;
     segment_1.direction_of_travel = 1; //static_cast<int8_t>(navigation_msgs::Direction::forward); //aka 1
 
-    ROS_INFO("[path_planner_node]: Sending goal to action server");
+    ROS_INFO("[frosty]: Sending path to action server");
     navigation_msgs::FollowPathGoal goal;
     std::vector<navigation_msgs::BezierSegment> p;
     p.push_back(segment_1);
@@ -130,16 +154,81 @@ void FrostyStateMachine::state2StartGoToDig()
     path_alc->sendGoal(goal);
 }
 
-Frosty_ns::StateResult FrostyStateMachine::state2CheckGoToDig()
+Frosty_ns::StateResult FrostyStateMachine::state3CheckGoToDig()
 {
     //check progress from actinlib feedback
     actionlib::SimpleClientGoalState state = path_alc->getState();
     //state = path_alc->getState();
-    if (state.isDone())
+    if (state.isDone()) //TODO use done callback instead for thread safety/sense stuff
     {
         return Frosty_ns::StateResult::SUCCESS;
     }
     return Frosty_ns::StateResult::IN_PROCESS;
+}
+
+Frosty_ns::StateResult FrostyStateMachine::state4Dig(double dt)
+{ 
+    dig_timer += dt;
+    actionlib::SimpleClientGoalState state = dig_alc->getState();
+    if (state.isDone() && dig_timer < min_dig_time) //TODO use done callback instead for thread safety/sense stuff
+    {
+        ROS_INFO("[frosty]: Sending dig command.");
+        dig_control::DigGoal goal;
+        dig_alc->sendGoal(goal);
+        return Frosty_ns::StateResult::IN_PROCESS;
+    }
+    else if (dig_timer >= min_dig_time)
+    {
+        dig_timer = 0;
+        return Frosty_ns::StateResult::SUCCESS;
+    }
+    return Frosty_ns::StateResult::IN_PROCESS;
+}
+
+void FrostyStateMachine::state5StartGoToHopper()
+{ 
+    //post static path (and implicit starting zero point turn) 
+    // to path actionlib server from path_alc actionlib client 
+    //make goal
+    
+    navigation_msgs::BezierSegment segment_1;
+    segment_1.p0.x = 4;
+    segment_1.p0.y = 0;
+    segment_1.p1.x = 3;
+    segment_1.p1.y = 0;
+    segment_1.p2.x = 2;
+    segment_1.p2.y = 0;
+    segment_1.p3.x = 1;
+    segment_1.p3.y = 0;
+    segment_1.path_cost = 0; //free
+    segment_1.min_radius = .1;
+    segment_1.direction_of_travel = 0; //static_cast<int8_t>(navigation_msgs::Direction::reverse); //aka 0
+
+    ROS_INFO("[frosty]: Sending return path to action server");
+    navigation_msgs::FollowPathGoal goal;
+    std::vector<navigation_msgs::BezierSegment> p;
+    p.push_back(segment_1);
+    goal.path = p;
+    path_alc->sendGoal(goal);
+}
+
+Frosty_ns::StateResult FrostyStateMachine::state6CheckGoToHopper()
+{
+    //check progress from actinlib feedback
+    actionlib::SimpleClientGoalState state = path_alc->getState();
+    //state = path_alc->getState();
+    if (state.isDone()) //TODO use done callback instead for thread safety/sense stuff
+    {
+        return Frosty_ns::StateResult::SUCCESS;
+    }
+    return Frosty_ns::StateResult::IN_PROCESS;
+}
+
+
+FrostyStateMachine::~FrostyStateMachine()
+{
+    delete path_alc;
+    delete dig_alc;
 }
     //Frosty_ns::StateResult state2GoToDig();
     //Frosty_ns::StateResult state3Dig();

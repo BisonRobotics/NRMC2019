@@ -250,11 +250,11 @@ int main(int argc, char **argv)
       robotAngles.position.push_back(urdf_flap);
 
       JsPub.publish(robotAngles);
-      ROS_DEBUG("wrist joint state published with angle %f \n", backhoeSimulation->getWrTheta());
-      ROS_DEBUG("monoboom angle     : %f \n", nrmc_polyfit(monoboom_c,backhoeSimulation->getShTheta()));
-      ROS_DEBUG("URDF monoboom angle: %f \n", urdf_monoboom);
-      ROS_DEBUG("shoulder joint stat: %f \n", backhoeSimulation->getShTheta());
-      ROS_DEBUG("urdf flap angle    : %f \n", urdf_flap);
+      //ROS_DEBUG("wrist joint state published with angle %f \n", backhoeSimulation->getWrTheta());
+      //ROS_DEBUG("monoboom angle     : %f \n", nrmc_polyfit(monoboom_c,backhoeSimulation->getShTheta()));
+      //ROS_DEBUG("URDF monoboom angle: %f \n", urdf_monoboom);
+      //ROS_DEBUG("shoulder joint stat: %f \n", backhoeSimulation->getShTheta());
+      //ROS_DEBUG("urdf flap angle    : %f \n", urdf_flap);
 
       
     }

@@ -31,21 +31,25 @@ public:
     FrostyStateMachine(bool dig_sim, bool drive_sim, double dig_time_sec, double dump_time_sec);
     int getState();
     Frosty_ns::StateResult update(double dt);
+    ~FrostyStateMachine();
 private:
     //need path planning actionlib client
     actionlib::SimpleActionClient<navigation_msgs::FollowPathAction> *path_alc;
     //need dig/dump actionlib client //wait
-    //SimpleActionClient<DigAction> *dig_alc;
+    actionlib::SimpleActionClient<dig_control::DigAction> *dig_alc;
     //SimpleActionClient<DumpAction> *dump_alc;
     double time;
     int state;
     bool dig_sim, drive_sim;
-    double dig_time, dump_time;
+    double min_dig_time, min_dump_time;
     void state1StartInit(double t);
     Frosty_ns::StateResult state1CheckInit();
     void state2StartGoToDig();
-    Frosty_ns::StateResult state2CheckGoToDig();
-    //Frosty_ns::StateResult state3Dig();
+    Frosty_ns::StateResult state3CheckGoToDig();
+    Frosty_ns::StateResult state4Dig(double dt);
+    void state5StartGoToHopper();
+    Frosty_ns::StateResult state6CheckGoToHopper();
+    double dig_timer;
     //Frosty_ns::StateResult state4GoToHopper();
     //Frosty_ns::StateResult state5Dump();
     //Frosty_ns::StateResult state6CheckCondtitions();

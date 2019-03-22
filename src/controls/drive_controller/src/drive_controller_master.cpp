@@ -416,8 +416,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   firstTime = true;
   while (ros::ok())
   {
-    ROS_DEBUG("\n");
-    ROS_DEBUG("Top");
+    //ROS_DEBUG("\n");
+    //ROS_DEBUG("Top");
     // update localizer here
     if (firstTime)
     {
@@ -432,7 +432,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       currTime = ros::Time::now();
       loopTime = currTime - lastTime;
     }
-    ROS_DEBUG("Looptime : %.5f", loopTime.toSec());
+    //ROS_DEBUG("Looptime : %.5f", loopTime.toSec());
     if (simulating)
     {
       tfBroad.sendTransform(create_sim_tf(pos->getX(), pos->getY(), pos->getTheta()));
@@ -461,8 +461,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     // update controller //Update localizer or controller? what order?
     dc.update(stateVector, loopTime.toSec());
 
-    ROS_INFO("Paths on Stack: %d, Current Fwd: %d", dc.getPPaths(), 
-             (forwardPoint ? 1 : 0));
+    //ROS_INFO("Paths on Stack: %d, Current Fwd: %d", dc.getPPaths(), 
+    //         (forwardPoint ? 1 : 0));
     if (dc.getPPaths() >=1)
     {
       // Provide feedback
