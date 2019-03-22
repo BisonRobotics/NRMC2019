@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   new_sim
   geometry_msgs
   visualization_msgs
+  drive_controller_msgs
   tf2
   nav_msgs
   navigation_msgs
@@ -30,13 +31,12 @@ set(GTEST_LIBRARIES gmock_main)
 find_package(OpenCV REQUIRED)
 find_package(catkin REQUIRED genmsg actionlib_msgs actionlib)
 add_action_files(DIRECTORY ../../navigation/navigation_msgs/action FILES FollowPath.action)
-generate_messages(DEPENDENCIES actionlib_msgs navigation_msgs)
-
+generate_messages(DEPENDENCIES actionlib_msgs navigation_msgs drive_controller_msgs)
 
 catkin_package(
         INCLUDE_DIRS include
 
-        CATKIN_DEPENDS driver_access roscpp std_msgs navigation_msgs localization cv_bridge
+        CATKIN_DEPENDS driver_access roscpp std_msgs navigation_msgs drive_controller_msgs localization cv_bridge
 )
 
 ###########
@@ -56,16 +56,27 @@ include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/inc
 ## Build libraries
 add_library(drive_controller
         src/drive_controller/drive_controller.cpp)
-add_dependencies(drive_controller vesc_access) # ${catkin_EXPORTED_TARGETS})
-target_link_libraries(drive_controller ${catkin_LIBRARIES} vesc_access)
+#add_dependencies(drive_controller vesc_access) # ${catkin_EXPORTED_TARGETS})
+target_link_libraries(drive_controller ${catkin_LIBRARIES})
 
 #############
 ## Install ##
 #############
 
 add_executable(drive_controller_master src/drive_controller_master.cpp)
-add_dependencies(drive_controller_master drive_controller vrep_driver_access ros_driver_access driver_access sim_robot ${catkin_EXPORTED_TARGETS}) #navigation_msgs localization
-target_link_libraries (drive_controller_master drive_controller  vrep_driver_access ros_driver_access driver_access ${OpenCV_LIBS} ${new_sim_LIBRARIES} ${localization_LIBRARIES} ${navigation_msgs_LIBRARIES} ${catkin_LIBRARIES} )
+add_dependencies(drive_controller_master ${catkin_EXPORTED_TARGETS}) #navigation_msgs localization
+target_link_libraries (drive_controller_master 
+  drive_controller
+  vrep_driver_access
+  ros_driver_access
+  driver_access
+  ${OpenCV_LIBS}
+  ${new_sim_LIBRARIES}
+  ${localization_LIBRARIES}
+  ${navigation_msgs_LIBRARIES}
+  ${drive_controller_msgs_LIBRARIES}
+  ${catkin_LIBRARIES} 
+)
 
 
 
@@ -73,14 +84,13 @@ target_link_libraries (drive_controller_master drive_controller  vrep_driver_acc
 ## Testing ##
 #############
 
-catkin_add_gtest(test_drive_controller include/drive_controller/drive_controller.h src/drive_controller/test/drive_controller_tests.cpp)
+#catkin_add_gtest(test_drive_controller include/drive_controller/drive_controller.h src/drive_controller/test/drive_controller_tests.cpp)
 if(TARGET test_drive_controller)
   target_link_libraries(test_drive_controller
     ${catkin_LIBRARIES}
     drive_controller
     gmock_main
   )
-  add_dependencies(test_drive_controller vesc_access)
 endif()
 
 ## Add gtest based cpp test target and link libraries

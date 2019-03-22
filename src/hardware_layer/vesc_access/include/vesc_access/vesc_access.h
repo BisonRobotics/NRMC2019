@@ -7,6 +7,14 @@ class VescAccess : public iVescAccess
 {
 public:
   //    VescAccess (unsigned int VESC_ID, double transmission_ratio, double output_ratio);
+  // Current
+  explicit VescAccess(nsVescAccess::vesc_param_struct_t param);
+  VescAccess(nsVescAccess::vesc_param_struct_t param, bool has_limits);
+  VescAccess(uint8_t VESC_ID, float direction, float transmission_ratio, float output_ratio, float velocity_limit,
+             float torque_limit, float torque_constant, char *can_network, unsigned int pole_pairs, bool has_limits,
+             std::string name, float max_duty);
+
+  // Other
   VescAccess(uint8_t VESC_ID, float transmission_ratio, float output_ratio, float velocity_limit, float torque_limit,
              float torque_constant, char *can_network, unsigned int pole_pairs, bool has_limits);
   VescAccess(uint8_t VESC_ID, float transmission_ratio, float output_ratio, float velocity_limit, float torque_limit,
@@ -14,23 +22,16 @@ public:
   VescAccess(uint8_t VESC_ID, float transmission_ratio, float output_ratio, float velocity_limit, float torque_limit,
              float torque_constant, char *can_network, unsigned int pole_pairs, bool has_limits, std::string name,
              float max_duty);
-
   VescAccess(float transmission_ratio, float output_ratio, float velocity_limit, float torque_limit,
              float torque_constant, iVesc *vesc, unsigned int pole_pairs, bool has_limits);
-
   VescAccess(float transmission_ratio, float output_ratio, float velocity_limit, float torque_limit,
              float torque_constant, iVesc *vesc, unsigned int pole_pairs);
-
   VescAccess(uint8_t VESC_ID, float transmission_ratio, float output_ratio, float velocity_limit, float torque_limit,
              float torque_constant, char *can_network, unsigned int pole_pairs);
-
   VescAccess(uint8_t VESC_ID, float transmission_ratio, float output_ratio, float velocity_limit, float torque_limit,
              float torque_constant, char *can_network, unsigned int pole_pairs, std::string name);
 
-  explicit VescAccess(nsVescAccess::vesc_param_struct_t param);
-
-  VescAccess(nsVescAccess::vesc_param_struct_t param, bool has_limits);
-
+  void setDirection(float direction);
   void setTorque(float newton_meters) override;
   void setLinearVelocity(float meters_per_second) override;
   float getLinearVelocityLimit(void);
@@ -50,6 +51,7 @@ private:
   void setTorqueConstant(float torque_ratio);
   void setPolePairs(unsigned int pole_pairs);
   void setMaxDuty(float max_duty);
+  float direction;
   float transmission_ratio;
   float output_ratio;
   float torque_constant;
@@ -71,8 +73,9 @@ private:
   bool has_limits;
   std::string name;
   float convertRpmToErpm(float rpm);
-  void initializeMembers(float transmission_ratio, float output_ratio, float velocity_limit, float torque_limit,
-                         float torque_constant, unsigned int pole_pairs, bool has_limits, float max_duty = 1.0f);
+  void initializeMembers(float direction, float transmission_ratio, float output_ratio, float velocity_limit,
+                         float torque_limit, float torque_constant, unsigned int pole_pairs, bool has_limits,
+                         float max_duty = 1.0f);
 };
 
 #endif

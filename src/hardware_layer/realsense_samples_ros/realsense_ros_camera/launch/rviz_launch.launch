@@ -1,3 +1,0 @@
-<launch>
- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find realsense_ros_camera)/rviz/pointcloud_and_laser_view.rviz" required="true" />
-</launch>

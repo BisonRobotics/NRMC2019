@@ -1,7 +1,8 @@
 <launch>
   <param name="use_sim_time" value="true" />
+  <arg name="fixed_central_drive" default="false" />
   <node name="teleop_node" pkg="teleop" type="teleop_node" />
   <node name="qt_joystick" pkg="teleop" type="qt_joystick" />
   <node name="map_server" pkg="occupancy_grid" type="map_server" />
-  <include file="$(find description)/launch/load_robot_and_arena.launch" />
+  <include file="$(find description)/launch/load_robot_and_arena.launch" pass_all_args="true" />
 </launch>

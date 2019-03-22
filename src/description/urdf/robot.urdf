@@ -26,6 +26,15 @@
         <color rgba="0.85490196078 0.64705882352 0.12549019607 1"/>
     </material>
 
+    <!-- Pull in parameters -->
+    <xacro:arg name="fixed_central_drive" default="1" />
+    <xacro:property name="central_drive_joints_type" value="revolute" />
+    <xacro:property name="monoboom_angle" value="0" />
+    <xacro:if value="$(arg fixed_central_drive)">
+        <xacro:property name="central_drive_joints_type" value="revolute" />
+        <xacro:property name="monoboom_angle" value="${-pi*0.28}" />
+    </xacro:if>
+
     <!-- Define linkages and joints -->
     <link name="base_link" />
         <!--<visual>
@@ -56,7 +65,7 @@
     <joint name="base_link_to_frame" type="fixed">
         <parent link="base_link"/>
         <child link="frame"/>
-        <origin xyz="-387.35e-3 0 2.0796e-01" rpy="0 0 0" />
+        <origin xyz="-0.5 0 0.65" rpy="0 0 0" />
     </joint>
 
     <xacro:macro name="wheel" params="x_name y_name rot r_z y_dir xdist color ">
@@ -142,13 +151,12 @@
         </visual>
     </link>
 
-    <joint name="monoboom_to_frame" type="revolute">
-        <origin xyz="0.98 0 -0.365" rpy="1.57 0 3.14" />
+    <joint name="frame_to_monoboom" type="${central_drive_joints_type}">
+        <origin xyz="0.98 0 -0.365" rpy="1.57 ${monoboom_angle} 3.14" />
         <axis xyz="0 0 -1" />
         <parent link="frame" />
         <child link="backhoe_monoboom" />
         <limit effort="1000.0" lower="-1" upper="0.85" velocity="1.0" />
-
     </joint>
 
     <link name="bucket_backhoe">
@@ -161,7 +169,7 @@
         </visual>
     </link>
 
-    <joint name="bucket_to_monoboom" type="revolute">
+    <joint name="monoboom_to_bucket" type="${central_drive_joints_type}">
         <origin xyz="0.55 0 0" rpy="0 0 3.14" />
         <axis xyz="0 0 1" />
         <parent link="backhoe_monoboom" />
@@ -179,7 +187,7 @@
         </visual>
     </link>
 
-    <joint name="frame_to_gravel_bucket" type="revolute">
+    <joint name="frame_to_gravel_bucket" type="${central_drive_joints_type}">
 
         <origin xyz="0 0 0" rpy="0 0 0" />
         <axis xyz="0 -1 0" />
@@ -198,7 +206,7 @@
         </visual>
     </link>
 
-    <joint name="left_flap_joint" type="revolute">
+    <joint name="left_flap_joint" type="${central_drive_joints_type}">
         <origin xyz="0.53 0.125 -0.2" rpy="1.57 0 -1.57" />
         <axis xyz="0 0 1" />
         <parent link="frame" />
@@ -218,7 +226,7 @@
         </visual>
     </link>
 
-    <joint name="right_flap_joint" type="revolute">
+    <joint name="right_flap_joint" type="${central_drive_joints_type}">
         <origin xyz="0.53 -0.125 -0.2" rpy="1.57 0 -1.57" />
         <axis xyz="0 0 -1" />
         <parent link="frame" />

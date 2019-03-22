@@ -21,7 +21,7 @@ int main( int argc, char** argv )
 
   std::vector<Circle> rocks;
   rocks.emplace_back(3.0,  1.0, 0.3);
-  rocks.emplace_back(4.0, -0.5, 0.3);
+  rocks.emplace_back(4.0,  1.0, 0.3);
   rocks.emplace_back(2.5, -0.9, 0.3);
   Arena arena(rocks);
 

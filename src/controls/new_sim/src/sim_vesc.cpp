@@ -106,7 +106,7 @@ void SimVesc::update(double dt)
   }
   if (onGround)
   {
-    torque = 70;
+    torque = -70; //Pushing into ground
   }
 }
 
@@ -127,7 +127,7 @@ float SimVesc::getTorque(void)
 
 void SimVesc::setTorque(float current)
 {
-  this->setLinearVelocity(.0005 * current);
+  this->setLinearVelocity(.001 * current);
 }
 
 void SimVesc::setLimitSwitchState(nsVescAccess::limitSwitchState state)

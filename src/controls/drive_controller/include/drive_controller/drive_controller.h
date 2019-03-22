@@ -7,7 +7,6 @@
 
 namespace DriveController_ns
 {
-//TODO add robot_state vector as data type
 typedef struct path_s
 {
    double x1;
@@ -19,6 +18,25 @@ typedef struct path_s
    double x4;
    double y4;
 } bezier_path;
+typedef struct error_states_s
+{
+    double path_error;
+    double angle_error;
+} error_state;
+typedef struct wheel_states_s
+{
+    double left_wheel_planned;
+    double right_wheel_planned;
+    double left_wheel_actual;
+    double right_wheel_actual;
+    double left_wheel_command;
+    double right_wheel_command;
+} wheel_state;
+typedef struct path_info_s
+{
+    double path_theta;
+    double path_omega;
+} path_info;
 }
 
 class DriveController
@@ -31,6 +49,9 @@ public:
    LocalizerInterface::stateVector getDeltaStateVector();
    double getPClosestT();
    int getPPaths();
+   DriveController_ns::error_state getErrorStates();
+   DriveController_ns::wheel_state getWheelStates();
+   DriveController_ns::path_info getPathInfo();
 //protected:
    double angleDiff(double angle1,double angle2);
    std::pair<double, double> speedSteeringControl(double speed, double steering, 
@@ -39,7 +60,7 @@ public:
                            std::vector<double>  &theta, std::vector<double>  &omega, 
                            std::vector<double>  &alpha, std::vector<double>  &lengths, 
                            std::vector<double>  &x, std::vector<double>  &y, double &length,
-                           int chopsize);
+                           int chopsize, bool forward_path);
    //findCPP2019 finds the closest point on the path described by x and y vectors and 
    // returns the parameter value in [0,1] followed by the signed path error as a pair.
    std::pair<double, double> findCPP2019(double rx, double ry, 
@@ -50,7 +71,7 @@ public:
    
 private:
   static const int Gchopsize = 100;
-  static constexpr double Axelsize = .5;
+  static constexpr double Axelsize = 1.0;
   iVescAccess *front_left_wheel, *front_right_wheel, *back_right_wheel, *back_left_wheel;
   std::vector<double>  p_theta;
   std::vector<double>  p_omega;
@@ -71,4 +92,6 @@ private:
   std::pair<double,double> p_prev_UlUr;
   double p_prev_theta;
   double p_prev_omega;
+  DriveController_ns::error_state es;
+  DriveController_ns::wheel_state ws;
 };
