@@ -103,15 +103,15 @@
     <link name="computer_box">
         <visual>
             <geometry>
-                <mesh filename="package://description/meshes/computer_box.stl" />
+                <mesh filename="package://description/meshes/battery_box.stl" />
             </geometry>
-            <origin xyz="0.5 -0.275 -0.1" rpy="1.57 0 -1.57" />
+            <origin xyz="0.9 -0.275 -0.3" rpy="1.57 0 -1.57" />
             <material name="black" />
         </visual>
     </link>
 
     <joint name="computer_box_to_base" type="fixed" >
-        <parent link="base_link" />
+        <parent link="frame" />
         <child link="computer_box" />
         <origin xyz="0 0 0" rpy="0 0 0" />
     </joint>
@@ -121,13 +121,13 @@
             <geometry>
                 <mesh filename="package://description/meshes/battery_box.stl" />
             </geometry>
-            <origin xyz="0.525 0.275 -0.1" rpy="1.57 0 1.57" />
+            <origin xyz="0.9 0.275 -0.3" rpy="1.57 0 1.57" />
             <material name="black" />
         </visual>
     </link>
 
     <joint name="battery_box_to_base" type="fixed" >
-        <parent link="base_link" />
+        <parent link="frame" />
         <child link="battery_box" />
         <origin xyz="0 0 0" rpy="0 0 0" />
     </joint >
@@ -225,6 +225,77 @@
         <child link="right_flap" />
         <limit effort="1000.0" lower="-1.55" upper="1.25" velocity="1.0" />
     </joint>
+
+    <link name="right_nodey_mount">
+        <visual>
+            <geometry>
+                <mesh filename="package://description/meshes/right_nodey.stl" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="1.57 0 0" />
+            <material name="black" />
+        </visual>
+    </link>
+
+    <joint name="right_nodey_fixed" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link= "frame" />
+        <child link = "right_nodey_mount" />
+        
+    </joint>
+
+    <link name="right_camera">
+        <visual>
+            <geometry>
+                <mesh filename="package://description/meshes/nodey_camera.stl" />
+            </geometry>
+            <origin xyz="0 0 0.01" rpy="0 0 0" />
+            <material name="black" />
+        </visual>
+    </link>
+
+    <joint name="right_nodey_joint" type="revolute">
+        <origin xyz="-0.035 -0.32 0.04" rpy="0 1.57 0" />
+        <parent link="right_nodey_mount" />
+        <child link = "right_camera" />
+        <limit effort="1000.0" lower="-1" upper="4" velocity="1.0" />
+
+    </joint>
+
+    <link name="left_nodey_mount">
+        <visual>
+            <geometry>
+                <mesh filename="package://description/meshes/left_nodey.stl"/>
+            </geometry>
+            <origin xyz="0 0 0" rpy="1.57 0 0"/>
+            <material name="black" />
+        </visual>
+    </link>
+
+    <joint name="left_nodey_fixed" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="frame" />
+        <child link = "left_nodey_mount" />
+    </joint>    
+
+    <link name="left_camera">
+        <visual>
+            <geometry>
+                <mesh filename="package://description/meshes/nodey_camera.stl" />
+            </geometry>
+            <origin xyz="0 0 0.01" rpy="0 0 0" />
+            <material name="black" />
+        </visual>
+    </link>
+
+    <joint name="left_nodey_joint" type="revolute">
+        <origin xyz= "-0.035 0.32 0.04" rpy="0 1.57 0" />
+        <parent link="left_nodey_mount" />
+        <child link = "left_camera" />
+        <limit effort="1000.0" lower="-4" upper="1" velocity="1.0" />
+    
+    </joint>
+
+
 
     
 
