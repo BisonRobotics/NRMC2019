@@ -1,4 +1,4 @@
-#include <tracker/apriltags/apriltags.h>
+#include <tracker/detector/detector.h>
 
 extern "C"
 {
@@ -25,7 +25,7 @@ AprilTag::AprilTag(int family, int id, int size, tf2::Transform placement) :
 
 // Note: As long as the tag is detected at the quad_decimate level, if refine_edges is enabled, it will
 // go through and refine the edges on the full resolution image.
-AprilTagDetector::AprilTagDetector(CameraInfo camera_info, uint8_t *buffer):
+Detector::Detector(CameraInfo camera_info, uint8_t *buffer):
     camera_info(camera_info),
     cv_image(camera_info.height, camera_info.width, CV_8UC1, buffer),
     map1(camera_info.height, camera_info.width, CV_16SC2),
@@ -58,12 +58,12 @@ AprilTagDetector::AprilTagDetector(CameraInfo camera_info, uint8_t *buffer):
       map1.type(), map1, map2);
 }
 
-uchar* AprilTagDetector::getBuffer()
+uchar* Detector::getBuffer()
 {
   return cv_image.data;
 }
 
-void AprilTagDetector::drawDetection(apriltag_detection_t *detection)
+void Detector::drawDetection(apriltag_detection_t *detection)
 {
   line(cv_image, cv::Point((int)detection->p[0][0], (int)detection->p[0][1]),
                  cv::Point((int)detection->p[1][0], (int)detection->p[1][1]),
@@ -88,7 +88,7 @@ void AprilTagDetector::drawDetection(apriltag_detection_t *detection)
           font_face, font_scale, cv::Scalar(0x80), 2);
 }
 
-void AprilTagDetector::detect()
+void Detector::detect()
 {
   cv::rotate(cv_image, cv_image, cv::ROTATE_180);
   cv::Mat tmp = cv_image.clone();
@@ -107,7 +107,7 @@ void AprilTagDetector::detect()
   apriltag_detections_destroy(detections);
 }
 
-AprilTagDetector::~AprilTagDetector()
+Detector::~Detector()
 {
   tag25h10_destroy(family);
   //tag36h11_destroy(tf);
@@ -115,7 +115,7 @@ AprilTagDetector::~AprilTagDetector()
   delete(at_image);
 }
 
-tf2::Stamped<tf2::Transform> AprilTagDetector::getRelativeTransform(apriltag_detection_t detection)
+tf2::Stamped<tf2::Transform> Detector::getRelativeTransform(apriltag_detection_t detection)
 {
   /*at_info.fx = ;
   at_info.cx = ;
@@ -140,7 +140,7 @@ tf2::Stamped<tf2::Transform> AprilTagDetector::getRelativeTransform(apriltag_det
   return tf2::Stamped<tf2::Transform>();
 }
 
-void AprilTagDetector::addTag(int family, int id, int size, tf2::Transform placement)
+void Detector::addTag(int family, int id, int size, tf2::Transform placement)
 {
   tags.emplace_back(family, id, size, placement);
 }

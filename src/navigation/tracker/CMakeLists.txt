@@ -10,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   apriltags
   ocam
+  tf2
+  tf2_geometry_msgs
+  tf2_ros
 )
 
 #find_package(OpenCV 3.2.0 REQUIRED)
@@ -58,8 +61,12 @@ if (BUILD_CAMERA_CALIBRATION)
 endif()
 
 # AprilTags
-add_library(apriltags_wrapper src/apriltags/apriltags.cpp)
-target_link_libraries(apriltags_wrapper ${apriltags_LIBRARIES})
+add_library(detector
+        src/detector/detector.cpp
+        src/detector/transform.cpp
+        src/detector/tag.cpp
+        src/detector/transforms_cache.cpp)
+target_link_libraries(detector ${apriltags_LIBRARIES})
 
 # Tracker node
 add_executable(tracker_node src/tracker_node.cpp)

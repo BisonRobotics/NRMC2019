@@ -1,5 +1,5 @@
 <launch>
-    <!-- Tracker apriltags -->
+    <!-- Tracker detector -->
     <node pkg="tracker" name="tracker_node" type="tracker_node" output="screen"/>
 
     <!-- Avoid slowing down tracker nodes with image compression -->

@@ -37,11 +37,11 @@ namespace tracker
     std::vector<StampedTransform> readings;
   };
 
-    class AprilTagDetector
+    class Detector
     {
       public:
-        AprilTagDetector(CameraInfo camera_info, uint8_t *buffer);
-        ~AprilTagDetector();
+        Detector(CameraInfo camera_info, uint8_t *buffer);
+        ~Detector();
 
         void addTag(int family, int id, int size, tf2::Transform placement);
         StampedTransform getRelativeTransform(apriltag_detection_t detection);

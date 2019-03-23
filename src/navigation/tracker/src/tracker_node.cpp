@@ -4,7 +4,7 @@
 #include <fstream>
 
 #include <ocam/camera.hpp>
-#include <tracker/apriltags/apriltags.h>
+#include <tracker/detector/detector.h>
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
@@ -81,7 +81,7 @@ void trackerThread(string camera_name, Camera *camera, NodeHandle *nh)
   image_msg.step = camera->getWidth();
   image_msg.data.resize(camera->getWidth() * camera->getHeight());
 
-  // Initialize apriltags
+  // Initialize detector
   /*apriltag_family_t *tf = tag36h11_create();
   //apriltag_family_t *tf = tag25h10_create();
   apriltag_detector_t *td = apriltag_detector_create();
@@ -100,7 +100,7 @@ void trackerThread(string camera_name, Camera *camera, NodeHandle *nh)
     .buf = image_msg.data.data()
   };*/
 
-  AprilTagDetector detector(camera->getInfo(), image_msg.data.data());
+  Detector detector(camera->getInfo(), image_msg.data.data());
 
 
   // Start camera

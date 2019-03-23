@@ -49,7 +49,7 @@ int main (int argc, char* argv[])
   image_msg.step = width;
   image_msg.data.resize(width * height);
 
-  // Initialize apriltags
+  // Initialize detector
   apriltag_family_t *tf = tag36h11_create();
   //apriltag_family_t *tf = tag25h10_create();
   apriltag_detector_t *td = apriltag_detector_create();
@@ -104,7 +104,7 @@ int main (int argc, char* argv[])
       continue;
     }
 
-    // Look for apriltags
+    // Look for detector
     zarray_t *detections = apriltag_detector_detect(td, &image);
     //ROS_INFO("Tags detected: %i", zarray_size(detections));
     printf("[Detections] ");
