@@ -32,7 +32,7 @@ AprilTagDetector::AprilTagDetector(CameraInfo camera_info, uint8_t *buffer):
   //family = tag25h10_create();
   family = tag36h11_create();
   detector = apriltag_detector_create();
-  detector->quad_decimate = 4.0;      // Default = 2.0
+  detector->quad_decimate = 3.0;      // Default = 2.0
   detector->quad_sigma = 0.0;         // Default = 0.0
   detector->refine_edges = 1;         // Default = 1
   detector->decode_sharpening = 0.25; // Default = 0.25
@@ -71,7 +71,7 @@ void AprilTagDetector::drawDetection(apriltag_detection_t *detection)
   const int font_face = cv::FONT_HERSHEY_SCRIPT_SIMPLEX;
   const double font_scale = 1.0;
   int baseline;
-  cv::Size text_size = getTextSize(text, font_face, font_scale, 2, &baseline);
+  cv::Size text_size = cv::getTextSize(text, font_face, font_scale, 2, &baseline);
   putText(cv_image, text,
           cv::Point((int)detection->c[0]-text_size.width/2,
                     (int)detection->c[1]+text_size.height/2),
@@ -80,6 +80,9 @@ void AprilTagDetector::drawDetection(apriltag_detection_t *detection)
 
 void AprilTagDetector::detect()
 {
+  cv::rotate(cv_image, cv_image, cv::ROTATE_180);
+  cv::Mat tmp = cv_image.clone();
+  cv::undistort(tmp, cv_image, camera_info.camera_matrix, camera_info.distortion_matrix);
   zarray_t *detections = apriltag_detector_detect(detector, at_image);
 
   // TODO get transforms
@@ -111,10 +114,10 @@ tf2::Stamped<tf2::Transform> AprilTagDetector::getRelativeTransform(apriltag_det
 
   apriltag_detection_info_t info;
   info.tagsize = 0.2;
-  info.fx = camera_info.fx; // 1007.4436610527366
-  info.fy = camera_info.fy; // 638.8631038728623
-  info.cx = camera_info.cx; // 1004.6555107631117
-  info.cy = camera_info.cy; // 351.5669704941244
+  info.fx = camera_info.getFx();
+  info.fy = camera_info.getFy();
+  info.cx = camera_info.getCx();
+  info.cy = camera_info.getCy();
   info.det = &detection;
 
   apriltag_pose_t pose;

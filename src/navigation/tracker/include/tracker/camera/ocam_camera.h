@@ -10,7 +10,7 @@ namespace tracker
     class OCamCamera : public Camera
     {
       public:
-        OCamCamera(CameraInfo info, const std::string &dev_path, uint fps, uint brightness, uint exposure);
+        OCamCamera(CameraInfo info, uint fps, uint brightness, uint exposure);
         ~OCamCamera();
 
         void start() override;

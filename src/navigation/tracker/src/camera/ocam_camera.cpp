@@ -1,19 +1,18 @@
 #include <tracker/camera/ocam_camera.h>
 #include <fstream>
 
-tracker::OCamCamera::OCamCamera(CameraInfo info, const std::string &dev_path,
-                                uint fps, uint brightness, uint exposure):
+tracker::OCamCamera::OCamCamera(CameraInfo info, uint fps, uint brightness, uint exposure):
                                 info(info)
 {
   // Make sure camera is exists
-  std::ifstream f(dev_path);
+  std::ifstream f(info.path);
   if (!f.good())
   {
     throw std::runtime_error("Unable to find camera");
   }
 
   // Set camera parameters
-  camera = new ocam::Camera(dev_path.c_str());
+  camera = new ocam::Camera(info.path.c_str());
   camera->set_format(info.width, info.height, ocam::fourcc_to_pixformat('G','R','E','Y'), 1, fps);
   setBrightness(brightness);
   setExposure(exposure);

@@ -3,15 +3,26 @@
 
 #include <stdint.h>
 #include <sys/types.h>
+#include <string>
+#include <opencv2/core.hpp>
 
 namespace tracker
 {
   class CameraInfo
   {
   public:
-    CameraInfo(uint width, uint height, double fx, double fy, double cx, double cy);
+    CameraInfo(const CameraInfo &info) = default;
+    explicit CameraInfo(std::string path);
+    CameraInfo(std::string path, uint width, uint height,
+               cv::Mat_<double> camera_matrix, cv::Mat_<double> distortion_matrix);
+    const std::string path;
     const uint width, height;
-    const double fx, fy, cx, cy;
+    const cv::Mat_<double> camera_matrix, distortion_matrix;
+
+    double getFx();
+    double getFy();
+    double getCx();
+    double getCy();
   };
 }
 

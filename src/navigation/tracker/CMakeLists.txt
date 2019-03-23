@@ -12,7 +12,15 @@ find_package(catkin REQUIRED COMPONENTS
   ocam
 )
 
-find_package(OpenCV 3.2.0 REQUIRED)
+#find_package(OpenCV 3.2.0 REQUIRED)
+find_package(OpenCV 4.0 QUIET)
+if(OpenCV_FOUND)
+    message("Found OpenCV 4.0")
+    set(BUILD_CAMERA_CALIBRATION 1)
+else()
+    message("Unable to find OpenCV 4.0")
+    find_package(OpenCV 3.2.0 REQUIRED)
+endif()
 find_package(Eigen3 REQUIRED)
 
 catkin_package(
@@ -39,6 +47,15 @@ add_library(ocam_camera src/camera/ocam_camera.cpp)
 target_link_libraries(ocam_camera ${ocam_LIBRARIES} camera_info)
 add_library(image_camera src/camera/image_camera.cpp)
 target_link_libraries(image_camera ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+# Camera calibration
+if (BUILD_CAMERA_CALIBRATION)
+    message("Building camera calibration")
+    add_executable(camera_calibration src/calibration/camera_calibration.cpp)
+    target_link_libraries(camera_calibration ${OpenCV_LIBS} ocam_camera)
+    #add_executable(record_images src/calibration/record_images.cpp)
+    #target_link_libraries(record_images ${OpenCV_LIBS} ocam_camera)
+endif()
 
 # AprilTags
 add_library(apriltags_wrapper src/apriltags/apriltags.cpp)

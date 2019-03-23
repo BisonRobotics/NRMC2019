@@ -9,6 +9,7 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <tracker/camera/ocam_camera.h>
+#include <tracker/config/config.h>
 
 #include <opencv2/opencv.hpp>
 #include <boost/thread.hpp>
@@ -32,9 +33,8 @@ using namespace tracker;
 using std::string;
 using ros::NodeHandle;
 
-tracker::Camera* initializeOCam(std::string device_path, uint width, uint height)
+tracker::Camera* initializeOCam(CameraInfo info, uint brightness, uint exposure)
 {
-  CameraInfo info(width, height, 1007.4436610527366, 638.8631038728623, 1004.6555107631117, 351.5669704941244);
 
   tracker::Camera* camera = nullptr;
   while (camera == nullptr)
@@ -49,7 +49,7 @@ tracker::Camera* initializeOCam(std::string device_path, uint width, uint height
       // brightness (int)    : min=0 max=255 step=1 default=64 value=50
       // exposure_auto (menu)   : min=0 max=3 default=1 value=1
       // exposure_absolute (int)    : min=1 max=1000 step=1 default=55 value=90
-      camera = new tracker::OCamCamera(info, device_path, 50, 64, 80);
+      camera = new tracker::OCamCamera(info, 50, brightness, exposure);
     }
     catch (std::runtime_error &e)
     {
@@ -99,6 +99,7 @@ void trackerThread(string camera_name, Camera *camera, NodeHandle *nh)
     .stride = (int32_t)camera->getWidth(),
     .buf = image_msg.data.data()
   };*/
+
   AprilTagDetector detector(camera->getInfo(), image_msg.data.data());
 
 
@@ -154,9 +155,7 @@ int main (int argc, char* argv[])
   ros::NodeHandle nh;
 
   // Instantiate cameras
-  unsigned int  width = 1280, height = 720;
-  tracker::Camera *camera0 = initializeOCam("/dev/v4l/by-id/usb-WITHROBOT_Inc._oCam-1MGN-U_SN_2C183178-video-index0",
-                                             width, height);
+  tracker::Camera *camera0 = initializeOCam(tracker::right_camera, 64, 200);
   /*tracker::Camera *camera1 = initializeOCam("/dev/v4l/by-id/usb-WITHROBOT_Inc._oCam-1MGN-U_SN_2C183178-video-index0",
                                              width, height);*/
 
