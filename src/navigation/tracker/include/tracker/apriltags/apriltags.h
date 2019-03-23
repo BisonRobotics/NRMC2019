@@ -54,7 +54,7 @@ namespace tracker
         apriltag_family_t *family;
         apriltag_detector_t *detector;
         image_u8_t *at_image;
-        cv::Mat cv_image;
+        cv::Mat cv_image, map1, map2;
         std::vector<AprilTag> tags;
         CameraInfo camera_info;
     };

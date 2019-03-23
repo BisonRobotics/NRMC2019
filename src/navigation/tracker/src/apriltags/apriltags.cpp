@@ -27,12 +27,14 @@ AprilTag::AprilTag(int family, int id, int size, tf2::Transform placement) :
 // go through and refine the edges on the full resolution image.
 AprilTagDetector::AprilTagDetector(CameraInfo camera_info, uint8_t *buffer):
     camera_info(camera_info),
-    cv_image(camera_info.height, camera_info.width, CV_8UC1, buffer)
+    cv_image(camera_info.height, camera_info.width, CV_8UC1, buffer),
+    map1(camera_info.height, camera_info.width, CV_16SC2),
+    map2(camera_info.height, camera_info.width, CV_16UC1)
 {
   //family = tag25h10_create();
   family = tag36h11_create();
   detector = apriltag_detector_create();
-  detector->quad_decimate = 3.0;      // Default = 2.0
+  detector->quad_decimate = 4.0;      // Default = 2.0
   detector->quad_sigma = 0.0;         // Default = 0.0
   detector->refine_edges = 1;         // Default = 1
   detector->decode_sharpening = 0.25; // Default = 0.25
@@ -46,6 +48,14 @@ AprilTagDetector::AprilTagDetector(CameraInfo camera_info, uint8_t *buffer):
     (int32_t)camera_info.width,
     buffer
   };
+
+  cv::initUndistortRectifyMap(
+      camera_info.camera_matrix,
+      camera_info.distortion_matrix,
+      cv::Mat_<double>::eye(3,3),
+      camera_info.camera_matrix,
+      cv::Size(camera_info.width, camera_info.height),
+      map1.type(), map1, map2);
 }
 
 uchar* AprilTagDetector::getBuffer()
@@ -82,7 +92,7 @@ void AprilTagDetector::detect()
 {
   cv::rotate(cv_image, cv_image, cv::ROTATE_180);
   cv::Mat tmp = cv_image.clone();
-  cv::undistort(tmp, cv_image, camera_info.camera_matrix, camera_info.distortion_matrix);
+  cv::remap(tmp, cv_image, map1, map2, cv::INTER_LINEAR, cv::BORDER_CONSTANT);
   zarray_t *detections = apriltag_detector_detect(detector, at_image);
 
   // TODO get transforms
