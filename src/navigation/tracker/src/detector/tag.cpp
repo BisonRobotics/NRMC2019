@@ -1,9 +1,8 @@
 #include <tracker/detector/tag.h>
-#include <tf2/transform_datatypes.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-
+/*
+ * Comparison operators for unit tests
+ */
 namespace tracker
 {
 bool operator == (const Tag &lhs, const Tag &rhs)
@@ -12,7 +11,7 @@ bool operator == (const Tag &lhs, const Tag &rhs)
          lhs.getSeq()        == rhs.getSeq()        &&
          lhs.getSize()       == rhs.getSize()       &&
          lhs.getMapToTag()   == rhs.getMapToTag()   &&
-         lhs.getTransforms() == rhs.getTransforms();
+      lhs.getRelativeTransforms() == rhs.getRelativeTransforms();
 }
 
 bool operator != (const Tag &lhs, const Tag &rhs)
@@ -21,52 +20,22 @@ bool operator != (const Tag &lhs, const Tag &rhs)
            lhs.getSeq()        == rhs.getSeq()        &&
            lhs.getSize()       == rhs.getSize()       &&
            lhs.getMapToTag()   == rhs.getMapToTag()   &&
-           lhs.getTransforms() == rhs.getTransforms());
+      lhs.getRelativeTransforms() == rhs.getRelativeTransforms());
 }
 }
 
+/*
+ * Types
+ */
 using namespace tracker;
 using std::vector;
 
-
-// Initialize static members
-std::vector<Tag> Tag::tags;
-bool Tag::initialized = false;
-uint Tag::list_size = 0;
-ros::Duration Tag::max_dt;
-
-
-void Tag::init(uint list_size, ros::Duration max_dt, bool find_tfs)
-{
-  Tag::list_size = list_size;
-  Tag::max_dt = max_dt;
-  if (find_tfs)
-  {
-    updateMapToTagTfs();
-  }
-  else
-  {
-    ROS_WARN("Map to tag tfs might be uninitialized");
-  }
-  Tag::initialized = true;
-}
-
-Tag::Tag(const Tag &tag) :
-    id(tag.id), seq(tag.seq), tag_size(tag.tag_size),
-    map_to_tag(tag.map_to_tag)
-{
-
-}
-
-Tag::Tag(Tag *tag) :
-    id(tag->id), seq(tag->seq), tag_size(tag->tag_size),
-    map_to_tag(tag->map_to_tag)
-{
-
-}
-
-Tag::Tag(int id, double tag_size, tf2::Transform map_to_tag) :
-    id(id), tag_size(tag_size), map_to_tag(map_to_tag), seq(0)
+/*
+ * Constructors
+ */
+Tag::Tag(const Tag &tag) : id(tag.id), seq(tag.seq), tag_size(tag.tag_size), map_to_tag(tag.map_to_tag){}
+Tag::Tag(Tag *tag) : id(tag->id), seq(tag->seq), tag_size(tag->tag_size), map_to_tag(tag->map_to_tag){}
+Tag::Tag(int id, double tag_size) : id(id), tag_size(tag_size), seq(0)
 {
   // Add tag to global vector if it doesn't already exist
   bool tag_exists = false;
@@ -84,87 +53,36 @@ Tag::Tag(int id, double tag_size, tf2::Transform map_to_tag) :
   }
 }
 
-tf2::Transform Tag::findMapToTag(int id)
+/*
+ * Methods
+ */
+void Tag::addRelativeTransform(StampedTransform relative_transform)
 {
-  std::string tag_name = "tag" + std::to_string(id);
-  tf2_ros::Buffer tfBuffer;
-  tf2_ros::TransformListener tfListener(tfBuffer);
-
-  bool transformed;
-  do
-  {
-    transformed = tfBuffer.canTransform("map", tag_name, ros::Time(0), ros::Duration(1));
-    if (!transformed)
-    {
-      std::stringstream ss;
-      ss << "Unable to find transform from " << "map" << " to " << tag_name;
-      ROS_WARN("%s", ss.str().c_str());
-    }
-  } while(ros::ok() && !transformed);
-  ROS_INFO("Found transform for tag%i", id);
-
-  geometry_msgs::TransformStamped transform_msg;
-  transform_msg = tfBuffer.lookupTransform("map", tag_name, ros::Time(0));
-  tf2::Transform map_to_tag;
-  tf2::fromMsg(transform_msg.transform, map_to_tag);
-  return map_to_tag;
+  addTransformToList(&relative_transforms, relative_transform);
+  relative_transform_updated = true;
 }
 
-void Tag::updateMapToTagTfs()
+void Tag::addStepperTransform(StampedTransform stepper_transform)
 {
-  for (int i = 0; i < tags.size(); i++)
+  addTransformToList(&stepper_transforms, stepper_transform);
+  this->stepper_transform_updated = true;
+}
+
+StampedTransform Tag::estimatePose()
+{
+  if (!(relative_transform_updated && stepper_transform_updated))
   {
-    tags[i].map_to_tag = findMapToTag(tags[i].id);
+    throw std::runtime_error("One of the transforms was not updated");
   }
-}
 
-void Tag::updateRelativeTransform(StampedTransform relative_transform)
-{
   this->seq++;
-  this->relative_transform = relative_transform;
-}
 
-StampedTransform Tag::getRelativeTransform() const
-{
-  return relative_transform;
-}
-
-void Tag::processDetection(tf2::Transform servo, ros::Time stamp)
-{
-  this->seq++;
   // TODO do transforms
-  // Build transform
-  tf2::Transform transform;
-  tf2::Stamped<tf2::Transform> stamped_transform;
-  stamped_transform.setData(transform);
-  stamped_transform.stamp_ = stamp;
-  this->transforms.emplace_front(stamped_transform);
-  // TODO remove old transforms
-  if (this->transforms.size() > this->list_size)
-  {
-    this->transforms.pop_back();
-  }
 }
 
-StampedTransform Tag::getMostRecentTransform() const
-{
-  if (transforms.size() < 1)
-  {
-    throw std::runtime_error("No transforms available for this tag");
-  }
-  return transforms.front();
-}
-
-vector<StampedTransform> Tag::getTransforms() const
-{
-  return vector<StampedTransform>(std::begin(transforms), std::end(transforms));
-}
-
-tf2::Transform Tag::getMapToTag() const
-{
-  return this->map_to_tag;
-}
-
+/*
+ * Accessors
+ */
 int Tag::getID() const
 {
   return id;
@@ -182,12 +100,52 @@ double Tag::getSize() const
 
 long Tag::getTransformsSize() const
 {
-  return transforms.size();
+  return relative_transforms.size();
 }
 
-ros::Duration Tag::getMaxDt()
+tf2::Transform Tag::getMapToTag() const
 {
-  return max_dt;
+  return this->map_to_tag;
+}
+
+StampedTransform Tag::getMostRecentRelativeTransform() const
+{
+  if (relative_transforms.empty())
+  {
+    throw std::runtime_error("No transforms available for this tag");
+  }
+  return relative_transforms.front();
+}
+
+vector<StampedTransform> Tag::getRelativeTransforms() const
+{
+  return vector<StampedTransform>(std::begin(relative_transforms), std::end(relative_transforms));
+}
+
+/*
+ * Static members
+ */
+std::vector<Tag> Tag::tags;
+bool Tag::initialized = false;
+uint Tag::list_size = 0;
+ros::Duration Tag::max_dt;
+
+/*
+ * Static methods
+ */
+void Tag::init(uint list_size, ros::Duration max_dt, bool find_tfs)
+{
+  Tag::list_size = list_size;
+  Tag::max_dt = max_dt;
+  if (find_tfs)
+  {
+    updateMapToTagTfs();
+  }
+  else
+  {
+    ROS_WARN("Map to tag tfs might be uninitialized");
+  }
+  Tag::initialized = true;
 }
 
 std::vector<Tag> Tag::getTags()
@@ -195,14 +153,134 @@ std::vector<Tag> Tag::getTags()
   return tags;
 }
 
-bool Tag::isInitialized()
-{
-  return initialized;
-}
-
 uint Tag::getListSize()
 {
   return list_size;
 }
 
+ros::Duration Tag::getMaxDt()
+{
+  return max_dt;
+}
 
+bool Tag::isInitialized()
+{
+  return initialized;
+}
+
+
+tf2::Transform Tag::findMapToTag(int id)
+{
+  std::string tag_name = "tag" + std::to_string(id);
+  tf2_ros::Buffer tfBuffer;
+  tf2_ros::TransformListener tfListener(tfBuffer);
+
+  do
+  {
+    if (tfBuffer.canTransform("map", tag_name, ros::Time(0), ros::Duration(1)))
+    {
+      break;
+    }
+    else
+    {
+      std::stringstream ss;
+      ss << "Unable to find transform from " << "map" << " to " << tag_name;
+      ROS_WARN("%s", ss.str().c_str());
+    }
+  } while(ros::ok());
+  ROS_INFO("Found transform for tag%i", id);
+
+  geometry_msgs::TransformStamped transform_msg;
+  transform_msg = tfBuffer.lookupTransform("map", tag_name, ros::Time(0));
+  tf2::Transform map_to_tag;
+  tf2::fromMsg(transform_msg.transform, map_to_tag);
+  return map_to_tag;
+}
+
+void Tag::updateMapToTagTfs()
+{
+  for (int i = 0; i < tags.size(); i++)
+  {
+    tags[i].map_to_tag = findMapToTag(tags[i].id);
+  }
+}
+
+void Tag::setTransformCaches(TagsVector *tags, std::string prefix)
+{
+  tf2_ros::Buffer tfBuffer;
+  tf2_ros::TransformListener tfListener(tfBuffer);
+
+  // Find base link to tracker mount transform
+  std::string tracker_mount = prefix + "_tracker_mount";
+  do
+  {
+    if (tfBuffer.canTransform("base_link", tracker_mount, ros::Time(0), ros::Duration(1)))
+    {
+      break;
+    }
+    else
+    {
+      ROS_WARN("Unable to find transform from map to %s", tracker_mount.c_str());
+    }
+  } while(ros::ok());
+  ROS_INFO("Found transform from map to %s", tracker_mount.c_str());
+
+  StampedTransform base_link_to_tracker_mount;
+  tf2::fromMsg(tfBuffer.lookupTransform("map", tracker_mount, ros::Time(0)), base_link_to_tracker_mount);
+
+  // Find tracker_mount to camera transform
+  std::string camera = prefix + "_camera";
+  do
+  {
+    if (tfBuffer.canTransform(tracker_mount, camera, ros::Time(0), ros::Duration(1)))
+    {
+      break;
+    }
+    else
+    {
+      ROS_WARN("Unable to find transform from %s to %s", tracker_mount.c_str(), camera.c_str());
+    }
+  } while(ros::ok());
+  ROS_INFO("Found transform from %s to %s", tracker_mount.c_str(), camera.c_str());
+
+  StampedTransform tracker_mount_to_camera;
+  tf2::fromMsg(tfBuffer.lookupTransform(tracker_mount, camera, ros::Time(0)), tracker_mount_to_camera);
+
+  for (int i = 0; i < tags->size(); i++)
+  {
+    (*tags)[i].base_link_to_tracker_mount = (tf2::Transform)base_link_to_tracker_mount;
+    (*tags)[i].tracker_mount_to_camera = (tf2::Transform)tracker_mount_to_camera;
+  }
+}
+
+void Tag::clearFlags(TagsVector *tags)
+{
+  for (int i = 0; i < tags->size(); i++)
+  {
+    (*tags)[i].relative_transform_updated = false;
+    (*tags)[i].stepper_transform_updated = false;
+  }
+}
+
+void Tag::addTransformToList(StampedTransformList *list, const StampedTransform &transform)
+{
+  // Clear expired transforms
+  // TODO Test expired transform removal
+  auto expired_start = list->end();
+  for (auto it = list->begin(); it != list->end(); it++)
+  {
+    if ((transform.stamp_ - (*it).stamp_) > Tag::max_dt)
+    {
+      expired_start = it;
+      break;
+    }
+  }
+  list->erase(expired_start, list->end());
+
+  // Add new transform
+  list->emplace_front(transform);
+  if (list->size() > Tag::list_size)
+  {
+    list->pop_back();
+  }
+}

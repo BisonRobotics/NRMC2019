@@ -22,7 +22,7 @@ TEST(TagTests, initialization)
   EXPECT_EQ(one.getSeq(), 0);
   EXPECT_EQ(one.getTransformsSize(), 0);
   EXPECT_EQ(one.getSize(), 0.5);
-  EXPECT_EQ(one.getTransforms().size(), 0);
+  EXPECT_EQ(one.getRelativeTransforms().size(), 0);
   EXPECT_EQ(Tag::getTags().size(), 1);
   EXPECT_EQ(Tag::isInitialized(), false);
   EXPECT_EQ(Tag::getListSize(), 0);
@@ -32,7 +32,7 @@ TEST(TagTests, initialization)
   EXPECT_EQ(two.getSeq(), 0);
   EXPECT_EQ(two.getTransformsSize(), 0);
   EXPECT_EQ(two.getSize(), 0.5);
-  EXPECT_EQ(two.getTransforms().size(), 0);
+  EXPECT_EQ(two.getRelativeTransforms().size(), 0);
   EXPECT_EQ(Tag::getTags().size(), 2);
   EXPECT_EQ(Tag::isInitialized(), false);
   EXPECT_EQ(Tag::getListSize(), 0);
@@ -42,7 +42,7 @@ TEST(TagTests, initialization)
   EXPECT_EQ(two_2.getSeq(), 0);
   EXPECT_EQ(two_2.getTransformsSize(), 0);
   EXPECT_EQ(two_2.getSize(), 0.5);
-  EXPECT_EQ(two_2.getTransforms().size(), 0);
+  EXPECT_EQ(two_2.getRelativeTransforms().size(), 0);
   EXPECT_EQ(Tag::getTags().size(), 2);
   EXPECT_EQ(Tag::isInitialized(), false);
   EXPECT_EQ(Tag::getListSize(), 0);

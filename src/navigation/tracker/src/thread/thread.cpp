@@ -2,7 +2,7 @@
 
 using namespace tracker;
 
-Thread::Thread(std::string name, tracker::Camera *camera, TagsVector tags) :
+Thread::Thread(std::string name, tracker::Camera *camera, TagsVector *tags) :
   name(name), camera(camera), nh(name), it(name), tags(tags),
   set_brightness_server(nh, "set_brightness", boost::bind(&Thread::setBrightnessCallback, this, _1), false),
   set_exposure_server(nh, "set_exposure", boost::bind(&Thread::setExposureCallback, this, _1), false)
@@ -25,7 +25,7 @@ Thread::Thread(std::string name, tracker::Camera *camera, TagsVector tags) :
   image_msg.step = camera->getWidth();
   image_msg.data.resize(camera->getWidth() * camera->getHeight());
 
-  detector = new Detector(camera->getInfo(), image_msg.data.data(), &this->tags);
+  detector = new Detector(camera->getInfo(), image_msg.data.data(), this->tags);
   set_brightness_server.start();
   set_exposure_server.start();
 
@@ -45,6 +45,7 @@ void Thread::thread()
     {
       try
       {
+        Tag::clearFlags(tags);
         camera->getFrame(detector->getBuffer());
         stamp = ros::Time::now();
         detector->detect(stamp);
@@ -57,25 +58,25 @@ void Thread::thread()
       }
     }
 
+    // Publish tfs
+    for (int i = 0; i < tags->size(); i++)
+    {
+      StampedTransform transform = (*tags)[i].getMostRecentRelativeTransform();
+      if (transform.stamp_ == stamp)
+      {
+        geometry_msgs::TransformStamped transform_msg = tf2::toMsg(transform);
+        transform_msg.header.seq = (*tags)[i].getSeq();
+        transform_msg.header.frame_id = camera->getName();
+        transform_msg.child_frame_id = "tag" + std::to_string((*tags)[i].getID()) + "_estimate";
+        tf_pub.sendTransform(transform_msg);
+      }
+    }
+
     // Publish the image
     if (drop_count++ >= drops)
     {
       pub.publish(image_msg);
       drop_count = 0;
-    }
-
-    // Publish tfs
-    for (int i = 0; i < tags.size(); i++)
-    {
-      StampedTransform transform = tags[i].getRelativeTransform();
-      if (transform.stamp_ == stamp)
-      {
-        geometry_msgs::TransformStamped transform_msg = tf2::toMsg(transform);
-        transform_msg.header.seq = tags[i].getSeq();
-        transform_msg.header.frame_id = camera->getName();
-        transform_msg.child_frame_id = "tag" + std::to_string(tags[i].getID()) + "_estimate";
-        tf_pub.sendTransform(transform_msg);
-      }
     }
 
     // Respond to callbacks

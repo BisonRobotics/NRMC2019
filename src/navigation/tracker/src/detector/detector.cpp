@@ -99,7 +99,7 @@ void Detector::detect(ros::Time stamp)
     {
       if (detection->id == (*tags)[i].getID())
       {
-        (*tags)[i].updateRelativeTransform(getRelativeTransform((*tags)[i].getSize(), detection, stamp));
+        (*tags)[i].addRelativeTransform(getRelativeTransform((*tags)[i].getSize(), detection, stamp));
       }
     }
   }

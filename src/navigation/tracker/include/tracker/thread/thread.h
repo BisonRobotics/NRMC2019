@@ -20,7 +20,7 @@ namespace tracker
   class Thread
   {
   public:
-    Thread(std::string name, Camera *camera, TagsVector tags);
+    Thread(std::string name, Camera *camera, TagsVector *tags);
 
     void thread();
     void join();
@@ -36,7 +36,7 @@ namespace tracker
     Camera *camera;
     Detector *detector;
     boost::thread *thread_handle;
-    std::vector<Tag> tags;
+    std::vector<Tag> *tags;
 
     ros::NodeHandle nh;
     ros::ServiceServer get_brightness_service, get_exposure_service;

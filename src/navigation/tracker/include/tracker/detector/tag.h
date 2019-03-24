@@ -3,8 +3,13 @@
 
 #include <list>
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/transform_datatypes.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
+#include <geometry_msgs/TransformStamped.h>
+
 #include <boost/thread/thread.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -13,15 +18,48 @@ namespace tracker
 {
   class Tag;
 
+  // Comparison operators for unit tests
   bool operator == (const tracker::Tag &lhs, const tracker::Tag &rhs);
   bool operator != (const tracker::Tag &lhs, const tracker::Tag &rhs);
 
+  // Typedefs
   typedef tf2::Stamped<tf2::Transform> StampedTransform;
+  typedef std::list<StampedTransform> StampedTransformList;
   typedef std::vector<Tag> TagsVector;
 
   class Tag
   {
   public:
+    // Constructors
+    Tag(Tag *tag);
+    Tag(const Tag &tag);
+    Tag(int id, double tag_size);
+
+    // Methods
+    void addRelativeTransform(StampedTransform relative_transform);
+    void addStepperTransform(StampedTransform stepper_transform);
+    StampedTransform estimatePose();
+
+    // Accessors
+    int getID() const;
+    unsigned int getSeq() const;
+    double getSize() const;
+    long getTransformsSize() const;
+    tf2::Transform getMapToTag() const;
+    StampedTransform getMostRecentRelativeTransform() const;
+    std::vector<StampedTransform> getRelativeTransforms() const;
+
+  private:
+    // Data
+    int id;
+    unsigned int seq;
+    double tag_size;
+    bool relative_transform_updated, stepper_transform_updated;
+    tf2::Transform map_to_tag, base_link_to_tracker_mount, tracker_mount_to_camera;
+    std::list<StampedTransform> relative_transforms, stepper_transforms;
+
+  public:
+    // Static methods
     static void init(uint list_size, ros::Duration max_dt, bool find_tfs);
     static std::vector<Tag> getTags();
     static uint getListSize();
@@ -29,36 +67,16 @@ namespace tracker
     static bool isInitialized();
     static tf2::Transform findMapToTag(int id);
     static void updateMapToTagTfs();
-
-    Tag(Tag *tag);
-    Tag(const Tag &tag);
-    Tag(int id, double tag_size, tf2::Transform map_to_tag = tf2::Transform());
-
-    void updateRelativeTransform(StampedTransform relative_transform);
-    void processDetection(tf2::Transform servo, ros::Time stamp);
-
-    // Accessors
-    int getID() const;
-    tf2::Transform getMapToTag() const;
-    unsigned int getSeq() const;
-    double getSize() const;
-    long getTransformsSize() const;
-    StampedTransform getRelativeTransform() const;
-    std::vector<StampedTransform> getTransforms() const;
-    StampedTransform getMostRecentTransform() const;
+    static void setTransformCaches(TagsVector *tags, std::string prefix); // Should be left or right
+    static void clearFlags(TagsVector *tags);
+    static void addTransformToList(StampedTransformList *list, const StampedTransform &transform);
 
   private:
+    // Static data
     static bool initialized;
     static uint list_size;
     static ros::Duration max_dt;
     static std::vector<Tag> tags;
-
-    int id;
-    unsigned int seq;
-    double tag_size;
-    tf2::Transform map_to_tag;
-    StampedTransform relative_transform;
-    std::list<tf2::Stamped<tf2::Transform>> transforms;
   };
 }
 

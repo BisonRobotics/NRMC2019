@@ -41,10 +41,12 @@ int main (int argc, char* argv[])
   }
 
   // TODO initialize tag tfs (3rd argument true)
-  Tag::init(10, ros::Duration(0.1), false);
+  Tag::init(10, ros::Duration(0.1), true);
+  TagsVector tracker0_tags = Tag::getTags();
+  Tag::setTransformCaches(&tracker0_tags, "right");
 
   // Start threads
-  Thread thread0("tracker0", camera0, Tag::getTags());
+  Thread thread0("tracker0", camera0, &tracker0_tags);
   //boost::thread thread1(trackerThread, "tracker1", camera1, &nh);
   ros::spin();
 

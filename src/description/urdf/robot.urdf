@@ -318,7 +318,6 @@
         <parent link="left_tracker_mount" />
         <child link = "left_camera" />
         <limit effort="1000.0" lower="-4" upper="1" velocity="1.0" />
-    
     </joint>
 
     <!-- Add a few static transforms for testing -->
