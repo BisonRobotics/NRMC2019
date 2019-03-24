@@ -35,6 +35,22 @@
         <xacro:property name="monoboom_angle" value="${-pi*0.28}" />
     </xacro:if>
 
+    <!-- Define apriltag locations -->
+    <link name="tag0" />
+    <link name="tag1" />
+
+    <joint name="map_to_tag0" type="fixed">
+        <origin xyz="0 -0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
+        <parent link="map" />
+        <child link = "tag0" />
+    </joint>
+
+    <joint name="map_to_tag1" type="fixed">
+        <origin xyz="0 0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
+        <parent link="map" />
+        <child link = "tag1" />
+    </joint>
+
     <!-- Define linkages and joints -->
     <link name="base_link" />
         <!--<visual>
