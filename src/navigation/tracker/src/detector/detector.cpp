@@ -20,8 +20,8 @@ using namespace tracker;
 
 // Note: As long as the tag is detected at the quad_decimate level, if refine_edges is enabled, it will
 // go through and refine the edges on the full resolution image.
-Detector::Detector(CameraInfo camera_info, uint8_t *buffer):
-    camera_info(camera_info),
+Detector::Detector(CameraInfo camera_info, uint8_t *buffer, TagsVector *tags):
+    camera_info(camera_info), tags(tags),
     cv_image(camera_info.height, camera_info.width, CV_8UC1, buffer),
     map1(camera_info.height, camera_info.width, CV_16SC2),
     map2(camera_info.height, camera_info.width, CV_16UC1)
@@ -83,7 +83,7 @@ void Detector::drawDetection(apriltag_detection_t *detection)
           font_face, font_scale, cv::Scalar(0x80), 2);
 }
 
-void Detector::detect()
+void Detector::detect(ros::Time stamp)
 {
   cv::rotate(cv_image, cv_image, cv::ROTATE_180);
   cv::Mat tmp = cv_image.clone();
@@ -95,10 +95,12 @@ void Detector::detect()
   {
     apriltag_detection_t *detection;
     zarray_get(detections, i, &detection);
-    if (detection->id == 0)
+    for (int j = 0; j < tags->size(); j++)
     {
-      StampedTransform transform = getRelativeTransform(detection);
-      tf2::Vector3 origin = transform.getOrigin();
+      if (detection->id == (*tags)[i].getID())
+      {
+        (*tags)[i].updateRelativeTransform(getRelativeTransform((*tags)[i].getSize(), detection, stamp));
+      }
     }
   }
 
@@ -120,26 +122,27 @@ Detector::~Detector()
   delete(at_image);
 }
 
-tf2::Stamped<tf2::Transform> Detector::getRelativeTransform(apriltag_detection_t *detection)
+StampedTransform Detector::getRelativeTransform(double tag_size, apriltag_detection_t *detection, ros::Time stamp)
 {
-  std::vector<cv::Point3d> objPts;
-  std::vector<cv::Point2d> imgPts;
-  double s = 0.4318 / 2.0;
-  objPts.emplace_back(-s, -s, 0);
-  objPts.emplace_back( s, -s, 0);
-  objPts.emplace_back( s,  s, 0);
-  objPts.emplace_back(-s,  s, 0);
 
+  double s = tag_size / 2.0;
+  std::vector<cv::Point3d> tag_points;
+  tag_points.emplace_back(-s, -s, 0);
+  tag_points.emplace_back( s, -s, 0);
+  tag_points.emplace_back( s,  s, 0);
+  tag_points.emplace_back(-s,  s, 0);
+
+  std::vector<cv::Point2d> image_points;
   for (int i = 0; i < 4; i++)
   {
-    imgPts.emplace_back(detection->p[i][0], detection->p[i][1]);
+    image_points.emplace_back(detection->p[i][0], detection->p[i][1]);
   }
 
   cv::Mat rvec, tvec;
   // TODO make sure the properties are accurate
-  // already undistorted image, so distortion parameter is NULL
+  // already undistorted the image, so distortion parameter is an empty matrix
   cv::Mat empty;
-  cv::solvePnP(objPts, imgPts, camera_info.camera_matrix, empty, rvec, tvec);
+  cv::solvePnP(tag_points, image_points, camera_info.camera_matrix, empty, rvec, tvec);
   cv::Matx33d r;
   cv::Rodrigues(rvec, r);
   Eigen::Matrix3d R;
@@ -151,18 +154,18 @@ tf2::Stamped<tf2::Transform> Detector::getRelativeTransform(apriltag_detection_t
   T.row(3) << 0, 0, 0, 1;
 
   // Build transform
-  tf2::Stamped<tf2::Transform> tag_transform;
+  StampedTransform tag_transform;
+  tag_transform.stamp_ = stamp;
   tag_transform.setOrigin(tf2::Vector3(T(0, 3), T(1, 3), T(2, 3)));    // TODO double check this
-  Eigen::Quaternion<double> rotation_q = Eigen::Quaternion<double>(R); // TODO fix this
+  Eigen::Quaternion<double> rotation_q = Eigen::Quaternion<double>(R); // TODO fix duplication
   tf2::Quaternion q;
   q.setX(rotation_q.x());
   q.setY(rotation_q.y());
   q.setZ(rotation_q.z());
   q.setW(rotation_q.w());
   tag_transform.setRotation(q);
-  tag_transform.stamp_ = ros::Time::now();
 
-  printf("%i, %f, %f, %f, %f\n", detection->id, T(0, 3), T(1, 3), T(2, 3), std::sqrt(T(0, 3)*T(0, 3) + T(2, 3)*T(2, 3)));
+  //printf("%i, %f, %f, %f, %f\n", detection->id, T(0, 3), T(1, 3), T(2, 3), std::sqrt(T(0, 3)*T(0, 3) + T(2, 3)*T(2, 3)));
 
   return tag_transform;
 }

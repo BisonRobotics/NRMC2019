@@ -26,11 +26,11 @@ namespace tracker
   class Detector
   {
     public:
-      Detector(CameraInfo camera_info, uint8_t *buffer);
+      Detector(CameraInfo camera_info, uint8_t *buffer, TagsVector *tags);
       ~Detector();
 
-      StampedTransform getRelativeTransform(apriltag_detection_t *detection);
-      void detect();
+      StampedTransform getRelativeTransform(double tag_size, apriltag_detection_t *detection, ros::Time stamp);
+      void detect(ros::Time stamp);
       //tf2::Transform getPose(apriltag_detection_t *detection);
       uchar* getBuffer();
       void drawDetection(apriltag_detection_t *detection);
@@ -41,7 +41,7 @@ namespace tracker
       image_u8_t *at_image;
       CameraInfo camera_info;
       cv::Mat cv_image, map1, map2;
-      std::vector<Tag> tags;
+      TagsVector *tags;
   };
 }
 

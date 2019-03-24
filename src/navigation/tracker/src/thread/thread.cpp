@@ -2,8 +2,8 @@
 
 using namespace tracker;
 
-Thread::Thread(std::string name, tracker::Camera *camera) :
-  name(name), camera(camera), nh(name), it(name),
+Thread::Thread(std::string name, tracker::Camera *camera, TagsVector tags) :
+  name(name), camera(camera), nh(name), it(name), tags(tags),
   set_brightness_server(nh, "set_brightness", boost::bind(&Thread::setBrightnessCallback, this, _1), false),
   set_exposure_server(nh, "set_exposure", boost::bind(&Thread::setExposureCallback, this, _1), false)
 {
@@ -25,7 +25,7 @@ Thread::Thread(std::string name, tracker::Camera *camera) :
   image_msg.step = camera->getWidth();
   image_msg.data.resize(camera->getWidth() * camera->getHeight());
 
-  detector = new Detector(camera->getInfo(), image_msg.data.data());
+  detector = new Detector(camera->getInfo(), image_msg.data.data(), &this->tags);
   set_brightness_server.start();
   set_exposure_server.start();
 
@@ -35,6 +35,7 @@ Thread::Thread(std::string name, tracker::Camera *camera) :
 void Thread::thread()
 {
   camera->start();
+  ros::Time stamp;
 
   // Main loop
   while (ros::ok())
@@ -45,7 +46,8 @@ void Thread::thread()
       try
       {
         camera->getFrame(detector->getBuffer());
-        detector->detect();
+        stamp = ros::Time::now();
+        detector->detect(stamp);
         break;
       }
       catch (std::runtime_error &e)
@@ -62,8 +64,23 @@ void Thread::thread()
       drop_count = 0;
     }
 
+    // Publish tfs
+    for (int i = 0; i < tags.size(); i++)
+    {
+      StampedTransform transform = tags[i].getRelativeTransform();
+      if (transform.stamp_ == stamp)
+      {
+        geometry_msgs::TransformStamped transform_msg = tf2::toMsg(transform);
+        transform_msg.header.seq = tags[i].getSeq();
+        transform_msg.header.frame_id = "map";
+        transform_msg.child_frame_id = "tag" + std::to_string(tags[i].getID());
+        tf_pub.sendTransform(transform_msg);
+      }
+    }
+
     // Respond to callbacks
     callback_queue.callAvailable(ros::WallDuration());
+    ros::spinOnce();
   }
 
   // Exit

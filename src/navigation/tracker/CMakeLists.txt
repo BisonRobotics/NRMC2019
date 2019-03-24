@@ -109,3 +109,7 @@ target_link_libraries(tracker_node
         camera_info)
 add_dependencies(tracker_node tracker_gencpp)
 
+catkin_add_gtest(tag_tests src/detector/tag.cpp src/detector/tests/tag_tests.cpp)
+if(TARGET tag_tests)
+    target_link_libraries(tag_tests gmock_main ${catkin_LIBRARIES})
+endif()

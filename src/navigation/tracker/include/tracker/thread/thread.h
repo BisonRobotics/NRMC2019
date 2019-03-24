@@ -11,13 +11,16 @@
 #include <tracker/GetUInt.h>
 #include <tracker/SetUIntAction.h>
 #include <actionlib/server/simple_action_server.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace tracker
 {
   class Thread
   {
   public:
-    Thread(std::string name, Camera *camera);
+    Thread(std::string name, Camera *camera, TagsVector tags);
 
     void thread();
     void join();
@@ -29,16 +32,21 @@ namespace tracker
   private:
     int drops, drop_count;
     std::string name;
+    sensor_msgs::Image image_msg;
+    Camera *camera;
+    Detector *detector;
+    boost::thread *thread_handle;
+    std::vector<Tag> tags;
+
     ros::NodeHandle nh;
     ros::ServiceServer get_brightness_service, get_exposure_service;
     actionlib::SimpleActionServer<SetUIntAction> set_brightness_server, set_exposure_server;
     image_transport::ImageTransport it;
     image_transport::Publisher pub;
-    sensor_msgs::Image image_msg;
     ros::CallbackQueue callback_queue;
-    Camera *camera;
-    Detector *detector;
-    boost::thread *thread_handle;
+    tf2_ros::TransformBroadcaster tf_pub;
+
+
   };
 }
 

@@ -3,9 +3,86 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-using namespace tracker;
 
+namespace tracker
+{
+bool operator == (const Tag &lhs, const Tag &rhs)
+{
+  return lhs.getID()         == rhs.getID()         &&
+         lhs.getSeq()        == rhs.getSeq()        &&
+         lhs.getSize()       == rhs.getSize()       &&
+         lhs.getMapToTag()   == rhs.getMapToTag()   &&
+         lhs.getTransforms() == rhs.getTransforms();
+}
+
+bool operator != (const Tag &lhs, const Tag &rhs)
+{
+  return !(lhs.getID()         == rhs.getID()         &&
+           lhs.getSeq()        == rhs.getSeq()        &&
+           lhs.getSize()       == rhs.getSize()       &&
+           lhs.getMapToTag()   == rhs.getMapToTag()   &&
+           lhs.getTransforms() == rhs.getTransforms());
+}
+}
+
+using namespace tracker;
 using std::vector;
+
+
+// Initialize static members
+std::vector<Tag> Tag::tags;
+bool Tag::initialized = false;
+uint Tag::list_size = 0;
+ros::Duration Tag::max_dt;
+
+
+void Tag::init(uint list_size, ros::Duration max_dt, bool find_tfs)
+{
+  Tag::list_size = list_size;
+  Tag::max_dt = max_dt;
+  if (find_tfs)
+  {
+    updateMapToTagTfs();
+  }
+  else
+  {
+    ROS_WARN("Map to tag tfs might be uninitialized");
+  }
+  Tag::initialized = true;
+}
+
+Tag::Tag(const Tag &tag) :
+    id(tag.id), seq(tag.seq), tag_size(tag.tag_size),
+    map_to_tag(tag.map_to_tag)
+{
+
+}
+
+Tag::Tag(Tag *tag) :
+    id(tag->id), seq(tag->seq), tag_size(tag->tag_size),
+    map_to_tag(tag->map_to_tag)
+{
+
+}
+
+Tag::Tag(int id, double tag_size, tf2::Transform map_to_tag) :
+    id(id), tag_size(tag_size), map_to_tag(map_to_tag), seq(0)
+{
+  // Add tag to global vector if it doesn't already exist
+  bool tag_exists = false;
+  for (int i = 0; i < tags.size(); i++)
+  {
+    if (tags[i].getID() == id)
+    {
+      tag_exists = true;
+      break;
+    }
+  }
+  if (!tag_exists)
+  {
+    tags.emplace_back(this);
+  }
+}
 
 tf2::Transform Tag::findMapToTag(int id)
 {
@@ -33,14 +110,26 @@ tf2::Transform Tag::findMapToTag(int id)
   return map_to_tag;
 }
 
-Tag::Tag(int id, int list_size, double tag_size, ros::Duration max_dt) :
-  id(id), tag_size(tag_size), list_size(list_size), max_dt(max_dt), seq(0)
+void Tag::updateMapToTagTfs()
 {
-  this->map_to_tag = findMapToTag(id);
+  for (int i = 0; i < tags.size(); i++)
+  {
+    tags[i].map_to_tag = findMapToTag(tags[i].id);
+  }
 }
 
-void Tag::addDetection(cv::Point2d center, tf2::Transform camera_to_tag,
-                       tf2::Transform servo, ros::Time stamp)
+void Tag::updateRelativeTransform(StampedTransform relative_transform)
+{
+  this->seq++;
+  this->relative_transform = relative_transform;
+}
+
+StampedTransform Tag::getRelativeTransform() const
+{
+  return relative_transform;
+}
+
+void Tag::processDetection(tf2::Transform servo, ros::Time stamp)
 {
   this->seq++;
   // TODO do transforms
@@ -57,7 +146,7 @@ void Tag::addDetection(cv::Point2d center, tf2::Transform camera_to_tag,
   }
 }
 
-StampedTransform Tag::getMostRecentTransform()
+StampedTransform Tag::getMostRecentTransform() const
 {
   if (transforms.size() < 1)
   {
@@ -66,32 +155,54 @@ StampedTransform Tag::getMostRecentTransform()
   return transforms.front();
 }
 
-vector<StampedTransform> Tag::getTransforms()
+vector<StampedTransform> Tag::getTransforms() const
 {
   return vector<StampedTransform>(std::begin(transforms), std::end(transforms));
 }
 
-tf2::Transform Tag::getMapToTag()
+tf2::Transform Tag::getMapToTag() const
 {
   return this->map_to_tag;
 }
 
-int Tag::getID()
+int Tag::getID() const
 {
   return id;
 }
 
-unsigned int Tag::getSeq()
+unsigned int Tag::getSeq() const
 {
   return seq;
 }
 
-double Tag::getSize()
+double Tag::getSize() const
 {
   return tag_size;
 }
 
-long Tag::getTransformsSize()
+long Tag::getTransformsSize() const
 {
   return transforms.size();
 }
+
+ros::Duration Tag::getMaxDt()
+{
+  return max_dt;
+}
+
+std::vector<Tag> Tag::getTags()
+{
+  return tags;
+}
+
+bool Tag::isInitialized()
+{
+  return initialized;
+}
+
+uint Tag::getListSize()
+{
+  return list_size;
+}
+
+
