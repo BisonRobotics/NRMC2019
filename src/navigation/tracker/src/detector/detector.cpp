@@ -10,17 +10,12 @@ extern "C"
 #include "apriltags/apriltag_pose.h"
 }
 
-#define BUFFER_SIZE 20
 
 using namespace tracker;
 
-AprilTag::AprilTag(int family, int id, int size, tf2::Transform placement) :
-    family(family), id(id), size(size), placement(placement)
-{
-  readings.resize(BUFFER_SIZE);
-  readings_start = 0;
-  readings_end = 0;
-}
+// TODO retry tag16h6 with a check for tag size
+// TODO generate tag36hX with a Hamming distance X
+//  greater than 11 (less tags, better accuracy)
 
 
 // Note: As long as the tag is detected at the quad_decimate level, if refine_edges is enabled, it will
@@ -138,9 +133,4 @@ tf2::Stamped<tf2::Transform> Detector::getRelativeTransform(apriltag_detection_t
 
 
   return tf2::Stamped<tf2::Transform>();
-}
-
-void Detector::addTag(int family, int id, int size, tf2::Transform placement)
-{
-  tags.emplace_back(family, id, size, placement);
 }

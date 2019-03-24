@@ -13,9 +13,11 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_geometry_msgs
   tf2_ros
+  message_generation
+  genmsg
+  actionlib_msgs
 )
 
-#find_package(OpenCV 3.2.0 REQUIRED)
 find_package(OpenCV 4.0 QUIET)
 if(OpenCV_FOUND)
     message("Found OpenCV 4.0")
@@ -24,12 +26,34 @@ else()
     message("Unable to find OpenCV 4.0")
     find_package(OpenCV 3.2.0 REQUIRED)
 endif()
+
 find_package(Eigen3 REQUIRED)
+
+add_service_files(FILES
+    GetUInt.srv
+)
+
+add_action_files(DIRECTORY action FILES
+    SetUInt.action
+)
+
+generate_messages(
+    DEPENDENCIES
+    std_msgs
+    actionlib_msgs
+)
+
 
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES tracker
-  CATKIN_DEPENDS roscpp std_msgs sensor_msgs
+  CATKIN_DEPENDS
+        roscpp
+        std_msgs
+        sensor_msgs
+        tf2
+        tf2_ros
+        tf2_geometry_msgs
   #  DEPENDS system_lib
 )
 
@@ -37,6 +61,10 @@ include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${Eigen3_INCLUDE_DIRS})
+
+# Add gmock
+link_directories(/usr/src/gmock/build)
+set(GTEST_LIBRARIES gmock_main)
 
 #if (OpenCV_FOUND)
 #  add_definitions(-DOPENCV_ENABLED)
@@ -60,19 +88,24 @@ if (BUILD_CAMERA_CALIBRATION)
     #target_link_libraries(record_images ${OpenCV_LIBS} ocam_camera)
 endif()
 
-# AprilTags
+# Detector
 add_library(detector
         src/detector/detector.cpp
-        src/detector/transform.cpp
         src/detector/tag.cpp
-        src/detector/transforms_cache.cpp)
-target_link_libraries(detector ${apriltags_LIBRARIES})
+        src/detector/util.cpp)
+target_link_libraries(detector
+        ${apriltags_LIBRARIES}
+        ${catkin_LIBRARIES})
 
 # Tracker node
-add_executable(tracker_node src/tracker_node.cpp)
+add_executable(tracker_node
+        src/thread/thread.cpp
+        src/tracker_node.cpp)
 target_link_libraries(tracker_node
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         ocam_camera
-        apriltags_wrapper
+        detector
         camera_info)
+add_dependencies(tracker_node tracker_gencpp)
+
