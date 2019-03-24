@@ -291,13 +291,14 @@
             <geometry>
                 <mesh filename="package://description/meshes/tracker_camera.stl" />
             </geometry>
-            <origin xyz="0 0 0.01" rpy="0 0 0" />
+            <origin xyz="0 0 0.01" rpy="0 0 ${pi/2}" />
             <material name="black" />
         </visual>
     </link>
 
     <joint name="left_tracker_joint" type="revolute">
-        <origin xyz= "-0.035 0.32 0.04" rpy="0 1.57 0" />
+        <!--<origin xyz= "-0.035 0.32 0.04" rpy="0 1.57 0" />-->
+        <origin xyz="-0.035 0.32 0.04" rpy="${-pi/2} 0 0" />
         <parent link="left_tracker_mount" />
         <child link = "left_camera" />
         <limit effort="1000.0" lower="-4" upper="1" velocity="1.0" />
