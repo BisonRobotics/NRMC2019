@@ -44,7 +44,7 @@ TrackerGUI::TrackerGUI(QWidget *parent) :
   current_exposure_client = &exposure_client0;
   getBrightnessButtonClicked();
   getExposureButtonClicked();
-  service_timer->start();
+  service_timer->start(10);
 }
 
 TrackerGUI::~TrackerGUI()

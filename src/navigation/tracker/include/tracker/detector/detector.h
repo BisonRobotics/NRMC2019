@@ -29,9 +29,9 @@ namespace tracker
       Detector(CameraInfo camera_info, uint8_t *buffer);
       ~Detector();
 
-      StampedTransform getRelativeTransform(apriltag_detection_t detection);
+      StampedTransform getRelativeTransform(apriltag_detection_t *detection);
       void detect();
-      //tf2::Transform getPose(apriltag_detection_t detection);
+      //tf2::Transform getPose(apriltag_detection_t *detection);
       uchar* getBuffer();
       void drawDetection(apriltag_detection_t *detection);
 

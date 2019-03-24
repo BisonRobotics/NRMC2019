@@ -29,7 +29,7 @@ Detector::Detector(CameraInfo camera_info, uint8_t *buffer):
   //family = tag25h10_create();
   family = tag36h11_create();
   detector = apriltag_detector_create();
-  detector->quad_decimate = 4.0;      // Default = 2.0
+  detector->quad_decimate = 3.0;      // Default = 2.0
   detector->quad_sigma = 0.0;         // Default = 0.0
   detector->refine_edges = 1;         // Default = 1
   detector->decode_sharpening = 0.25; // Default = 0.25
@@ -91,6 +91,16 @@ void Detector::detect()
   zarray_t *detections = apriltag_detector_detect(detector, at_image);
 
   // TODO get transforms
+  for (int i = 0; i < zarray_size(detections); i++)
+  {
+    apriltag_detection_t *detection;
+    zarray_get(detections, i, &detection);
+    if (detection->id == 0)
+    {
+      StampedTransform transform = getRelativeTransform(detection);
+      tf2::Vector3 origin = transform.getOrigin();
+    }
+  }
 
   // Draw detection outlines
   for (int i = 0; i < zarray_size(detections); i++)
@@ -110,27 +120,49 @@ Detector::~Detector()
   delete(at_image);
 }
 
-tf2::Stamped<tf2::Transform> Detector::getRelativeTransform(apriltag_detection_t detection)
+tf2::Stamped<tf2::Transform> Detector::getRelativeTransform(apriltag_detection_t *detection)
 {
-  /*at_info.fx = ;
-  at_info.cx = ;
-  at_info.fy = ;
-  at_info.cy = ;*/
+  std::vector<cv::Point3d> objPts;
+  std::vector<cv::Point2d> imgPts;
+  double s = 0.4318 / 2.0;
+  objPts.emplace_back(-s, -s, 0);
+  objPts.emplace_back( s, -s, 0);
+  objPts.emplace_back( s,  s, 0);
+  objPts.emplace_back(-s,  s, 0);
 
-  apriltag_detection_info_t info;
-  info.tagsize = 0.2;
-  info.fx = camera_info.getFx();
-  info.fy = camera_info.getFy();
-  info.cx = camera_info.getCx();
-  info.cy = camera_info.getCy();
-  info.det = &detection;
+  for (int i = 0; i < 4; i++)
+  {
+    imgPts.emplace_back(detection->p[i][0], detection->p[i][1]);
+  }
 
-  apriltag_pose_t pose;
-  pose.t = matd_create(4, 4);
-  pose.R = matd_create(4, 4);
+  cv::Mat rvec, tvec;
+  // TODO make sure the properties are accurate
+  // already undistorted image, so distortion parameter is NULL
+  cv::Mat empty;
+  cv::solvePnP(objPts, imgPts, camera_info.camera_matrix, empty, rvec, tvec);
+  cv::Matx33d r;
+  cv::Rodrigues(rvec, r);
+  Eigen::Matrix3d R;
+  R << r(0, 0), r(0, 1), r(0, 2), r(1, 0), r(1, 1), r(1, 2), r(2, 0), r(2, 1), r(2, 2);
 
-  estimate_tag_pose(&info, &pose);
+  Eigen::Matrix4d T;
+  T.topLeftCorner(3, 3) = R;
+  T.col(3).head(3) << tvec.at<double>(0), tvec.at<double>(1), tvec.at<double>(2);
+  T.row(3) << 0, 0, 0, 1;
 
+  // Build transform
+  tf2::Stamped<tf2::Transform> tag_transform;
+  tag_transform.setOrigin(tf2::Vector3(T(0, 3), T(1, 3), T(2, 3)));    // TODO double check this
+  Eigen::Quaternion<double> rotation_q = Eigen::Quaternion<double>(R); // TODO fix this
+  tf2::Quaternion q;
+  q.setX(rotation_q.x());
+  q.setY(rotation_q.y());
+  q.setZ(rotation_q.z());
+  q.setW(rotation_q.w());
+  tag_transform.setRotation(q);
+  tag_transform.stamp_ = ros::Time::now();
 
-  return tf2::Stamped<tf2::Transform>();
+  printf("%i, %f, %f, %f, %f\n", detection->id, T(0, 3), T(1, 3), T(2, 3), std::sqrt(T(0, 3)*T(0, 3) + T(2, 3)*T(2, 3)));
+
+  return tag_transform;
 }
