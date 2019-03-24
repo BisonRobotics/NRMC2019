@@ -256,13 +256,14 @@
             <geometry>
                 <mesh filename="package://description/meshes/tracker_camera.stl" />
             </geometry>
-            <origin xyz="0 0 0.01" rpy="0 0 0" />
+            <origin xyz="0 0 0.01" rpy="0 0 ${pi/2}" />
             <material name="black" />
         </visual>
     </link>
 
     <joint name="right_tracker_joint" type="revolute">
-        <origin xyz="-0.035 -0.32 0.04" rpy="0 1.57 0" />
+        <!--<origin xyz="-0.035 -0.32 0.04" rpy="0 1.57 0" />-->
+        <origin xyz="-0.035 -0.32 0.04" rpy="0 ${pi} 0" />
         <parent link="right_tracker_mount" />
         <child link = "right_camera" />
         <limit effort="1000.0" lower="-1" upper="4" velocity="1.0" />
@@ -310,7 +311,7 @@
         <joint name="map_to_base_link" type="fixed">
             <parent link="map"/>
             <child link="base_link"/>
-            <origin xyz="${264*0.0254} ${48*0.0254} 0" rpy="0 0 ${-pi/2}" />
+            <origin xyz="${264*0.0254 + 0.75/2} ${48*0.0254} 0" rpy="0 0 ${-pi/2}" />
         </joint>
     </xacro:if>
 </robot>

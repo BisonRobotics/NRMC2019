@@ -3,6 +3,16 @@
 using namespace tracker;
 
 CameraInfo::CameraInfo(std::string path) :
+    name("default_camera"),
+    path(path),
+    width(1280),
+    height(720),
+    camera_matrix(3,3),
+    distortion_matrix(5,1)
+{}
+
+CameraInfo::CameraInfo(std::string name, std::string path) :
+  name(name),
   path(path),
   width(1280),
   height(720),
@@ -10,8 +20,9 @@ CameraInfo::CameraInfo(std::string path) :
   distortion_matrix(5,1)
 {}
 
-CameraInfo::CameraInfo(std::string path, uint width, uint height,
+CameraInfo::CameraInfo(std::string name, std::string path, uint width, uint height,
                        cv::Mat_<double> camera_matrix, cv::Mat_<double> distortion_matrix) :
+  name(name),
   path(path),
   width(width),
   height(height),

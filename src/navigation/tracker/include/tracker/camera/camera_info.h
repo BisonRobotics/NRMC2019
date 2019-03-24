@@ -13,9 +13,10 @@ namespace tracker
   public:
     CameraInfo(const CameraInfo &info) = default;
     explicit CameraInfo(std::string path);
-    CameraInfo(std::string path, uint width, uint height,
+    CameraInfo(std::string name, std::string path);
+    CameraInfo(std::string name, std::string path, uint width, uint height,
                cv::Mat_<double> camera_matrix, cv::Mat_<double> distortion_matrix);
-    const std::string path;
+    const std::string name, path;
     const uint width, height;
     const cv::Mat_<double> camera_matrix, distortion_matrix;
 

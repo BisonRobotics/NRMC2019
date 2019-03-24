@@ -19,6 +19,7 @@ namespace tracker
       virtual uint getWidth() = 0;
       virtual uint getHeight() = 0;
       virtual CameraInfo getInfo() = 0;
+      virtual std::string getName() = 0;
   };
 }
 

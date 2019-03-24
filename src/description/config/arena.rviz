@@ -1,6 +1,6 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 81
+    Help Height: 84
     Name: Displays
     Property Tree Widget:
       Expanded:
@@ -13,7 +13,7 @@ Panels:
         - /Marker1
         - /Marker2
       Splitter Ratio: 0.5
-    Tree Height: 784
+    Tree Height: 597
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -22,7 +22,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679016
+    Splitter Ratio: 0.5886790156364441
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -33,6 +33,8 @@ Panels:
     Name: Time
     SyncMode: 0
     SyncSource: ""
+Preferences:
+  PromptSaveOnExit: true
 Visualization Manager:
   Class: ""
   Displays:
@@ -42,14 +44,14 @@ Visualization Manager:
       Color: 58; 58; 58
       Enabled: true
       Line Style:
-        Line Width: 0.0299999993
+        Line Width: 0.029999999329447746
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
       Offset:
-        X: 3.68600011
+        X: 3.686000108718872
         Y: 0
-        Z: -0.940439999
+        Z: -0.9404399991035461
       Plane: XY
       Plane Cell Count: 15
       Reference Frame: <Fixed Frame>
@@ -84,27 +86,13 @@ Visualization Manager:
           Value: true
         back_right_wheel:
           Value: true
-        backhoe_bucket:
+        backhoe_monoboom:
           Value: true
         base_link:
           Value: true
         battery_box:
           Value: true
-        bucket:
-          Value: true
-        camera_depth_frame:
-          Value: true
-        camera_depth_optical_frame:
-          Value: true
-        camera_fisheye_frame:
-          Value: true
-        camera_fisheye_optical_frame:
-          Value: true
-        camera_link:
-          Value: true
-        camera_rgb_frame:
-          Value: true
-        camera_rgb_optical_frame:
+        bucket_backhoe:
           Value: true
         central_drive:
           Value: true
@@ -116,47 +104,27 @@ Visualization Manager:
           Value: true
         front_right_wheel:
           Value: true
-        imu:
+        gravel_bucket:
+          Value: true
+        left_camera:
+          Value: true
+        left_flap:
+          Value: true
+        left_tracker_mount:
           Value: true
         map:
           Value: true
-        monoboom:
+        right_camera:
           Value: true
-        monoboom_actuator_link:
+        right_flap:
           Value: true
-        node0_camera:
+        right_tracker_mount:
           Value: true
-        node0_camera_mount:
+        tag0_estimate:
           Value: true
-        node0_camera_optical:
+        tag1_estimate:
           Value: true
-        node0_dynamixel:
-          Value: true
-        node1_camera:
-          Value: true
-        node1_camera_mount:
-          Value: true
-        node1_camera_optical:
-          Value: true
-        node1_dynamixel:
-          Value: true
-        sim_base_link:
-          Value: true
-        tag0:
-          Value: true
-        tag1:
-          Value: true
-        tag5:
-          Value: true
-        tag6:
-          Value: true
-        zr300_dynamixel:
-          Value: true
-        zr300_mount:
-          Value: true
-        zr300_mount_2:
-          Value: true
-      Marker Scale: 0.200000003
+      Marker Scale: 0.800000011920929
       Name: TF
       Show Arrows: true
       Show Axes: true
@@ -169,70 +137,35 @@ Visualization Manager:
                 {}
               back_right_wheel:
                 {}
+              backhoe_monoboom:
+                bucket_backhoe:
+                  {}
               battery_box:
                 {}
-              bucket:
-                {}
               central_drive:
-                monoboom:
-                  backhoe_bucket:
-                    {}
-                  monoboom_actuator_link:
-                    {}
+                {}
               computer_box:
-                zr300_dynamixel:
-                  {}
+                {}
               front_left_wheel:
                 {}
               front_right_wheel:
                 {}
-              imu:
+              gravel_bucket:
                 {}
-              node0_dynamixel:
+              left_flap:
                 {}
-              node1_dynamixel:
+              left_tracker_mount:
+                left_camera:
+                  {}
+              right_flap:
                 {}
-          sim_base_link:
-            {}
-          tag0:
-            {}
-          tag1:
-            {}
-          tag5:
-            {}
-          tag6:
-            {}
+              right_tracker_mount:
+                right_camera:
+                  tag0_estimate:
+                    {}
+                  tag1_estimate:
+                    {}
       Update Interval: 0
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: LaserScan
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.00999999978
-      Style: Flat Squares
-      Topic: /vrep/laser_scan_front
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
       Value: true
     - Alpha: 1
       Class: rviz/RobotModel
@@ -254,7 +187,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        backhoe_bucket:
+        backhoe_monoboom:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -268,40 +201,11 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        bucket:
+        bucket_backhoe:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        camera_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_fisheye_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_fisheye_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        camera_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        camera_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         central_drive:
           Alpha: 1
           Show Axes: false
@@ -327,68 +231,41 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        imu:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        monoboom:
+        gravel_bucket:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        monoboom_actuator_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        node0_camera:
+        left_camera:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        node0_camera_mount:
+        left_flap:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        node0_camera_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        node0_dynamixel:
+        left_tracker_mount:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        node1_camera:
+        map:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        right_camera:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        node1_camera_mount:
+        right_flap:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        node1_camera_optical:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        node1_dynamixel:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        zr300_dynamixel:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        zr300_mount:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        zr300_mount_2:
+        right_tracker_mount:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -403,28 +280,28 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: Map
       Topic: /costmap_less_inflation/costmap/costmap
       Unreliable: false
       Use Timestamp: false
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /position_controller/whole_queue
       Name: Marker
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /autonomy_goals
       Name: Marker
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 152; 152; 152
@@ -450,33 +327,33 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 11.7888603
+      Distance: 9.621712684631348
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.0599999987
+        Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.9444977
-        Y: -0.922694623
-        Z: 0.393408656
+        X: 2.836259365081787
+        Y: -0.32814821600914
+        Z: -0.7140292525291443
       Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.00999999978
-      Pitch: 1.23979652
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.6297969818115234
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.60636652
+      Yaw: 1.5663645267486572
     Saved: ~
 Window Geometry:
-  Displays:
+  "&Displays":
     collapsed: false
-  Height: 1027
+  Height: 871
   Hide Left Dock: false
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a000003a2fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006700fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000043000003a2000000e300fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000354fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004300000354000000b300fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000003bf00000044fc0100000002fb0000000800540069006d00650000000000000003bf0000022300fffffffb0000000800540069006d006501000000000000045000000000000000000000060e000003a200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000016a000002f8fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000007601000003fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000046000002f8000000f901000003fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000354fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004300000354000000d401000003fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000003bf00000044fc0100000002fb0000000800540069006d00650000000000000003bf000002d701000003fb0000000800540069006d00650100000000000004500000000000000000000004d5000002f800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -485,6 +362,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 1918
-  X: 0
-  Y: 25
+  Width: 1600
+  X: 1920
+  Y: 0

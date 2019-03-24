@@ -117,3 +117,8 @@ tracker::CameraInfo tracker::OCamCamera::getInfo()
 {
   return info;
 }
+
+std::string tracker::OCamCamera::getName()
+{
+  return info.name;
+}

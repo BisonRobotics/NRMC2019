@@ -72,8 +72,8 @@ void Thread::thread()
       {
         geometry_msgs::TransformStamped transform_msg = tf2::toMsg(transform);
         transform_msg.header.seq = tags[i].getSeq();
-        transform_msg.header.frame_id = "map";
-        transform_msg.child_frame_id = "tag" + std::to_string(tags[i].getID());
+        transform_msg.header.frame_id = camera->getName();
+        transform_msg.child_frame_id = "tag" + std::to_string(tags[i].getID()) + "_estimate";
         tf_pub.sendTransform(transform_msg);
       }
     }

@@ -24,6 +24,7 @@ namespace tracker
         uint getWidth() override;
         uint getHeight() override;
         CameraInfo getInfo() override;
+        std::string getName() override;
 
 
     private:
