@@ -1,4 +1,5 @@
 #include <tracker/detector/tag.h>
+#include <Eigen/Dense>
 
 /*
  * Comparison operators for unit tests
@@ -33,8 +34,8 @@ using std::vector;
 /*
  * Constructors
  */
-Tag::Tag(const Tag &tag) : id(tag.id), seq(tag.seq), tag_size(tag.tag_size), map_to_tag(tag.map_to_tag){}
-Tag::Tag(Tag *tag) : id(tag->id), seq(tag->seq), tag_size(tag->tag_size), map_to_tag(tag->map_to_tag){}
+Tag::Tag(const Tag &tag) : id(tag.id), seq(tag.seq), tag_size(tag.tag_size), tag_to_map(tag.tag_to_map){}
+Tag::Tag(Tag *tag) : id(tag->id), seq(tag->seq), tag_size(tag->tag_size), tag_to_map(tag->tag_to_map){}
 Tag::Tag(int id, double tag_size) : id(id), tag_size(tag_size), seq(0)
 {
   // Add tag to global vector if it doesn't already exist
@@ -68,16 +69,38 @@ void Tag::addStepperTransform(StampedTransform stepper_transform)
   this->stepper_transform_updated = true;
 }
 
-StampedTransform Tag::estimatePose()
+geometry_msgs::PoseStamped Tag::estimatePose()
 {
   if (!(relative_transform_updated && stepper_transform_updated))
   {
     throw std::runtime_error("One of the transforms was not updated");
   }
 
-  this->seq++;
+  StampedTransform stepper_transform = stepper_transforms.front();
+  StampedTransform relative_transform = relative_transforms.front();
 
-  // TODO do transforms
+  tf2::Transform base_link_to_map = base_link_to_tracker_mount
+                                      * tracker_mount_to_camera
+                                      * relative_transform
+                                      * tag_to_map;
+
+  //tf2::Vector3 O = base_link_to_map.getOrigin();
+  //printf("%f, %f, %f\n", O.getX(), O.getY(), O.getZ());
+
+  tf2::Transform T1, T2, T3;
+  T1.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
+  T1.setRotation(base_link_to_map.getRotation().inverse());
+  T2.setOrigin(-base_link_to_map.getOrigin());
+  T2.setRotation(tf2::Quaternion(0.0, 0.0, 0.0, 1.0));
+  T3 = T1 * T2;
+
+  geometry_msgs::PoseStamped pose_estimate;
+  tf2::toMsg(T3, pose_estimate.pose);
+  pose_estimate.header.seq = this->seq++;
+  pose_estimate.header.frame_id = "map";
+  pose_estimate.header.stamp = stepper_transforms.front().stamp_;
+
+  return pose_estimate;
 }
 
 /*
@@ -105,7 +128,7 @@ long Tag::getTransformsSize() const
 
 tf2::Transform Tag::getMapToTag() const
 {
-  return this->map_to_tag;
+  return this->tag_to_map;
 }
 
 StampedTransform Tag::getMostRecentRelativeTransform() const
@@ -120,6 +143,16 @@ StampedTransform Tag::getMostRecentRelativeTransform() const
 vector<StampedTransform> Tag::getRelativeTransforms() const
 {
   return vector<StampedTransform>(std::begin(relative_transforms), std::end(relative_transforms));
+}
+
+bool Tag::relativeTransformUpdated() const
+{
+  return relative_transform_updated;
+}
+
+bool Tag::stepperTransformUpdated() const
+{
+  return stepper_transform_updated;
 }
 
 /*
@@ -177,31 +210,31 @@ tf2::Transform Tag::findMapToTag(int id)
 
   do
   {
-    if (tfBuffer.canTransform("map", tag_name, ros::Time(0), ros::Duration(1)))
+    if (tfBuffer.canTransform(tag_name, "map", ros::Time(0), ros::Duration(1)))
     {
       break;
     }
     else
     {
       std::stringstream ss;
-      ss << "Unable to find transform from " << "map" << " to " << tag_name;
+      ss << "Unable to find transform from " << tag_name << " to " << "map";
       ROS_WARN("%s", ss.str().c_str());
     }
   } while(ros::ok());
   ROS_INFO("Found transform for tag%i", id);
 
   geometry_msgs::TransformStamped transform_msg;
-  transform_msg = tfBuffer.lookupTransform("map", tag_name, ros::Time(0));
-  tf2::Transform map_to_tag;
-  tf2::fromMsg(transform_msg.transform, map_to_tag);
-  return map_to_tag;
+  transform_msg = tfBuffer.lookupTransform(tag_name, "map", ros::Time(0));
+  tf2::Transform tag_to_map;
+  tf2::fromMsg(transform_msg.transform, tag_to_map);
+  return tag_to_map;
 }
 
 void Tag::updateMapToTagTfs()
 {
   for (int i = 0; i < tags.size(); i++)
   {
-    tags[i].map_to_tag = findMapToTag(tags[i].id);
+    tags[i].tag_to_map = findMapToTag(tags[i].id);
   }
 }
 
@@ -226,7 +259,7 @@ void Tag::setTransformCaches(TagsVector *tags, std::string prefix)
   ROS_INFO("Found transform from map to %s", tracker_mount.c_str());
 
   StampedTransform base_link_to_tracker_mount;
-  tf2::fromMsg(tfBuffer.lookupTransform("map", tracker_mount, ros::Time(0)), base_link_to_tracker_mount);
+  tf2::fromMsg(tfBuffer.lookupTransform("base_link", tracker_mount, ros::Time(0)), base_link_to_tracker_mount);
 
   // Find tracker_mount to camera transform
   std::string camera = prefix + "_camera";
@@ -284,3 +317,4 @@ void Tag::addTransformToList(StampedTransformList *list, const StampedTransform 
     list->pop_back();
   }
 }
+

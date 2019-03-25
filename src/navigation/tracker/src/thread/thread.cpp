@@ -13,6 +13,8 @@ Thread::Thread(std::string name, tracker::Camera *camera, TagsVector *tags) :
   get_brightness_service = nh.advertiseService("get_brightness", &Thread::getBrightnessCallback, this);
   get_exposure_service   = nh.advertiseService("get_exposure",   &Thread::getExposureCallback,   this);
 
+  pose_pub = nh.advertise<geometry_msgs::PoseStamped>("pose_estimate", 1);
+  pose_pub1 = nh.advertise<geometry_msgs::PoseStamped>("pose_estimate1", 1);
   pub = it.advertise("image", 1);
 
   image_msg.header.frame_id = name;
@@ -58,17 +60,49 @@ void Thread::thread()
       }
     }
 
+    // Add stepper transform
+    for (int i = 0; i < tags->size(); i++)
+    {
+      if ((*tags)[i].relativeTransformUpdated())
+      {
+        StampedTransform stepper_transform; // TODO actually do this
+        stepper_transform.stamp_ = stamp;
+        (*tags)[i].addStepperTransform(stepper_transform);
+      }
+    }
+
     // Publish tfs
     for (int i = 0; i < tags->size(); i++)
     {
-      StampedTransform transform = (*tags)[i].getMostRecentRelativeTransform();
-      if (transform.stamp_ == stamp)
+      if ((*tags)[i].relativeTransformUpdated())
       {
+        StampedTransform transform = (*tags)[i].getMostRecentRelativeTransform();
         geometry_msgs::TransformStamped transform_msg = tf2::toMsg(transform);
         transform_msg.header.seq = (*tags)[i].getSeq();
         transform_msg.header.frame_id = camera->getName();
         transform_msg.child_frame_id = "tag" + std::to_string((*tags)[i].getID()) + "_estimate";
         tf_pub.sendTransform(transform_msg);
+      }
+    }
+
+    // Publish pose estimate
+    for (int i = 0; i < tags->size(); i++)
+    {
+      if ((*tags)[i].relativeTransformUpdated() &&
+          (*tags)[i].stepperTransformUpdated())
+      {
+        if ((*tags)[i].getID() == 0)
+        {
+          geometry_msgs::PoseStamped pose_estimate = (*tags)[i].estimatePose();
+          //pose_estimate.pose.position.z = 1.0;
+          pose_pub.publish(pose_estimate);
+        }
+        else if ((*tags)[i].getID() == 1)
+        {
+          geometry_msgs::PoseStamped pose_estimate = (*tags)[i].estimatePose();
+          //pose_estimate.pose.position.z = 1.0;
+          pose_pub1.publish(pose_estimate);
+        }
       }
     }
 

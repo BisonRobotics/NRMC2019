@@ -38,6 +38,8 @@
     <!-- Define apriltag locations -->
     <link name="tag0" />
     <link name="tag1" />
+    <link name="tag4" />
+
 
     <joint name="map_to_tag0" type="fixed">
         <origin xyz="0 -0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
@@ -49,6 +51,12 @@
         <origin xyz="0 0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
         <parent link="map" />
         <child link = "tag1" />
+    </joint>
+
+    <joint name="map_to_tag4" type="fixed">
+        <origin xyz="0 -0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
+        <parent link="map" />
+        <child link = "tag4" />
     </joint>
 
     <!-- Define linkages and joints -->
@@ -255,13 +263,13 @@
             <geometry>
                 <mesh filename="package://description/meshes/right_tracker.stl" />
             </geometry>
-            <origin xyz="0 0 0" rpy="1.57 0 0" />
+            <origin xyz="0.035 0.32 -0.04" rpy="1.57 0 0" />
             <material name="black" />
         </visual>
     </link>
 
     <joint name="right_tracker_fixed" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <origin xyz="-0.035 -0.32 0.04" rpy="0 0 0" />
         <parent link= "frame" />
         <child link = "right_tracker_mount" />
         
@@ -279,7 +287,7 @@
 
     <joint name="right_tracker_joint" type="revolute">
         <!--<origin xyz="-0.035 -0.32 0.04" rpy="0 1.57 0" />-->
-        <origin xyz="-0.035 -0.32 0.04" rpy="0 ${pi} 0" />
+        <origin xyz="0 0 0" rpy="0 ${pi} 0" />
         <parent link="right_tracker_mount" />
         <child link = "right_camera" />
         <limit effort="1000.0" lower="-1" upper="4" velocity="1.0" />
@@ -327,7 +335,7 @@
         <joint name="map_to_base_link" type="fixed">
             <parent link="map"/>
             <child link="base_link"/>
-            <origin xyz="${264*0.0254 + 0.75/2} ${48*0.0254} 0" rpy="0 0 ${-pi/2}" />
+            <origin xyz="${0.0254*264 + 0.75 / 2} ${48*0.0254 - 1.5/2} 0" rpy="0 0 ${-pi/2}" />
         </joint>
     </xacro:if>
 </robot>

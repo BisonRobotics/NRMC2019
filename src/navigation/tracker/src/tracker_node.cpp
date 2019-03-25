@@ -30,7 +30,7 @@ int main (int argc, char* argv[])
   ros::NodeHandle nh;
 
   // Instantiate cameras
-  tracker::Camera *camera0 = initializeOCam(tracker::right_camera, 19, 184);
+  tracker::Camera *camera0 = initializeOCam(tracker::right_camera, 45, 529);
   /*tracker::Camera *camera1 = initializeOCam("/dev/v4l/by-id/usb-WITHROBOT_Inc._oCam-1MGN-U_SN_2C183178-video-index0",
                                              width, height);*/
 

@@ -39,12 +39,14 @@ namespace tracker
     std::vector<Tag> *tags;
 
     ros::NodeHandle nh;
+    ros::Publisher pose_pub, pose_pub1;
     ros::ServiceServer get_brightness_service, get_exposure_service;
     actionlib::SimpleActionServer<SetUIntAction> set_brightness_server, set_exposure_server;
     image_transport::ImageTransport it;
     image_transport::Publisher pub;
     ros::CallbackQueue callback_queue;
     tf2_ros::TransformBroadcaster tf_pub;
+
 
 
   };

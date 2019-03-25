@@ -9,6 +9,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/Transform.h>
 
 #include <boost/thread/thread.hpp>
 #include <opencv2/opencv.hpp>
@@ -38,7 +39,7 @@ namespace tracker
     // Methods
     void addRelativeTransform(StampedTransform relative_transform);
     void addStepperTransform(StampedTransform stepper_transform);
-    StampedTransform estimatePose();
+    geometry_msgs::PoseStamped estimatePose();
 
     // Accessors
     int getID() const;
@@ -48,6 +49,8 @@ namespace tracker
     tf2::Transform getMapToTag() const;
     StampedTransform getMostRecentRelativeTransform() const;
     std::vector<StampedTransform> getRelativeTransforms() const;
+    bool relativeTransformUpdated() const;
+    bool stepperTransformUpdated() const;
 
   private:
     // Data
@@ -55,7 +58,7 @@ namespace tracker
     unsigned int seq;
     double tag_size;
     bool relative_transform_updated, stepper_transform_updated;
-    tf2::Transform map_to_tag, base_link_to_tracker_mount, tracker_mount_to_camera;
+    tf2::Transform tag_to_map, base_link_to_tracker_mount, tracker_mount_to_camera;
     std::list<StampedTransform> relative_transforms, stepper_transforms;
 
   public:
