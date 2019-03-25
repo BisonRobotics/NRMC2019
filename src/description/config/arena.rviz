@@ -340,7 +340,7 @@ Visualization Manager:
       Axes Radius: 0.05000000074505806
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: false
+      Enabled: true
       Head Length: 0.30000001192092896
       Head Radius: 0.10000000149011612
       Name: Pose
@@ -349,7 +349,7 @@ Visualization Manager:
       Shape: Axes
       Topic: /tracker0/pose_estimate1
       Unreliable: true
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 152; 152; 152
@@ -375,25 +375,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 27.785688400268555
+      Distance: 14.054787635803223
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 7.500005722045898
-        Y: -0.3066675066947937
-        Z: -0.8133138418197632
+        X: 5.258697032928467
+        Y: 0.22861090302467346
+        Z: -0.2598719596862793
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9097959995269775
+      Pitch: 1.4697961807250977
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.0336649417877197
+      Yaw: 1.400481104850769
     Saved: ~
 Window Geometry:
   "&Displays":

@@ -10,6 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
 )
 
+find_package(Boost COMPONENTS program_options timer REQUIRED)
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -44,3 +46,12 @@ target_link_libraries(stepper ${catkin_LIBRARIES})
 
 add_executable(stepper_node src/stepper_node.cpp)
 target_link_libraries(stepper_node ${catkin_LIBRARIES} stepper)
+
+add_executable(stepper_tool src/stepper_tool.cpp)
+target_link_libraries(stepper_tool ${catkin_LIBRARIES} stepper)
+target_link_libraries(stepper_tool ${Boost_LIBRARIES})
+
+catkin_add_gtest(stepper_tests src/stepper.cpp src/tests/stepper_tests.cpp)
+if(TARGET stepper_tests)
+    target_link_libraries(stepper_tests gmock_main ${catkin_LIBRARIES})
+endif()

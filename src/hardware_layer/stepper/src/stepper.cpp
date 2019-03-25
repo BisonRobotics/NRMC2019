@@ -18,7 +18,7 @@ Stepper::Stepper(std::string network, canid_t tx_id, canid_t rx_id) :
   }
 
   filters[0].can_id = rx_id;
-  filters[0].can_mask = CAN_SFF_MASK;
+  filters[0].can_mask = 0xF; // ID is contained in first 4 bits
 
   if (setsockopt(can_socket, SOL_CAN_RAW, CAN_RAW_FILTER, &filters, sizeof(filters)) < 0)
   {
@@ -60,26 +60,19 @@ void Stepper::sendFrame(can_frame_t frame)
   }
 }
 
-canid_t Stepper::getCanID(uint32_t id, uint32_t messageType)
+canid_t Stepper::generateCanID(uint32_t id, uint32_t messageType)
 {
-  return (canid_t) id | messageType << 6;
-}
-
-void Stepper::scan()
-{
-  tx_frame.can_id = getCanID(tx_id, MessageType::Scan);
-  tx_frame.can_dlc = 0;
-  sendFrame(tx_frame);
+  return (canid_t) id | messageType << 4;
 }
 
 void Stepper::requestState()
 {
-  tx_frame.can_id = getCanID(tx_id, MessageType::RequestState);
+  tx_frame.can_id = generateCanID(tx_id, MessageType::RequestState);
   tx_frame.can_dlc = 0;
   sendFrame(tx_frame);
 }
 
-State Stepper::poll()
+State Stepper::pollState()
 {
   requestState();
   while(true)
@@ -90,40 +83,47 @@ State Stepper::poll()
       if (getMessageType(frame.can_id) == MessageType::StateMessage)
       {
         // TODO do conversion
-        return State{-1.0, -1.0};
+        float position, velocity;
+        memcpy(&position, &frame.data[0], 4);
+        memcpy(&velocity, &frame.data[4], 4);
+        return State{position, velocity};
+      }
+      else
+      {
+        printf("[WARN] invalid message");
       }
     }
     usleep(1000);
   }
-
 }
 
 void Stepper::findZero()
 {
-  tx_frame.can_id = getCanID(tx_id, MessageType::FindZero);
+  tx_frame.can_id = generateCanID(tx_id, MessageType::FindZero);
   tx_frame.can_dlc = 0;
   sendFrame(tx_frame);
 }
 
 void Stepper::setZero()
 {
-  tx_frame.can_id = getCanID(tx_id, MessageType::SetZero);
+  tx_frame.can_id = generateCanID(tx_id, MessageType::SetZero);
   tx_frame.can_dlc = 0;
   sendFrame(tx_frame);
 }
 
-void Stepper::setMode(Mode mode)
+void Stepper::setMode(Mode mode, float set_point)
 {
-  tx_frame.can_id = getCanID(tx_id, MessageType::SetMode);
-  tx_frame.can_dlc = 1;
+  tx_frame.can_id = generateCanID(tx_id, MessageType::SetMode);
+  tx_frame.can_dlc = 5;
   tx_frame.data[0] = mode;
+  memcpy (&tx_frame.data[1], &set_point, 4);
   sendFrame(tx_frame);
 }
 
 void Stepper::setLimits(double ccw, double cw)
 {
   // TODO do some double to 16 bit conversions
-  tx_frame.can_id = getCanID(tx_id, MessageType::SetLimits);
+  tx_frame.can_id = generateCanID(tx_id, MessageType::SetLimits);
   tx_frame.can_dlc = 4;
   tx_frame.data[0] = 0;
   tx_frame.data[1] = 0;
@@ -135,7 +135,7 @@ void Stepper::setLimits(double ccw, double cw)
 void Stepper::setPoint(double value)
 {
   // TODO do some double to 16 bit conversions
-  tx_frame.can_id = getCanID(tx_id, MessageType::SetPoint);
+  tx_frame.can_id = generateCanID(tx_id, MessageType::SetPoint);
   tx_frame.can_dlc = 2;
   tx_frame.data[0] = 0;
   tx_frame.data[1] = 0;
@@ -144,8 +144,7 @@ void Stepper::setPoint(double value)
 
 MessageType Stepper::getMessageType(canid_t id)
 {
-  // TODO actually do this
-  return Scan;
+  return (MessageType)(id >> 4);;
 }
 
 State::State(double position, double velocity) : position(position), velocity(velocity){};

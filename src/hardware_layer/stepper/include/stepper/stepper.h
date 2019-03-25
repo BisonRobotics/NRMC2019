@@ -21,8 +21,8 @@ namespace stepper
   typedef struct can_frame can_frame_t;
 
 /** CAN ID Format
- * [0:5] ID (64 IDs)
- * [6:10] Message Type (32 Message Types)
+ * [0:3] ID (16 IDs)
+ * [4:10] Message Type (128 Message Types)
  */
 
 /** Message types
@@ -46,16 +46,17 @@ namespace stepper
     bool messagesAvailable();
     can_frame_t receiveFrame();
     void sendFrame(can_frame_t frame);
-    canid_t getCanID(uint32_t id, uint32_t messageType);
-    MessageType getMessageType(canid_t id);
-    void scan();
     void requestState();
-    State poll();
+    State pollState();
     void findZero();
     void setZero();
-    void setMode(Mode mode);
+    void setMode(Mode mode, float initial_setpoint);
     void setLimits(double ccw, double cw);
     void setPoint(double value);
+
+    static canid_t generateCanID(uint32_t id, uint32_t messageType);
+    static MessageType getMessageType(canid_t id);
+
 
 
 
