@@ -1,7 +1,11 @@
 #include <tracker/thread/thread.h>
 #include <boost/timer/timer.hpp>
-#include <tracker/config/camera_config.h>
 #include <tracker/camera/ocam_camera.h>
+#include <tracker/Debug.h>
+
+// Must be included once in the project
+#include <tracker/config/camera_config.h>
+#include <tracker/config/tag_config.h>
 
 
 using namespace tracker;
@@ -62,6 +66,7 @@ Thread::Thread(std::string name) :
   get_exposure_service   = nh.advertiseService("get_exposure",   &Thread::getExposureCallback,   this);
 
   pose_pub = nh.advertise<geometry_msgs::PoseStamped>("pose_estimate", 1);
+  debug_pub = nh.advertise<tracker::Debug>("debug", 1);
   //pose_pub1 = nh.advertise<geometry_msgs::PoseStamped>("pose_estimate1", 1);
   pub = it.advertise("image", 1);
 
@@ -150,7 +155,6 @@ void Thread::thread()
         if (tags[i].getID() == 0)
         {
           geometry_msgs::PoseStamped pose_estimate = tags[i].estimatePose();
-          //pose_estimate.pose.position.z = 1.0;
           pose_pub.publish(pose_estimate);
         }
         else if (tags[i].getID() == 1)
@@ -170,7 +174,7 @@ void Thread::thread()
       {
         tf2::Vector3 T = tags[i].getMostRecentRelativeTransform().getOrigin();
         double error = std::atan2(T.getX(), T.getZ());
-        //ROS_INFO("Error: %f", error);
+        ROS_INFO("Error: %f", error);
       }
     }
 
@@ -184,10 +188,16 @@ void Thread::thread()
     // Respond to callbacks
     ros::spinOnce();
     callback_queue.callAvailable(ros::WallDuration());
+
+    // Output debug info
     total.stop(); actual.stop();
     double total_time = total.elapsed().wall * 1.0e-9;
     double actual_time = actual.elapsed().wall * 1.0e-9;
-    printf("Rate(Hz): %7.4f, Utilized(%%): %7.4f\n", 1.0/total_time, actual_time/total_time);
+    Debug debug_msg;
+    debug_msg.rate = 1.0/total_time;
+    debug_msg.cpu_utilization = actual_time/total_time;
+    debug_pub.publish(debug_msg);
+    //printf("Rate(Hz): %7.4f, Utilized(%%): %7.4f\n", 1.0/total_time, actual_time/total_time);
   }
 
   // Exit

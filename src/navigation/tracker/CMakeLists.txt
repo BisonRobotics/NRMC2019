@@ -31,6 +31,9 @@ endif()
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS timer REQUIRED)
 
+add_message_files(FILES
+    Debug.msg
+)
 
 add_service_files(FILES
     GetUInt.srv

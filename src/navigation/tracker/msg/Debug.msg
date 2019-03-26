@@ -1,0 +1,3 @@
+float64 rate
+float64 cpu_utilization
+float64 angle_error
