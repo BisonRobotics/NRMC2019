@@ -12,9 +12,9 @@ Thread::Thread(std::string name, tracker::Camera *camera, Stepper *stepper, Tags
 {
   drops = 0;
   drop_count = 0;
-  //nh.setCallbackQueue(&callback_queue);
-  //get_brightness_service = nh.advertiseService("get_brightness", &Thread::getBrightnessCallback, this);
-  //get_exposure_service   = nh.advertiseService("get_exposure",   &Thread::getExposureCallback,   this);
+  nh.setCallbackQueue(&callback_queue);
+  get_brightness_service = nh.advertiseService("get_brightness", &Thread::getBrightnessCallback, this);
+  get_exposure_service   = nh.advertiseService("get_exposure",   &Thread::getExposureCallback,   this);
 
   pose_pub = nh.advertise<geometry_msgs::PoseStamped>("pose_estimate", 1);
   //pose_pub1 = nh.advertise<geometry_msgs::PoseStamped>("pose_estimate1", 1);
@@ -31,8 +31,8 @@ Thread::Thread(std::string name, tracker::Camera *camera, Stepper *stepper, Tags
   image_msg.data.resize(camera->getWidth() * camera->getHeight());
 
   detector = new Detector(camera->getInfo(), image_msg.data.data(), this->tags);
-  //set_brightness_server.start();
-  //set_exposure_server.start();
+  set_brightness_server.start();
+  set_exposure_server.start();
 
   thread_handle = new boost::thread(boost::bind(&Thread::thread, this));
 }
@@ -43,18 +43,18 @@ void Thread::thread()
   ros::Time stamp;
 
   // Main loop
+  boost::timer::cpu_timer total;
+  boost::timer::cpu_timer actual;
   while (ros::ok())
   {
     // Get frame from camera (blocking)
+    total.start();
     while (true)
     {
       try
       {
-        //Tag::clearFlags(tags);
         camera->getFrame(detector->getBuffer());
         // TODO request stepper position
-        //stamp = ros::Time::now();
-        //detector->detect(stamp);
         break;
       }
       catch (std::runtime_error &e)
@@ -64,7 +64,12 @@ void Thread::thread()
       }
     }
 
-    /*
+    // Detect tags
+    actual.start();
+    Tag::clearFlags(tags);
+    stamp = ros::Time::now();
+    detector->detect(stamp);
+
     // Add stepper transform
     for (int i = 0; i < tags->size(); i++)
     {
@@ -104,9 +109,9 @@ void Thread::thread()
         }
         else if ((*tags)[i].getID() == 1)
         {
-          geometry_msgs::PoseStamped pose_estimate = (*tags)[i].estimatePose();
+          //geometry_msgs::PoseStamped pose_estimate = (*tags)[i].estimatePose();
           //pose_estimate.pose.position.z = 1.0;
-          pose_pub1.publish(pose_estimate);
+          //pose_pub1.publish(pose_estimate);
         }
       }
     }
@@ -121,23 +126,23 @@ void Thread::thread()
         double error = std::atan2(T.getX(), T.getZ());
         //ROS_INFO("Error: %f", error);
       }
-    }*/
+    }
 
     // Publish the image
-    //boost::timer::cpu_timer timer;
-    //timer.start();
    // printf("Delay: %s\n", timer.format(4).c_str());
-    /*if (drop_count++ >= drops)
-    {*/
+    if (drop_count++ >= drops)
+    {
       pub.publish(image_msg);
       drop_count = 0;
-    //}
+    }
 
     // Respond to callbacks
-    //callback_queue.callAvailable(ros::WallDuration());
-    ros::spinOnce();
-    //timer.stop();
-
+    callback_queue.callAvailable(ros::WallDuration());
+    //ros::spinOnce();
+    total.stop(); actual.stop();
+    double total_time = total.elapsed().wall * 1.0e-9;
+    double actual_time = actual.elapsed().wall * 1.0e-9;
+    //printf("Rate(Hz): %7.4f, Utilized(%%): %7.4f\n", 1.0/total_time, actual_time/total_time);
   }
 
   // Exit
