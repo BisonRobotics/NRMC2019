@@ -70,10 +70,11 @@ DriveController_ns::bezier_path curr_path;
 
 SimpleActionServer<FollowPathAction> *server;
 
-void newGoalCallback(const FollowPathGoalConstPtr &goal) //technically called in another thread
+void newGoalCallback() //technically called in another thread
 {
  ROS_INFO("[action_server] Moving toward goal");
   //ros::Rate rate(1.0);
+  const FollowPathGoalConstPtr &goal = server->acceptNewGoal();
 
   // Get path
   BezierSegment segment = goal->path[0];
@@ -88,7 +89,12 @@ void newGoalCallback(const FollowPathGoalConstPtr &goal) //technically called in
 
   forwardPoint = (segment.direction_of_travel == 1 ? true : false);
   newWaypointHere = true;
-  server->acceptNewGoal();
+  //server->acceptNewGoal();
+}
+
+void preemptCallback()
+{
+    server->setPreempted();
 }
 
 geometry_msgs::TransformStamped create_tf(double x, double y, double theta, tf2::Quaternion imu_orientation, double z)
@@ -410,7 +416,9 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   DriveController dc = DriveController(fr, fl, bl, br);
   ROS_INFO("DC Init");
 
-  server = new SimpleActionServer<FollowPathAction>(global_node, "follow_path", &newGoalCallback, false);
+  server = new SimpleActionServer<FollowPathAction>(global_node, "follow_path", false);
+  server->registerGoalCallback(&newGoalCallback);
+  server->registerPreemptCallback(&preemptCallback)
   server->start();
   ROS_INFO("[action_server] Started");
 
@@ -488,7 +496,10 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       result.pose.orientation.z = std::sin(.5*stateVector.theta);
       result.status = 0;
       ROS_INFO("SETTING GOAL SUCCESS 111111: %d", dc.getPPaths());
-      if (server->isActive()) server->setSucceeded(result);
+      if (server->isActive())
+      {
+          server->setSucceeded(result);
+      } 
       doing_path = false;
     }
 
