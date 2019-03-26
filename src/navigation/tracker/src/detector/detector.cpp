@@ -97,9 +97,9 @@ void Detector::detect(ros::Time stamp)
     zarray_get(detections, i, &detection);
     for (int j = 0; j < tags->size(); j++)
     {
-      if (detection->id == (*tags)[i].getID())
+      if (detection->id == (*tags)[j].getID())
       {
-        (*tags)[i].addRelativeTransform(getRelativeTransform((*tags)[i].getSize(), detection, stamp));
+        (*tags)[j].addRelativeTransform(getRelativeTransform((*tags)[j].getSize(), detection, stamp));
       }
     }
   }

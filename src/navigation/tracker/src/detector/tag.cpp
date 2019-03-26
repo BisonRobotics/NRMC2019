@@ -318,3 +318,8 @@ void Tag::addTransformToList(StampedTransformList *list, const StampedTransform 
   }
 }
 
+uint Tag::getRelativeTransformsSize() const
+{
+  return relative_transforms.size();
+}
+

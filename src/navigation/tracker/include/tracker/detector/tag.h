@@ -49,6 +49,7 @@ namespace tracker
     tf2::Transform getMapToTag() const;
     StampedTransform getMostRecentRelativeTransform() const;
     std::vector<StampedTransform> getRelativeTransforms() const;
+    uint getRelativeTransformsSize() const;
     bool relativeTransformUpdated() const;
     bool stepperTransformUpdated() const;
 

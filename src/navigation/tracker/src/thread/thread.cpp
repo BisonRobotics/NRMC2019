@@ -2,6 +2,7 @@
 #include <boost/timer/timer.hpp>
 #include <tracker/camera/ocam_camera.h>
 #include <tracker/Debug.h>
+#include <algorithm>
 
 // Must be included once in the project
 #include <tracker/config/camera_config.h>
@@ -48,16 +49,23 @@ Thread::Thread(std::string name) :
   set_brightness_server(nh, "set_brightness", boost::bind(&Thread::setBrightnessCallback, this, _1), false),
   set_exposure_server(nh, "set_exposure", boost::bind(&Thread::setExposureCallback, this, _1), false)
 {
-  Tag::init(10, ros::Duration(0.1), true);
+  Tag::init(50, ros::Duration(2.0), true);
   tags = Tag::getTags();
   Tag::setTransformCaches(&tags, "right");
 
-  camera = initializeOCam(tracker::right_camera, 45, 100);
+  camera = initializeOCam(tracker::right_camera, 225, 89);
   if (camera == nullptr)
   {
     ROS_WARN("Camera 0 handle invalid, shutting down");
     return;
   }
+
+  ROS_INFO("Initializing stepper");
+  // TODO add initialization confirmation
+  stepper = new Stepper("can0", 1, 3);
+  stepper->setMode(Mode::Initialize, 0.25);
+  ros::Duration(5.0).sleep();
+  stepper->setMode(Mode::Velocity, 0.0);
 
   drops = 0;
   drop_count = 0;
@@ -99,6 +107,7 @@ void Thread::thread()
   while (ros::ok())
   {
     // Get frame from camera (blocking)
+    Debug debug_msg;
     total.start();
     while (true)
     {
@@ -168,22 +177,51 @@ void Thread::thread()
 
     // Control loop
     // TODO better tag selection
+    bool success = false;
+    double gain = 1;
     for (int i = 0; i < tags.size(); i++)
     {
-      if (tags[i].getID() == 0 && tags[i].relativeTransformUpdated())
+      if (tags[i].getID() == 4)
       {
-        tf2::Vector3 T = tags[i].getMostRecentRelativeTransform().getOrigin();
-        double error = std::atan2(T.getX(), T.getZ());
-        ROS_INFO("Error: %f", error);
+        //printf("size %i\n", tags[i].getRelativeTransformsSize());
+        try
+        {
+          tf2::Vector3 T = tags[i].getMostRecentRelativeTransform().getOrigin();
+          double error = std::atan2(T.getX(), T.getZ()) / M_2_PI;
+          debug_msg.angle_error = error;
+          if (std::abs(error) < 0.002) error = 0.0;
+          ROS_INFO("Error: %f", error);
+          if (tags[i].relativeTransformUpdated())
+          {
+            drop_count = 0;
+            stepper->setMode(Mode::Velocity, gain*error);
+          }
+          else if (drop_count <= 50)
+          {
+            stepper->setMode(Mode::Velocity, gain*error);
+          }
+          else
+          {
+            //double dir = (error >= 0 ? 1.0 : -1.0);
+            //double value = std::max(-0.02, std::min(dir*0.001*drop_count, 0.02)); // Clamp
+            //stepper->setMode(Mode::Scan, 0.5*dir*gain);
+          }
+        }
+        catch (std::runtime_error &e)
+        {
+          //printf("No recent transforms\n");
+        }
       }
     }
+    if (drop_count++ > 50)
+    {
+      stepper->setMode(Mode::Scan, 0.05);
+    }
+
 
     // Publish the image
-    if (drop_count++ >= drops)
-    {
-      pub.publish(image_msg);
-      drop_count = 0;
-    }
+
+    pub.publish(image_msg);
 
     // Respond to callbacks
     ros::spinOnce();
@@ -193,7 +231,6 @@ void Thread::thread()
     total.stop(); actual.stop();
     double total_time = total.elapsed().wall * 1.0e-9;
     double actual_time = actual.elapsed().wall * 1.0e-9;
-    Debug debug_msg;
     debug_msg.rate = 1.0/total_time;
     debug_msg.cpu_utilization = actual_time/total_time;
     debug_pub.publish(debug_msg);
