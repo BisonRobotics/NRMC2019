@@ -17,6 +17,9 @@ State 6 . Check Time/Conditions
           and GOTO 2.
 */
 
+bool FrostyStateMachine::state3_done;
+
+
 FrostyStateMachine::FrostyStateMachine(bool dig_sim, bool drive_sim, double dig_time_sec, double dump_time_sec):
 dig_sim(dig_sim), drive_sim(drive_sim), min_dig_time(dig_time_sec), min_dump_time(dump_time_sec)
 {
@@ -76,7 +79,8 @@ Frosty_ns::StateResult FrostyStateMachine::update(double dt)
     break;
     case 4:
         ROS_DEBUG("IN STATE 4");
-        res = state4Dig(dt);
+        //res = state4Dig(dt);
+        res = Frosty_ns::StateResult::FAILED;
         if (res == Frosty_ns::StateResult::SUCCESS)
         {
             state = 5;
@@ -151,7 +155,15 @@ void FrostyStateMachine::state2StartGoToDig()
     std::vector<navigation_msgs::BezierSegment> p;
     p.push_back(segment_1);
     goal.path = p;
-    path_alc->sendGoal(goal);
+    FrostyStateMachine::state3_done = false;
+    path_alc->sendGoal(goal, &FrostyStateMachine::state3CheckDoneCallback);
+}
+
+void FrostyStateMachine::state3CheckDoneCallback(const actionlib::SimpleClientGoalState& state,
+                                                 const navigation_msgs::FollowPathResultConstPtr& result)
+{
+    FrostyStateMachine::state3_done = true;
+    ROS_WARN("PATH CALLED BACK AS DONE");
 }
 
 Frosty_ns::StateResult FrostyStateMachine::state3CheckGoToDig()
@@ -159,7 +171,7 @@ Frosty_ns::StateResult FrostyStateMachine::state3CheckGoToDig()
     //check progress from actinlib feedback
     actionlib::SimpleClientGoalState state = path_alc->getState();
     //state = path_alc->getState();
-    if (state.isDone()) //TODO use done callback instead for thread safety/sense stuff
+    if (FrostyStateMachine::state3_done) //TODO use done callback instead for thread safety/sense stuff
     {
         return Frosty_ns::StateResult::SUCCESS;
     }
@@ -209,7 +221,8 @@ void FrostyStateMachine::state5StartGoToHopper()
     std::vector<navigation_msgs::BezierSegment> p;
     p.push_back(segment_1);
     goal.path = p;
-    path_alc->sendGoal(goal);
+    FrostyStateMachine::state3_done = false;
+    path_alc->sendGoal(goal, &FrostyStateMachine::state3CheckDoneCallback);
 }
 
 Frosty_ns::StateResult FrostyStateMachine::state6CheckGoToHopper()
@@ -217,7 +230,7 @@ Frosty_ns::StateResult FrostyStateMachine::state6CheckGoToHopper()
     //check progress from actinlib feedback
     actionlib::SimpleClientGoalState state = path_alc->getState();
     //state = path_alc->getState();
-    if (state.isDone()) //TODO use done callback instead for thread safety/sense stuff
+    if (FrostyStateMachine::state3_done) //TODO use done callback instead for thread safety/sense stuff
     {
         return Frosty_ns::StateResult::SUCCESS;
     }

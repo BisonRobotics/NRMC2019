@@ -50,6 +50,9 @@ private:
     void state5StartGoToHopper();
     Frosty_ns::StateResult state6CheckGoToHopper();
     double dig_timer;
+    static void state3CheckDoneCallback(const actionlib::SimpleClientGoalState& state,
+                                        const navigation_msgs::FollowPathResultConstPtr& result);
+    static bool state3_done;
     //Frosty_ns::StateResult state4GoToHopper();
     //Frosty_ns::StateResult state5Dump();
     //Frosty_ns::StateResult state6CheckCondtitions();

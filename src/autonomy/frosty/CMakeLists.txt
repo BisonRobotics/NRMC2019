@@ -28,7 +28,7 @@ generate_messages(DEPENDENCIES actionlib_msgs navigation_msgs drive_controller_m
 include_directories(include ${catkin_INCLUDE_DIRS} $ENV{HOME}/NRMC2018/devel/include)
 #build libraries
 add_library(frosty_state_machine src/frosty_state_machine/frosty_state_machine.cpp)
-#target_link_libraries(frosty_state_machine ${catkin_LIBRARIES})
+target_link_libraries(frosty_state_machine ${catkin_LIBRARIES})
 
 # define executable not using any messages/services provided by this package
   add_executable(frosty src/frosty.cpp)

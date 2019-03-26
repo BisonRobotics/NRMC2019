@@ -88,6 +88,7 @@ void newGoalCallback(const FollowPathGoalConstPtr &goal) //technically called in
 
   forwardPoint = (segment.direction_of_travel == 1 ? true : false);
   newWaypointHere = true;
+  server->acceptNewGoal();
 }
 
 geometry_msgs::TransformStamped create_tf(double x, double y, double theta, tf2::Quaternion imu_orientation, double z)
@@ -251,7 +252,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     return -1;
   }
 
-  ros::Subscriber sub = node.subscribe("additional_path", 100, newGoalCallback);
+  //ros::Subscriber sub = node.subscribe("additional_path", 100, newGoalCallback);
 
   ros::Publisher jspub = global_node.advertise<sensor_msgs::JointState>("joint_states", 500);
 
