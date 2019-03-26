@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   genmsg
   actionlib_msgs
+  stepper
 )
 
 find_package(OpenCV 4.0 QUIET)

@@ -12,6 +12,8 @@
 #include <tracker/camera/ocam_camera.h>
 #include <tracker/thread/thread.h>
 
+#include <stepper/stepper.h>
+
 // Only load in main executable
 #include <tracker/config/camera_config.h>
 #include <tracker/config/tag_config.h>

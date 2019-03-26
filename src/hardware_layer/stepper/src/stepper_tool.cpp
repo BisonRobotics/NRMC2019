@@ -6,6 +6,8 @@
 #include <ros/ros.h>
 #include <stepper/stepper.h>
 #include <boost/timer/timer.hpp>
+#include <map>
+#include <algorithm>
 
 using namespace stepper;
 using namespace boost::program_options;
@@ -22,9 +24,9 @@ int main(int argc, char *argv[])
         ("help,h", "Help screen")
         ("disable,d", "Disable")
         ("initialize,i", value<float>(), "Initialize stepper")
-        ("setPosition,p",  value<float>(), "Set Position")
-        ("setVelocity,v",  value<float>(), "Set Velocity")
-        ("setScan,s", value<float>(), "Set Scan")
+        ("setMode,m", value<std::string>(), "Set Mode")
+        ("setPoint,p",  value<float>(), "Set Point")
+        ("setScan,s", value<float>(), "Start Scan")
         ("getState,g", "Get state")
         ("pollState", value<float>(), "Poll state");
 
@@ -36,7 +38,7 @@ int main(int argc, char *argv[])
     {
       std::cout << desc << '\n';
     }
-    if (vm.count("setDisable"))
+    if (vm.count("disable"))
     {
       try
       {
@@ -63,13 +65,17 @@ int main(int argc, char *argv[])
         std::cout << e.what() << std::endl;
       }
     }
-    if (vm.count("setPosition"))
+    if (vm.count("setMode"))
     {
-      float position = vm["setPosition"].as<float>();
+      std::map<std::string, Mode> map;
+      map.emplace("initialize", Mode::Initialize);
+      map.emplace("velocity", Mode::Velocity); // TODO finish
+      std::string mode = vm["setMode"].as<std::string>();
+      std::transform(mode.begin(), mode.end(), mode.begin(), ::tolower);
       try
       {
-        std::cout << "Setting position: " << position << "... ";
-        stepper.setMode(Mode::Position, position);
+        std::cout << "Setting mode: " << mode << "... ";
+        stepper.setMode(map[mode], 0.0);
         std::cout << "Success" << std::endl;
       }
       catch (std::runtime_error &e)
@@ -77,13 +83,13 @@ int main(int argc, char *argv[])
         std::cout << e.what() << std::endl;
       }
     }
-    if (vm.count("setVelocity"))
+    if (vm.count("setPoint"))
     {
-      float velocity = vm["setVelocity"].as<float>();
+      float set_point = vm["setPoint"].as<float>();
       try
       {
-        std::cout << "Setting velocity: " << velocity << "...";
-        stepper.setMode(Mode::Velocity, velocity);
+        std::cout << "Setting set point: " << set_point << "...";
+        stepper.setPoint(set_point);
         std::cout << "Success" << std::endl;
       }
       catch (std::runtime_error &e)
