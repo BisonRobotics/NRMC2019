@@ -18,6 +18,8 @@ State 6 . Check Time/Conditions
 */
 
 bool FrostyStateMachine::state3_done;
+bool FrostyStateMachine::need2_dig;
+
 
 
 FrostyStateMachine::FrostyStateMachine(bool dig_sim, bool drive_sim, double dig_time_sec, double dump_time_sec):
@@ -165,6 +167,12 @@ void FrostyStateMachine::state3CheckDoneCallback(const actionlib::SimpleClientGo
     ROS_WARN("PATH CALLED BACK AS DONE");
 }
 
+void FrostyStateMachine::state4CheckDigCallback(const actionlib::SimpleClientGoalState& state,
+                                                const dig_control::DigResultConstPtr& result)
+{
+    FrostyStateMachine::need2_dig = true;
+}
+
 Frosty_ns::StateResult FrostyStateMachine::state3CheckGoToDig()
 {
     //check progress from actinlib feedback
@@ -172,6 +180,7 @@ Frosty_ns::StateResult FrostyStateMachine::state3CheckGoToDig()
     //state = path_alc->getState();
     if (FrostyStateMachine::state3_done) //TODO use done callback instead for thread safety/sense stuff
     {
+        FrostyStateMachine::need2_dig = true;
         return Frosty_ns::StateResult::SUCCESS;
     }
     return Frosty_ns::StateResult::IN_PROCESS;
@@ -180,20 +189,27 @@ Frosty_ns::StateResult FrostyStateMachine::state3CheckGoToDig()
 Frosty_ns::StateResult FrostyStateMachine::state4Dig(double dt)
 { 
     dig_timer += dt;
-    actionlib::SimpleClientGoalState state = dig_alc->getState();
-    if (state.isDone() && dig_timer < min_dig_time) //TODO use done callback instead for thread safety/sense stuff
+    //actionlib::SimpleClientGoalState state = dig_alc->getState();
+    if (FrostyStateMachine::need2_dig)
     {
+      if (dig_timer < min_dig_time) //TODO use done callback instead for thread safety/sense stuff
+      {
         ROS_INFO("[frosty]: Sending dig command.");
         dig_control::DigGoal goal;
-        dig_alc->sendGoal(goal);
+        FrostyStateMachine::need2_dig = false;
+        dig_alc->sendGoal(goal, &FrostyStateMachine::state4CheckDigCallback);
         return Frosty_ns::StateResult::IN_PROCESS;
-    }
-    else if (dig_timer >= min_dig_time)
-    {
+      }
+      else
+      {
         dig_timer = 0;
         return Frosty_ns::StateResult::SUCCESS;
+      }
     }
-    return Frosty_ns::StateResult::IN_PROCESS;
+    else
+    {
+        return Frosty_ns::StateResult::IN_PROCESS;
+    }
 }
 
 void FrostyStateMachine::state5StartGoToHopper()
@@ -231,6 +247,7 @@ Frosty_ns::StateResult FrostyStateMachine::state6CheckGoToHopper()
     //state = path_alc->getState();
     if (FrostyStateMachine::state3_done) //TODO use done callback instead for thread safety/sense stuff
     {
+        FrostyStateMachine::state3_done = false;
         return Frosty_ns::StateResult::SUCCESS;
     }
     return Frosty_ns::StateResult::IN_PROCESS;

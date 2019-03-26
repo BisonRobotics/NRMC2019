@@ -13,6 +13,7 @@ State 6 . Check Time/Conditions
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <navigation_msgs/FollowPathAction.h>
+#include <std_msgs/Empty.h>
 #include <dig_control/DumpAction.h>
 #include <dig_control/DigAction.h>
 
@@ -52,7 +53,10 @@ private:
     double dig_timer;
     static void state3CheckDoneCallback(const actionlib::SimpleClientGoalState& state,
                                         const navigation_msgs::FollowPathResultConstPtr& result);
+    static void state4CheckDigCallback(const actionlib::SimpleClientGoalState& state,
+                                       const dig_control::DigResultConstPtr& result);
     static bool state3_done;
+    static bool need2_dig;
     //Frosty_ns::StateResult state4GoToHopper();
     //Frosty_ns::StateResult state5Dump();
     //Frosty_ns::StateResult state6CheckCondtitions();
