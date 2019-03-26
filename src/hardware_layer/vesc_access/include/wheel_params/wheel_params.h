@@ -4,7 +4,7 @@
 #include "vesc_access/ivesc_access.h"
 #include "safety_vesc/isafety_controller.h"
 
-#define WHEEL_CAN_NETWORK ("can0")
+#define WHEEL_CAN_NETWORK ("vesc_can")
 
 #define FRONT_LEFT_WHEEL_ID 1
 #define FRONT_RIGHT_WHEEL_ID 2
