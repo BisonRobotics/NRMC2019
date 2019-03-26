@@ -79,8 +79,7 @@ Frosty_ns::StateResult FrostyStateMachine::update(double dt)
     break;
     case 4:
         ROS_DEBUG("IN STATE 4");
-        //res = state4Dig(dt);
-        res = Frosty_ns::StateResult::FAILED;
+        res = state4Dig(dt);
         if (res == Frosty_ns::StateResult::SUCCESS)
         {
             state = 5;
@@ -169,7 +168,7 @@ void FrostyStateMachine::state3CheckDoneCallback(const actionlib::SimpleClientGo
 Frosty_ns::StateResult FrostyStateMachine::state3CheckGoToDig()
 {
     //check progress from actinlib feedback
-    actionlib::SimpleClientGoalState state = path_alc->getState();
+    //actionlib::SimpleClientGoalState state = path_alc->getState();
     //state = path_alc->getState();
     if (FrostyStateMachine::state3_done) //TODO use done callback instead for thread safety/sense stuff
     {
@@ -228,7 +227,7 @@ void FrostyStateMachine::state5StartGoToHopper()
 Frosty_ns::StateResult FrostyStateMachine::state6CheckGoToHopper()
 {
     //check progress from actinlib feedback
-    actionlib::SimpleClientGoalState state = path_alc->getState();
+    //actionlib::SimpleClientGoalState state = path_alc->getState();
     //state = path_alc->getState();
     if (FrostyStateMachine::state3_done) //TODO use done callback instead for thread safety/sense stuff
     {

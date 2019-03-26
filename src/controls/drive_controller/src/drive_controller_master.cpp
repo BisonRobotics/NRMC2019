@@ -418,7 +418,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   server = new SimpleActionServer<FollowPathAction>(global_node, "follow_path", false);
   server->registerGoalCallback(&newGoalCallback);
-  server->registerPreemptCallback(&preemptCallback)
+  server->registerPreemptCallback(&preemptCallback);
   server->start();
   ROS_INFO("[action_server] Started");
 
