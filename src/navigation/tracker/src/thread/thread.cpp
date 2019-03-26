@@ -1,20 +1,23 @@
 #include <tracker/thread/thread.h>
+#include <boost/timer/timer.hpp>
+
 
 using namespace tracker;
+using namespace stepper;
 
-Thread::Thread(std::string name, tracker::Camera *camera, TagsVector *tags) :
-  name(name), camera(camera), nh(name), it(name), tags(tags),
+Thread::Thread(std::string name, tracker::Camera *camera, Stepper *stepper, TagsVector *tags) :
+  name(name), camera(camera), nh(name), it(name), tags(tags), stepper(stepper),
   set_brightness_server(nh, "set_brightness", boost::bind(&Thread::setBrightnessCallback, this, _1), false),
   set_exposure_server(nh, "set_exposure", boost::bind(&Thread::setExposureCallback, this, _1), false)
 {
   drops = 0;
   drop_count = 0;
-  nh.setCallbackQueue(&callback_queue);
-  get_brightness_service = nh.advertiseService("get_brightness", &Thread::getBrightnessCallback, this);
-  get_exposure_service   = nh.advertiseService("get_exposure",   &Thread::getExposureCallback,   this);
+  //nh.setCallbackQueue(&callback_queue);
+  //get_brightness_service = nh.advertiseService("get_brightness", &Thread::getBrightnessCallback, this);
+  //get_exposure_service   = nh.advertiseService("get_exposure",   &Thread::getExposureCallback,   this);
 
   pose_pub = nh.advertise<geometry_msgs::PoseStamped>("pose_estimate", 1);
-  pose_pub1 = nh.advertise<geometry_msgs::PoseStamped>("pose_estimate1", 1);
+  //pose_pub1 = nh.advertise<geometry_msgs::PoseStamped>("pose_estimate1", 1);
   pub = it.advertise("image", 1);
 
   image_msg.header.frame_id = name;
@@ -28,8 +31,8 @@ Thread::Thread(std::string name, tracker::Camera *camera, TagsVector *tags) :
   image_msg.data.resize(camera->getWidth() * camera->getHeight());
 
   detector = new Detector(camera->getInfo(), image_msg.data.data(), this->tags);
-  set_brightness_server.start();
-  set_exposure_server.start();
+  //set_brightness_server.start();
+  //set_exposure_server.start();
 
   thread_handle = new boost::thread(boost::bind(&Thread::thread, this));
 }
@@ -47,10 +50,11 @@ void Thread::thread()
     {
       try
       {
-        Tag::clearFlags(tags);
+        //Tag::clearFlags(tags);
         camera->getFrame(detector->getBuffer());
-        stamp = ros::Time::now();
-        detector->detect(stamp);
+        // TODO request stepper position
+        //stamp = ros::Time::now();
+        //detector->detect(stamp);
         break;
       }
       catch (std::runtime_error &e)
@@ -60,12 +64,13 @@ void Thread::thread()
       }
     }
 
+    /*
     // Add stepper transform
     for (int i = 0; i < tags->size(); i++)
     {
       if ((*tags)[i].relativeTransformUpdated())
       {
-        StampedTransform stepper_transform; // TODO actually do this
+        StampedTransform stepper_transform; // TODO request stepper position
         stepper_transform.stamp_ = stamp;
         (*tags)[i].addStepperTransform(stepper_transform);
       }
@@ -106,16 +111,33 @@ void Thread::thread()
       }
     }
 
-    // Publish the image
-    if (drop_count++ >= drops)
+    // Control loop
+    // TODO better tag selection
+    for (int i = 0; i < tags->size(); i++)
     {
+      if ((*tags)[i].getID() == 0 && (*tags)[i].relativeTransformUpdated())
+      {
+        tf2::Vector3 T = (*tags)[i].getMostRecentRelativeTransform().getOrigin();
+        double error = std::atan2(T.getX(), T.getZ());
+        //ROS_INFO("Error: %f", error);
+      }
+    }*/
+
+    // Publish the image
+    //boost::timer::cpu_timer timer;
+    //timer.start();
+   // printf("Delay: %s\n", timer.format(4).c_str());
+    /*if (drop_count++ >= drops)
+    {*/
       pub.publish(image_msg);
       drop_count = 0;
-    }
+    //}
 
     // Respond to callbacks
-    callback_queue.callAvailable(ros::WallDuration());
+    //callback_queue.callAvailable(ros::WallDuration());
     ros::spinOnce();
+    //timer.stop();
+
   }
 
   // Exit

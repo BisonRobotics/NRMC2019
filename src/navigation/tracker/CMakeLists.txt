@@ -29,6 +29,8 @@ else()
 endif()
 
 find_package(Eigen3 REQUIRED)
+find_package(Boost COMPONENTS timer REQUIRED)
+
 
 add_service_files(FILES
     GetUInt.srv
@@ -55,6 +57,7 @@ catkin_package(
         tf2
         tf2_ros
         tf2_geometry_msgs
+        stepper
   #  DEPENDS system_lib
 )
 
@@ -105,6 +108,7 @@ add_executable(tracker_node
 target_link_libraries(tracker_node
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
+        ${Boost_LIBRARIES}
         ocam_camera
         detector
         camera_info)

@@ -14,13 +14,14 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <stepper/stepper.h>
 
 namespace tracker
 {
   class Thread
   {
   public:
-    Thread(std::string name, Camera *camera, TagsVector *tags);
+    Thread(std::string name, Camera *camera, stepper::Stepper *stepper, TagsVector *tags);
 
     void thread();
     void join();
@@ -34,6 +35,7 @@ namespace tracker
     std::string name;
     sensor_msgs::Image image_msg;
     Camera *camera;
+    stepper::Stepper *stepper;
     Detector *detector;
     boost::thread *thread_handle;
     std::vector<Tag> *tags;

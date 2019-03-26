@@ -31,6 +31,10 @@ int main (int argc, char* argv[])
   ros::init(argc, argv, "tracker_node");
   ros::NodeHandle nh;
 
+  // Instantiate stepper
+  //stepper::Stepper stepper("can0", 1, 3);
+  stepper::Stepper *stepper;
+
   // Instantiate cameras
   tracker::Camera *camera0 = initializeOCam(tracker::right_camera, 45, 529);
   /*tracker::Camera *camera1 = initializeOCam("/dev/v4l/by-id/usb-WITHROBOT_Inc._oCam-1MGN-U_SN_2C183178-video-index0",
@@ -48,9 +52,9 @@ int main (int argc, char* argv[])
   Tag::setTransformCaches(&tracker0_tags, "right");
 
   // Start threads
-  Thread thread0("tracker0", camera0, &tracker0_tags);
+  Thread thread0("tracker0", camera0, stepper, &tracker0_tags);
   //boost::thread thread1(trackerThread, "tracker1", camera1, &nh);
-  ros::spin();
+  //ros::spin();
 
   // Wait and exit
   thread0.join();
