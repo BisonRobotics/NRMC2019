@@ -1,15 +1,55 @@
 #include <tracker/thread/thread.h>
 #include <boost/timer/timer.hpp>
+#include <tracker/config/camera_config.h>
+#include <tracker/camera/ocam_camera.h>
 
 
 using namespace tracker;
 using namespace stepper;
 
-Thread::Thread(std::string name, tracker::Camera *camera, Stepper *stepper, TagsVector *tags) :
-  name(name), camera(camera), nh(name), it(name), tags(tags), stepper(stepper),
+
+tracker::Camera* initializeOCam(CameraInfo info, uint brightness, uint exposure)
+{
+  tracker::Camera* camera = nullptr;
+  while (camera == nullptr)
+  {
+    if (!ros::ok())
+    {
+      ROS_WARN("ROS is not ok");
+      return nullptr;
+    }
+    try
+    {
+      // brightness (int)    : min=0 max=255 step=1 default=64 value=50
+      // exposure_auto (menu)   : min=0 max=3 default=1 value=1
+      // exposure_absolute (int)    : min=1 max=1000 step=1 default=55 value=90
+      camera = new tracker::OCamCamera(info, 50, brightness, exposure);
+    }
+    catch (std::runtime_error &e)
+    {
+      ROS_WARN("%s", e.what());
+      ros::Duration(2).sleep();
+    }
+  }
+  return camera;
+}
+
+Thread::Thread(std::string name) :
+  name(name), nh(name), it(nh),
   set_brightness_server(nh, "set_brightness", boost::bind(&Thread::setBrightnessCallback, this, _1), false),
   set_exposure_server(nh, "set_exposure", boost::bind(&Thread::setExposureCallback, this, _1), false)
 {
+  Tag::init(10, ros::Duration(0.1), true);
+  tags = Tag::getTags();
+  Tag::setTransformCaches(&tags, "right");
+
+  camera = initializeOCam(tracker::right_camera, 45, 100);
+  if (camera == nullptr)
+  {
+    ROS_WARN("Camera 0 handle invalid, shutting down");
+    return;
+  }
+
   drops = 0;
   drop_count = 0;
   nh.setCallbackQueue(&callback_queue);
@@ -30,7 +70,8 @@ Thread::Thread(std::string name, tracker::Camera *camera, Stepper *stepper, Tags
   image_msg.step = camera->getWidth();
   image_msg.data.resize(camera->getWidth() * camera->getHeight());
 
-  detector = new Detector(camera->getInfo(), image_msg.data.data(), this->tags);
+  detector = new Detector(camera->getInfo(), image_msg.data.data(), &(this->tags));
+  callback_queue.enable();
   set_brightness_server.start();
   set_exposure_server.start();
 
@@ -66,48 +107,48 @@ void Thread::thread()
 
     // Detect tags
     actual.start();
-    Tag::clearFlags(tags);
+    Tag::clearFlags(&tags);
     stamp = ros::Time::now();
     detector->detect(stamp);
 
     // Add stepper transform
-    for (int i = 0; i < tags->size(); i++)
+    for (int i = 0; i < tags.size(); i++)
     {
-      if ((*tags)[i].relativeTransformUpdated())
+      if (tags[i].relativeTransformUpdated())
       {
         StampedTransform stepper_transform; // TODO request stepper position
         stepper_transform.stamp_ = stamp;
-        (*tags)[i].addStepperTransform(stepper_transform);
+        tags[i].addStepperTransform(stepper_transform);
       }
     }
 
     // Publish tfs
-    for (int i = 0; i < tags->size(); i++)
+    for (int i = 0; i < tags.size(); i++)
     {
-      if ((*tags)[i].relativeTransformUpdated())
+      if (tags[i].relativeTransformUpdated())
       {
-        StampedTransform transform = (*tags)[i].getMostRecentRelativeTransform();
+        StampedTransform transform = tags[i].getMostRecentRelativeTransform();
         geometry_msgs::TransformStamped transform_msg = tf2::toMsg(transform);
-        transform_msg.header.seq = (*tags)[i].getSeq();
+        transform_msg.header.seq = tags[i].getSeq();
         transform_msg.header.frame_id = camera->getName();
-        transform_msg.child_frame_id = "tag" + std::to_string((*tags)[i].getID()) + "_estimate";
+        transform_msg.child_frame_id = "tag" + std::to_string(tags[i].getID()) + "_estimate";
         tf_pub.sendTransform(transform_msg);
       }
     }
 
     // Publish pose estimate
-    for (int i = 0; i < tags->size(); i++)
+    for (int i = 0; i < tags.size(); i++)
     {
-      if ((*tags)[i].relativeTransformUpdated() &&
-          (*tags)[i].stepperTransformUpdated())
+      if (tags[i].relativeTransformUpdated() &&
+          tags[i].stepperTransformUpdated())
       {
-        if ((*tags)[i].getID() == 0)
+        if (tags[i].getID() == 0)
         {
-          geometry_msgs::PoseStamped pose_estimate = (*tags)[i].estimatePose();
+          geometry_msgs::PoseStamped pose_estimate = tags[i].estimatePose();
           //pose_estimate.pose.position.z = 1.0;
           pose_pub.publish(pose_estimate);
         }
-        else if ((*tags)[i].getID() == 1)
+        else if (tags[i].getID() == 1)
         {
           //geometry_msgs::PoseStamped pose_estimate = (*tags)[i].estimatePose();
           //pose_estimate.pose.position.z = 1.0;
@@ -118,18 +159,17 @@ void Thread::thread()
 
     // Control loop
     // TODO better tag selection
-    for (int i = 0; i < tags->size(); i++)
+    for (int i = 0; i < tags.size(); i++)
     {
-      if ((*tags)[i].getID() == 0 && (*tags)[i].relativeTransformUpdated())
+      if (tags[i].getID() == 0 && tags[i].relativeTransformUpdated())
       {
-        tf2::Vector3 T = (*tags)[i].getMostRecentRelativeTransform().getOrigin();
+        tf2::Vector3 T = tags[i].getMostRecentRelativeTransform().getOrigin();
         double error = std::atan2(T.getX(), T.getZ());
         //ROS_INFO("Error: %f", error);
       }
     }
 
     // Publish the image
-   // printf("Delay: %s\n", timer.format(4).c_str());
     if (drop_count++ >= drops)
     {
       pub.publish(image_msg);
@@ -137,12 +177,12 @@ void Thread::thread()
     }
 
     // Respond to callbacks
+    ros::spinOnce();
     callback_queue.callAvailable(ros::WallDuration());
-    //ros::spinOnce();
     total.stop(); actual.stop();
     double total_time = total.elapsed().wall * 1.0e-9;
     double actual_time = actual.elapsed().wall * 1.0e-9;
-    //printf("Rate(Hz): %7.4f, Utilized(%%): %7.4f\n", 1.0/total_time, actual_time/total_time);
+    printf("Rate(Hz): %7.4f, Utilized(%%): %7.4f\n", 1.0/total_time, actual_time/total_time);
   }
 
   // Exit
