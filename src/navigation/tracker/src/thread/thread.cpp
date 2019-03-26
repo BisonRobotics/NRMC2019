@@ -62,7 +62,7 @@ Thread::Thread(std::string name) :
 
   ROS_INFO("Initializing stepper");
   // TODO add initialization confirmation
-  stepper = new Stepper("can0", 1, 3);
+  stepper = new Stepper("tracker_can", 1, 3);
   stepper->setMode(Mode::Initialize, 0.25);
   ros::Duration(5.0).sleep();
   stepper->setMode(Mode::Velocity, 0.0);
@@ -134,7 +134,7 @@ void Thread::thread()
     State state = stepper->pollState();
     double position = state.position;
     position = position * 2 * M_PI;
-    printf("Position %f\n", position);
+    //printf("Position %f\n", position);
     StampedTransform stepper_transform; // TODO request stepper position
     stepper_transform.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
     stepper_transform.setRotation(tf2::Quaternion(tf2::Vector3(0.0, 1.0, 0.0), position));
@@ -191,10 +191,10 @@ void Thread::thread()
     // Control loop
     // TODO better tag selection
     bool success = false;
-    double gain = 0.8;
+    double gain = 0.4;
     for (int i = 0; i < tags.size(); i++)
     {
-      if (tags[i].getID() == 0)
+      if (tags[i].getID() == 4)
       {
         //printf("size %i\n", tags[i].getRelativeTransformsSize());
         try
@@ -203,7 +203,7 @@ void Thread::thread()
           double error = std::atan2(T.getX(), T.getZ()) / M_2_PI;
           debug_msg.angle_error = error;
           if (std::abs(error) < 0.002) error = 0.0;
-          ROS_INFO("Error: %f", error);
+          //ROS_INFO("Error: %f", error);
           if (tags[i].relativeTransformUpdated())
           {
             drop_count = 0;
