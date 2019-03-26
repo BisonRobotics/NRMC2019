@@ -79,23 +79,23 @@ geometry_msgs::PoseStamped Tag::estimatePose()
   StampedTransform stepper_transform = stepper_transforms.front();
   StampedTransform relative_transform = relative_transforms.front();
 
-  tf2::Transform base_link_to_map = base_link_to_tracker_mount
-                                      * tracker_mount_to_camera
-                                      * relative_transform
-                                      * tag_to_map;
+  tf2::Transform base_link_to_map = base_link_to_camera_base
+                                    * stepper_transform
+                                    * relative_transform
+                                    * tag_to_map;
 
   //tf2::Vector3 O = base_link_to_map.getOrigin();
   //printf("%f, %f, %f\n", O.getX(), O.getY(), O.getZ());
 
-  tf2::Transform T1, T2, T3;
+  /*tf2::Transform T1, T2, T3;
   T1.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
   T1.setRotation(base_link_to_map.getRotation().inverse());
   T2.setOrigin(-base_link_to_map.getOrigin());
   T2.setRotation(tf2::Quaternion(0.0, 0.0, 0.0, 1.0));
-  T3 = T1 * T2;
+  T3 = T1 * T2;*/
 
   geometry_msgs::PoseStamped pose_estimate;
-  tf2::toMsg(T3, pose_estimate.pose);
+  tf2::toMsg(base_link_to_map.inverse(), pose_estimate.pose);
   pose_estimate.header.seq = this->seq++;
   pose_estimate.header.frame_id = "map";
   pose_estimate.header.stamp = stepper_transforms.front().stamp_;
@@ -244,45 +244,26 @@ void Tag::setTransformCaches(TagsVector *tags, std::string prefix)
   tf2_ros::TransformListener tfListener(tfBuffer);
 
   // Find base link to tracker mount transform
-  std::string tracker_mount = prefix + "_tracker_mount";
+  std::string camera_base = prefix + "_camera_base";
   do
   {
-    if (tfBuffer.canTransform("base_link", tracker_mount, ros::Time(0), ros::Duration(1)))
+    if (tfBuffer.canTransform("base_link", camera_base, ros::Time(0), ros::Duration(1)))
     {
       break;
     }
     else
     {
-      ROS_WARN("Unable to find transform from map to %s", tracker_mount.c_str());
+      ROS_WARN("Unable to find transform from map to %s", camera_base.c_str());
     }
   } while(ros::ok());
-  ROS_INFO("Found transform from map to %s", tracker_mount.c_str());
+  ROS_INFO("Found transform from map to %s", camera_base.c_str());
 
-  StampedTransform base_link_to_tracker_mount;
-  tf2::fromMsg(tfBuffer.lookupTransform("base_link", tracker_mount, ros::Time(0)), base_link_to_tracker_mount);
-
-  // Find tracker_mount to camera transform
-  std::string camera = prefix + "_camera";
-  do
-  {
-    if (tfBuffer.canTransform(tracker_mount, camera, ros::Time(0), ros::Duration(1)))
-    {
-      break;
-    }
-    else
-    {
-      ROS_WARN("Unable to find transform from %s to %s", tracker_mount.c_str(), camera.c_str());
-    }
-  } while(ros::ok());
-  ROS_INFO("Found transform from %s to %s", tracker_mount.c_str(), camera.c_str());
-
-  StampedTransform tracker_mount_to_camera;
-  tf2::fromMsg(tfBuffer.lookupTransform(tracker_mount, camera, ros::Time(0)), tracker_mount_to_camera);
+  StampedTransform base_link_to_camera_base;
+  tf2::fromMsg(tfBuffer.lookupTransform("base_link", camera_base, ros::Time(0)), base_link_to_camera_base);
 
   for (int i = 0; i < tags->size(); i++)
   {
-    (*tags)[i].base_link_to_tracker_mount = (tf2::Transform)base_link_to_tracker_mount;
-    (*tags)[i].tracker_mount_to_camera = (tf2::Transform)tracker_mount_to_camera;
+    (*tags)[i].base_link_to_camera_base = (tf2::Transform)base_link_to_camera_base;
   }
 }
 

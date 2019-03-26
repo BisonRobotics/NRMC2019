@@ -59,7 +59,7 @@ namespace tracker
     unsigned int seq;
     double tag_size;
     bool relative_transform_updated, stepper_transform_updated;
-    tf2::Transform tag_to_map, base_link_to_tracker_mount, tracker_mount_to_camera;
+    tf2::Transform tag_to_map, base_link_to_camera_base;
     std::list<StampedTransform> relative_transforms, stepper_transforms;
 
   public:

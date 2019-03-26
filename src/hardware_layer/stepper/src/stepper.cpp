@@ -15,7 +15,7 @@
 using namespace stepper;
 
 Stepper::Stepper(std::string network, uint tx_id, uint rx_id) :
-  tx_id(tx_id), rx_id(rx_id)
+  tx_id(tx_id), rx_id(rx_id), seq(0)
 {
   request = new ifreq;
   address = new sockaddr_can;
@@ -90,6 +90,7 @@ canid_t Stepper::generateCanID(uint32_t id, uint32_t messageType)
 
 void Stepper::requestState()
 {
+  seq++;
   can_frame frame;
   frame.can_id = generateCanID(tx_id, MessageType::RequestState);
   frame.can_dlc = 0;
@@ -169,6 +170,11 @@ void Stepper::setPoint(float value)
 MessageType Stepper::getMessageType(canid_t id)
 {
   return (MessageType)(id >> 4);
+}
+
+uint Stepper::getSeq()
+{
+  return seq;
 }
 
 State::State(double position, double velocity) : position(position), velocity(velocity){};

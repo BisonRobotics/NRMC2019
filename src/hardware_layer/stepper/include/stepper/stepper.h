@@ -42,13 +42,14 @@ namespace stepper
     void setMode(Mode mode, float initial_setpoint);
     void setLimits(float ccw, float cw);
     void setPoint(float value);
+    uint getSeq();
 
     static uint generateCanID(uint32_t id, uint32_t messageType);
     static MessageType getMessageType(uint id);
 
   private:
     int can_socket;
-    uint tx_id, rx_id;
+    uint tx_id, rx_id, seq;
     struct sockaddr_can *address;
     struct ifreq *request;
     struct can_filter *filters;

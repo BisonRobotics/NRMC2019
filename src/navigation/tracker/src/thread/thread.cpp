@@ -131,12 +131,24 @@ void Thread::thread()
     detector->detect(stamp);
 
     // Add stepper transform
+    State state = stepper->pollState();
+    double position = state.position;
+    position = position * 2 * M_PI;
+    printf("Position %f\n", position);
+    StampedTransform stepper_transform; // TODO request stepper position
+    stepper_transform.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
+    stepper_transform.setRotation(tf2::Quaternion(tf2::Vector3(0.0, 1.0, 0.0), position));
+    stepper_transform.stamp_ = stamp;
+    geometry_msgs::TransformStamped transform_msg = tf2::toMsg(stepper_transform);
+    transform_msg.header.seq = stepper->getSeq();
+    transform_msg.header.frame_id = camera->getName() + "_base";
+    transform_msg.child_frame_id = camera->getName();
+    tf_pub.sendTransform(transform_msg);
     for (int i = 0; i < tags.size(); i++)
     {
       if (tags[i].relativeTransformUpdated())
       {
-        StampedTransform stepper_transform; // TODO request stepper position
-        stepper_transform.stamp_ = stamp;
+        transform_msg.header.seq = tags[i].getSeq();
         tags[i].addStepperTransform(stepper_transform);
       }
     }
@@ -152,6 +164,7 @@ void Thread::thread()
         transform_msg.header.frame_id = camera->getName();
         transform_msg.child_frame_id = "tag" + std::to_string(tags[i].getID()) + "_estimate";
         tf_pub.sendTransform(transform_msg);
+
       }
     }
 
@@ -178,10 +191,10 @@ void Thread::thread()
     // Control loop
     // TODO better tag selection
     bool success = false;
-    double gain = 1;
+    double gain = 0.8;
     for (int i = 0; i < tags.size(); i++)
     {
-      if (tags[i].getID() == 4)
+      if (tags[i].getID() == 0)
       {
         //printf("size %i\n", tags[i].getRelativeTransformsSize());
         try
