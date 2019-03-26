@@ -194,7 +194,7 @@ void Thread::thread()
     double gain = 0.4;
     for (int i = 0; i < tags.size(); i++)
     {
-      if (tags[i].getID() == 4)
+      if (tags[i].getID() == 0)
       {
         //printf("size %i\n", tags[i].getRelativeTransformsSize());
         try

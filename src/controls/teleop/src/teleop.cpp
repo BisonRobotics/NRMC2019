@@ -9,8 +9,13 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
 {
   if (joy->buttons[4])
   {
-    left = joy->axes[1];
-    right = joy->axes[4];
+    left = joy->axes[1] * 0.25f;
+    right = joy->axes[4] * 0.25f;
+  }
+  else if (joy->buttons[5]) // Boostish mode
+  {
+    left = joy->axes[1] * 0.5f;
+    right = joy->axes[4] * 0.5f;
   }
   else
   {
@@ -25,7 +30,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::Subscriber joy_sub = n.subscribe("joy", 2, callback);
   ros::Rate rate(50);
-  TeleopInterface teleop(TeleopInterface::duty, 0.8f);
+  TeleopInterface teleop(TeleopInterface::duty, 0.95f);
 
   while (ros::ok())
   {
