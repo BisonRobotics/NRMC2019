@@ -31,8 +31,8 @@ TrackerGUI::TrackerGUI(QWidget *parent) :
 
   ui->brightnessSpinBox->setMaximum(255);
   ui->brightnessSlider->setMaximum(255);
-  ui->exposureSlider->setMaximum(1000);
-  ui->exposureSpinBox->setMaximum(1000);
+  ui->exposureSlider->setMaximum(195);
+  ui->exposureSpinBox->setMaximum(195);
   ui->imageView->setScene(&scene);
   ui->topicComboBox->addItem("/tracker0");
   ui->topicComboBox->addItem("/tracker1");
@@ -77,6 +77,11 @@ void TrackerGUI::handleServices()
 {
   using actionlib::SimpleClientGoalState;
 
+  if (!ros::ok())
+  {
+    this->close();
+  }
+
   int value;
   SimpleClientGoalState state(SimpleClientGoalState::SUCCEEDED);
   if (enabled)
@@ -108,6 +113,7 @@ void TrackerGUI::handleServices()
     }
   }
   ros::spinOnce();
+
 }
 
 void TrackerGUI::getBrightnessButtonClicked()

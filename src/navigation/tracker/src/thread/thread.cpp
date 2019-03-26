@@ -10,6 +10,11 @@ using namespace stepper;
 
 tracker::Camera* initializeOCam(CameraInfo info, uint brightness, uint exposure)
 {
+  if (exposure > 195)
+  {
+    exposure = 195;
+    ROS_WARN("Exposure can't be greater than 195 to operate at 50Hz");
+  }
   tracker::Camera* camera = nullptr;
   while (camera == nullptr)
   {
@@ -22,7 +27,7 @@ tracker::Camera* initializeOCam(CameraInfo info, uint brightness, uint exposure)
     {
       // brightness (int)    : min=0 max=255 step=1 default=64 value=50
       // exposure_auto (menu)   : min=0 max=3 default=1 value=1
-      // exposure_absolute (int)    : min=1 max=1000 step=1 default=55 value=90
+      // exposure_absolute (int)    : min=1 max=1000 step=1 default=55 value=90 (195ish for 50Hz)
       camera = new tracker::OCamCamera(info, 50, brightness, exposure);
     }
     catch (std::runtime_error &e)
@@ -239,7 +244,13 @@ void Thread::setExposureCallback(const actionlib::SimpleActionServer<SetUIntActi
 {
   try
   {
-    camera->setExposure(goal->value);
+    uint32_t exposure = goal->value;
+    if (exposure > 195)
+    {
+      exposure = 195;
+      ROS_WARN("Exposure can't be greater than 195 to operate at 50Hz");
+    }
+    camera->setExposure(exposure);
     set_exposure_server.setSucceeded();
   }
   catch (std::runtime_error &e)
