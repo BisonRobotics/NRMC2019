@@ -432,19 +432,23 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   }
 
   DriveController dc = DriveController(fr, fl, bl, br);
-  ROS_INFO("DC Init");
+  ROS_INFO("Drive Controller Init");
 
   server = new SimpleActionServer<FollowPathAction>(global_node, "follow_path", false);
   server->registerGoalCallback(&newGoalCallback);
   server->registerPreemptCallback(&preemptCallback);
   server->start();
-  ROS_INFO("[action_server] Started");
+  ROS_INFO("[drive controller action_server] Started");
 
   firstTime = true;
+  bool loopdebug = true; //could be a param
   while (ros::ok())
   {
-    //ROS_DEBUG("\n");
-    //ROS_DEBUG("Top");
+    if (loopdebug)
+    {
+      ROS_DEBUG("\n");
+      ROS_DEBUG("Top"); 
+    }
     // update localizer here
     if (firstTime)
     {
@@ -459,7 +463,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       currTime = ros::Time::now();
       loopTime = currTime - lastTime;
     }
-    //ROS_DEBUG("Looptime : %.5f", loopTime.toSec());
+    if (loopdebug) ROS_DEBUG("Looptime : %.5f", loopTime.toSec());
     if (simulating)
     {
       tfBroad.sendTransform(create_sim_tf(pos->getX(), pos->getY(), pos->getTheta()));
@@ -491,8 +495,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     // update controller //Update localizer or controller? what order?
     dc.update(stateVector, loopTime.toSec());
 
-    //ROS_INFO("Paths on Stack: %d, Current Fwd: %d", dc.getPPaths(), 
-    //         (forwardPoint ? 1 : 0));
+    if (loopdebug) ROS_INFO("Paths on Stack: %d, Current Fwd: %d", dc.getPPaths(), 
+                   (forwardPoint ? 1 : 0));
     if (dc.getPPaths() >=1)
     {
       // Provide feedback
