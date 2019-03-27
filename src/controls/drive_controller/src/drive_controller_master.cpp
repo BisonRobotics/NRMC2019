@@ -298,8 +298,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     pos = new AprilTagTrackerInterface("/vrep/pose", .1);
     imu = new VrepImu(0, .0001, 0, .0001);
     
-    mm.giveImu(imu, 0, 0, 0);
-    mm.givePos(pos);
+    //mm.giveImu(imu, 0, 0, 0);
+    //mm.givePos(pos);
   }
   else
   {
@@ -322,12 +322,12 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       vesc_init_rate.sleep();
     }
     //these will need updated with new sensors, using the same interface
-    //pos = new AprilTagTrackerInterface("/pose_estimate_filter/pose_estimate", .1);
-    //imu = new LpResearchImu("imu_base_link");
+    pos = new AprilTagTrackerInterface("/tracker0/pose_estimate", .1);
+    imu = new LpResearchImu("imu_base_link");
   }
   
-  //mm.giveImu(imu, 0, 0, 0);
-  //mm.givePos(pos);
+  mm.giveImu(imu, 0, 0, 0);
+  mm.givePos(pos);
 
   std::vector<driver_access::DriverAccess*> drivers = {dfl, dfr, dbr, dbl};
   driver_access::ROSDriverAccess ros_drivers(drivers);
