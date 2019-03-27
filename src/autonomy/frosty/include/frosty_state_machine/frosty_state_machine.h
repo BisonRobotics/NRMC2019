@@ -38,6 +38,7 @@ private:
     actionlib::SimpleActionClient<navigation_msgs::FollowPathAction> *path_alc;
     //need dig/dump actionlib client //wait
     actionlib::SimpleActionClient<dig_control::DigAction> *dig_alc;
+    actionlib::SimpleActionClient<dig_control::DumpAction> *dump_alc;
     //SimpleActionClient<DumpAction> *dump_alc;
     double time;
     int state;
@@ -50,13 +51,19 @@ private:
     Frosty_ns::StateResult state4Dig(double dt);
     void state5StartGoToHopper();
     Frosty_ns::StateResult state6CheckGoToHopper();
+    void state7StartDump();
+    Frosty_ns::StateResult state8CheckDumpAndConditions();
+
     double dig_timer;
     static void state3CheckDoneCallback(const actionlib::SimpleClientGoalState& state,
                                         const navigation_msgs::FollowPathResultConstPtr& result);
     static void state4CheckDigCallback(const actionlib::SimpleClientGoalState& state,
                                        const dig_control::DigResultConstPtr& result);
+    static void state8CheckDumpCallback(const actionlib::SimpleClientGoalState& state,
+                                       const dig_control::DumpResultConstPtr& result);
     static bool state3_done;
     static bool need2_dig;
+    static bool done_dumping;
     //Frosty_ns::StateResult state4GoToHopper();
     //Frosty_ns::StateResult state5Dump();
     //Frosty_ns::StateResult state6CheckCondtitions();

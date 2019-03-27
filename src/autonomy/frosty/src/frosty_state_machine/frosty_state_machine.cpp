@@ -19,7 +19,7 @@ State 6 . Check Time/Conditions
 
 bool FrostyStateMachine::state3_done;
 bool FrostyStateMachine::need2_dig;
-
+bool FrostyStateMachine::done_dumping;
 
 
 FrostyStateMachine::FrostyStateMachine(bool dig_sim, bool drive_sim, double dig_time_sec, double dump_time_sec):
@@ -31,8 +31,7 @@ dig_sim(dig_sim), drive_sim(drive_sim), min_dig_time(dig_time_sec), min_dump_tim
     //initialize actionlib clients
     path_alc = new actionlib::SimpleActionClient<navigation_msgs::FollowPathAction> ("follow_path", true);
     dig_alc  = new actionlib::SimpleActionClient<dig_control::DigAction> ("dig_server", true);
-    //dig one here too
-    //and dump
+    dump_alc  = new actionlib::SimpleActionClient<dig_control::DumpAction> ("dump_server", true);
 }
 
 int FrostyStateMachine::getState()
@@ -100,13 +99,29 @@ Frosty_ns::StateResult FrostyStateMachine::update(double dt)
         res = state6CheckGoToHopper();
         if (res == Frosty_ns::StateResult::SUCCESS)
         {
-            state = 2; //start again (havent dumped ever tho)
+            state = 7; //start again (havent dumped ever tho)
         }
         else
         {
             ROS_DEBUG("return Path Check: %s", (res == Frosty_ns::StateResult::FAILED) ? "FAILED": "IN PROGRESS");
         }
     break;
+    case 7:
+        ROS_DEBUG("IN STATE 7");
+        state7StartDump();
+        state = 8;
+    break;
+    case 8:
+        res = state8CheckDumpAndConditions();
+        if (res == Frosty_ns::StateResult::SUCCESS)
+        {
+            state = 2;
+        }
+        else
+        {
+            ROS_DEBUG("DUMP CHECK: %s", (res == Frosty_ns::StateResult::FAILED) ? "FAILED": "IN PROGRESS");
+        }
+    break;    
   }
   time += dt;
 }
@@ -171,6 +186,12 @@ void FrostyStateMachine::state4CheckDigCallback(const actionlib::SimpleClientGoa
                                                 const dig_control::DigResultConstPtr& result)
 {
     FrostyStateMachine::need2_dig = true;
+}
+
+void FrostyStateMachine::state8CheckDumpCallback(const actionlib::SimpleClientGoalState& state,
+                                                 const dig_control::DumpResultConstPtr& result)
+{
+    FrostyStateMachine::done_dumping = true;                                                     
 }
 
 Frosty_ns::StateResult FrostyStateMachine::state3CheckGoToDig()
@@ -251,6 +272,26 @@ Frosty_ns::StateResult FrostyStateMachine::state6CheckGoToHopper()
         return Frosty_ns::StateResult::SUCCESS;
     }
     return Frosty_ns::StateResult::IN_PROCESS;
+}
+
+void FrostyStateMachine::state7StartDump()
+{
+    dig_control::DumpGoal goal;
+    FrostyStateMachine::done_dumping = false;
+    dump_alc->sendGoal(goal, &FrostyStateMachine::state8CheckDumpCallback);
+}
+
+Frosty_ns::StateResult FrostyStateMachine::state8CheckDumpAndConditions()
+{
+    //TODO add timeout or count
+    if (FrostyStateMachine::done_dumping)
+    {
+        return Frosty_ns::StateResult::SUCCESS;
+    }
+    else 
+    {
+        return Frosty_ns::StateResult::IN_PROCESS;
+    }
 }
 
 
