@@ -323,19 +323,32 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     }
     //these will need updated with new sensors, using the same interface
     pos = new AprilTagTrackerInterface("/tracker0/pose_estimate", .1);
-    imu = new LpResearchImu("imu_base_link");
+    imu = new LpResearchImu("imu");
   }
+  
+  ROS_DEBUG("MADE IT THROUGH 1");
   
   mm.giveImu(imu, 0, 0, 0);
   mm.givePos(pos);
+  
+  ROS_DEBUG("MADE IT THROUGH 1.25");
+  
+  driver_access::ROSDriverAccess* ros_drivers; 
+  
+  if (simulating)
+  {
+      std::vector<driver_access::DriverAccess*> drivers = {dfl, dfr, dbr, dbl};
+      ros_drivers = new driver_access::ROSDriverAccess(drivers); 
+  }
 
-  std::vector<driver_access::DriverAccess*> drivers = {dfl, dfr, dbr, dbl};
-  driver_access::ROSDriverAccess ros_drivers(drivers);
 
   ros::Duration loopTime;
   bool firstTime = true;
   tf2_ros::TransformBroadcaster tfBroad;
   std::vector<std::pair<double, double> > waypoint_set;
+  
+    ROS_DEBUG("MADE IT THROUGH 1.5");
+
 
   UltraLocalizer ultraLocalizer(UltraLocalizer_default_gains, UltraLocalizer_initial_estimate);
   //SuperLocalizer superLocalizer(ROBOT_AXLE_LENGTH, 1, .5, 0, fl, fr, br, bl, /*imu,*/ pos, SuperLocalizer_default_gains);
@@ -344,6 +357,9 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   ros::Subscriber haltsub = node.subscribe("halt", 100, haltCallback);
 
   double wheel_positions[4] = { 0 };
+
+  ROS_DEBUG("MADE IT THROUGH 2");
+
 
   geometry_msgs::Point vis_point;
   // hang here until someone knows where we are
@@ -360,6 +376,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   //Can these two settling rounds be compacted into one?
   lastTime = ros::Time::now ();
+  ROS_DEBUG("MADE IT THROUGH 3");
+
   while (((ros::Time::now() - lastTime).toSec() < 2.0f + settle_time) && (ros::ok())) //((!superLocalizer.getIsDataGood() && ros::ok()))
   {
     // do initial localization
@@ -460,7 +478,10 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     wheel_states_publisher.publish(wheel_states_to_msg(dc.getWheelStates()));
     path_info_publisher.publish(path_info_to_msg(dc.getPathInfo()));
 
-    ros_drivers.publish();
+    if (simulating) 
+    {
+        ros_drivers->publish();
+    }
 
     if (newWaypointHere)
     {
@@ -525,6 +546,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     
     delete imu;
     delete pos;
+    delete ros_drivers;
   }
   else
   {
