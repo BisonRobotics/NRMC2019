@@ -1,0 +1,63 @@
+# Rules for 2019 robot
+KERNELS=="1-7:1.0", DRIVERS=="gs_usb", NAME="tracker_can"
+KERNELS=="1-8:1.0", DRIVERS=="gs_usb", NAME="vesc_can"
+
+# 
+# 99-robot.rules
+#
+# Overview
+#
+# This file contains the udev rules that map specific usb ports on the robot computer
+# to symlinks in the dev folder.
+#
+# References
+#
+# http://manpages.ubuntu.com/manpages/zesty/man7/udev.7.html
+# http://reactivated.net/writing_udev_rules.html
+# https://wiki.debian.org/udev
+#
+# Instructions
+# 
+# 1. Move 99-robot.rules to the /etc/udev/rules.d directory
+# 2. Modify the rules to do what you want
+# 3. Run `udevadm control --reload-rules`
+# 4. Unplug and replug in the device
+#
+# USB Cameras
+#
+# The board cams all have an attribute name called "VGA USB Camera", so we used that
+# for identifying that a board cam has been plugged in. Since the board cams don't 
+# have any unique identifiers we are assigning them to a physical usb port on the 
+# computer, this is identified using with the KERNELS key. To find the corresponding
+# KERNELS key run
+#
+#   udevadm info --name=/dev/videoX --attribute-walk 
+#
+# where videoX is the device. Use the first parent device's "KERNELS" key. It should 
+# look something like KERNELS=="3-3:1.0". In the example the first 3 is the bus, the 
+# second 3 is the physical port, the 1.0 has something to do with the device.
+#
+# Canables
+#
+# Couldn't figure out how to set the serial number for the canables. So we're tying
+# the canables to a specific usb port just like the USB Cameras. To find the current
+# name of the canable run
+#   
+#   udevadm info -e | grep -B 30 -A 10 INTERFACE=can
+#
+# You'll get a bunch of info of the device with an E: at the start of the line. For
+# each canable there'll be two devices intialized for some reason as well. Focus on
+# the even numbered one, so if you have can0 and can1, use can0. Select the line 
+# that begins with P: above the E: INTERFACE=canX. It should look something like
+#   
+#   /devices/pci0000:00/0000:00:14.0/usb3/3-6/3-6:1.0/net/can0
+#
+# To get additional information of the device and it's parent devices run  
+#
+#   udevadm info --path=/devices/pci0000:00/0000:00:14.0/usb3/3-6/3-6:1.0/net/can10 
+#              \ --attribute-walk
+#
+# Use the first parent device's "KERNELS" key. It should 
+# look something like KERNELS=="3-3:1.0". In the example the first 3 is the bus, the 
+# 6 is the physical port, the 1.0 has something to do with the device.
+#

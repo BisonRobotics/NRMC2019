@@ -36,21 +36,21 @@ void dcvis_multiplot::draw(cv::Mat frame)
     int dummy;
     double font_scale = .5;
     cv::Scalar font_color = cv::Scalar(150,150,150);
-    cv::Size title_size = cv::getTextSize(title, CV_FONT_HERSHEY_SIMPLEX, font_scale, 1, &dummy);
+    cv::Size title_size = cv::getTextSize(title, cv::FONT_HERSHEY_SCRIPT_SIMPLEX, font_scale, 1, &dummy);
     cv::Point title_point((frame.cols - title_size.width)/2, (title_size.height));
-    cv::putText(frame, title, title_point, CV_FONT_HERSHEY_SIMPLEX, font_scale, font_color);
+    cv::putText(frame, title, title_point, cv::FONT_HERSHEY_SIMPLEX, font_scale, font_color);
     //draw yticks, largest one has top left corner at bottom height of title, smallest one is at bottom of frame
     //so thats (frame.rows - 2*title_size.height)/yticks spacing
-    cv::Size number_size = cv::getTextSize("-2.50", CV_FONT_HERSHEY_SIMPLEX, font_scale, 1, &dummy);
+    cv::Size number_size = cv::getTextSize("-2.50", cv::FONT_HERSHEY_SIMPLEX, font_scale, 1, &dummy);
     for (int index = 0; index < yticks; index++)
     {
         double scale_fact = ((double)(index)) / ((double)(yticks - 1.0));
         char data[10];
         sprintf(data, "% .2f", (ymax - ymin) * (1.0-scale_fact) + ymin);
-        cv::Size this_size = cv::getTextSize(data, CV_FONT_HERSHEY_SIMPLEX, font_scale, 1, &dummy);
+        cv::Size this_size = cv::getTextSize(data, cv::FONT_HERSHEY_SIMPLEX, font_scale, 1, &dummy);
         title_point.x = number_size.width - this_size.width;
         title_point.y = (frame.rows - title_size.height - number_size.height) * scale_fact + title_size.height + number_size.height;
-        cv::putText(frame, data, title_point, CV_FONT_HERSHEY_SIMPLEX, font_scale, font_color);
+        cv::putText(frame, data, title_point, cv::FONT_HERSHEY_SIMPLEX, font_scale, font_color);
     }
     //draw xticks
     //keep track of which ones are on the screen
@@ -71,7 +71,7 @@ void dcvis_multiplot::draw(cv::Mat frame)
         char data[10];
         sprintf(data, "%.0f", tick);
         title_point.x = width - (xmax - tick) * xscale + number_size.width;
-        cv::putText(frame, data, title_point, CV_FONT_HERSHEY_SIMPLEX, font_scale, font_color);
+        cv::putText(frame, data, title_point, cv::FONT_HERSHEY_SIMPLEX, font_scale, font_color);
     }
     //draw side, top and bottom lines
     cv::line(frame, cv::Point(number_size.width, number_size.height), 
@@ -114,6 +114,6 @@ void dcvis_multiplot::draw(cv::Mat frame)
     {
         cv::putText(frame, names[idex], 
                     cv::Point(frame.cols * .7, 2*title_size.height + idex*title_size.height),
-                    CV_FONT_HERSHEY_SIMPLEX, font_scale, colors[idex]);
+                    cv::FONT_HERSHEY_SIMPLEX, font_scale, colors[idex]);
     }
 }

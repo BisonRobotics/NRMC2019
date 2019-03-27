@@ -59,12 +59,15 @@ add_executable(hoe_master src/hoe_master.cpp)
 add_executable (dig_teleop src/real_dig_teleop.cpp)
 add_executable (setpoint_test src/test/safety_position_setpoint_test.cpp)
 
+add_dependencies(dig_dump_action_lib ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 add_dependencies(hoe_master
   backhoe_controller_lib
   outrigger_controller_lib
   bucket_controller_lib
   sim_robot
   dig_dump_action_lib
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 
 add_dependencies(dig_teleop
@@ -73,6 +76,7 @@ add_dependencies(dig_teleop
   bucket_controller_lib
   sim_robot
   dig_dump_action_lib
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 
 add_dependencies(setpoint_test
@@ -81,6 +85,7 @@ add_dependencies(setpoint_test
   bucket_controller_lib
   sim_robot
   dig_dump_action_lib
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
 )
 
 target_link_libraries(backhoe_controller_lib ${catkin_LIBRARIES})

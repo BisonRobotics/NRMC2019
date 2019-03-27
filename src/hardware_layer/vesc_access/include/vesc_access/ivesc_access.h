@@ -13,6 +13,7 @@ enum limitSwitchState
 
 typedef struct vesc_param_struct
 {
+  float direction;
   float max_velocity;
   float max_torque;
   float max_duty;
