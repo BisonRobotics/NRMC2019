@@ -1,6 +1,6 @@
 <launch>
   <node name="map_server" pkg="occupancy_grid" type="map_server" />
-  <include file="$(find tracker)/launch/test_tracker.launch"/>
+  <include file="$(find tracker)/launch/tracker.launch"/>
   <!--<node name="path_planner_node" pkg="path_planner" type="path_planner_node" />-->
   <node name="position_controller" pkg="drive_controller" type="drive_controller_master">
     <param name="simulating_driving" type="bool" value="false"/>
