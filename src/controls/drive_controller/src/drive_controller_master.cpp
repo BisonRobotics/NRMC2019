@@ -61,6 +61,7 @@ int delta_vec_seq    = 0;
 int error_states_seq = 0;
 int wheel_states_seq = 0;
 int path_info_seq    = 0;
+int map_base_link_seq= 0;
 
 
 #define STATE_VECTOR_ID 0
@@ -100,6 +101,7 @@ void preemptCallback()
 geometry_msgs::TransformStamped create_tf(double x, double y, double theta, tf2::Quaternion imu_orientation, double z)
 {
   geometry_msgs::TransformStamped transform;
+  transform.header.seq = map_base_link_seq++;
   transform.header.stamp = ros::Time::now();
   transform.header.frame_id = "map";
   transform.child_frame_id = "base_link";
@@ -122,7 +124,7 @@ geometry_msgs::TransformStamped create_tf(double x, double y, double theta, tf2:
     transform.transform.translation.z =z;
     tf2::Quaternion robot_orientation;
     robot_orientation.setRPY(0.0, 0.0, theta);
-    robot_orientation = robot_orientation * imu_orientation;
+    robot_orientation = robot_orientation;/* * imu_orientation;*/
     transform.transform.rotation.x = robot_orientation.x();
     transform.transform.rotation.y = robot_orientation.y();
     transform.transform.rotation.z = robot_orientation.z();
@@ -230,7 +232,7 @@ class DriverVescCrossover : public iVescAccess
 int main(int argc, char **argv)
 {
   // read ros param for simulating
-  ros::init(argc, argv, "my_tf2_listener");
+  ros::init(argc, argv, "position_controller");
 if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
    ros::console::notifyLoggerLevelsChanged();
 }
@@ -295,11 +297,13 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     br = new DriverVescCrossover(dbr);
     bl = new DriverVescCrossover(dbl);
 
-    pos = new AprilTagTrackerInterface("/vrep/pose", .1);
-    imu = new VrepImu(0, .0001, 0, .0001);
+    //simulate with real sensors for a bit
+    //pos = new AprilTagTrackerInterface("/vrep/pose", .1);
+    //imu = new VrepImu(0, .0001, 0, .0001);
     
-    //mm.giveImu(imu, 0, 0, 0);
-    //mm.givePos(pos);
+    pos = new AprilTagTrackerInterface("/tracker0/pose_estimate", .1);
+    imu = new LpResearchImu("imu");
+    
   }
   else
   {
