@@ -325,7 +325,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       }
       vesc_init_rate.sleep();
     }
-    //these will need updated with new sensors, using the same interface
     pos = new AprilTagTrackerInterface("/tracker0/pose_estimate", .1);
     imu = new LpResearchImu("imu");
   }
