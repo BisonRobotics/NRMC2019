@@ -1,9 +1,16 @@
+#
 # Rules for 2019 robot
-KERNELS=="1-7:1.0", DRIVERS=="gs_usb", NAME="tracker_can"
-KERNELS=="1-8:1.0", DRIVERS=="gs_usb", NAME="vesc_can"
+#
+# Can
+KERNELS=="1-1.1:1.0", DRIVERS=="gs_usb", NAME="tracker_can"
+KERNELS=="1-1.4:1.0", DRIVERS=="gs_usb", NAME="vesc_can"
+# Cameras
+SUBSYSTEM=="video4linux" OWNER="nrmc" GROUP="nrmc"
+# IMU
+SUBSYSTEMS=="usb-serial" OWNER="nrmc" GROUP="nrmc"
 
 # 
-# 99-robot.rules
+# 99-robot.rules Reference
 #
 # Overview
 #
