@@ -15,7 +15,8 @@ SafetyController::SafetyController(iVescAccess *vesc, safetycontroller::joint_pa
 }
 
 
-int sign (double a){
+int sign (double a)
+{
   return a>0?1:-1;
 }
 
