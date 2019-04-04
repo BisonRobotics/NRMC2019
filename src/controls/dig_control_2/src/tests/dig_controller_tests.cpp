@@ -13,7 +13,11 @@ using ::testing::NiceMock;
 
 using namespace dig_control_2;
 
-TEST(DigControllerTests, allocatesCorrectly)
+// TODO only works with a running ROS master and a connected or virtual can network
+// Should change to an integration test
+// sudo ip link add vesc_can type vcan
+// sudo ip link set vesc_can up
+/*TEST(DigControllerTests, allocatesCorrectly)
 {
   int argc = 0;
   char **argv = nullptr;
@@ -28,7 +32,7 @@ TEST(DigControllerTests, allocatesCorrectly)
 
   EXPECT_EQ(controller_mock.isInternallyAllocated(), false);
   EXPECT_EQ(controller.isInternallyAllocated(), true);
-}
+}*/
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv)
