@@ -66,7 +66,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
   p_prev_UlUr.second = right_speed;
 
   double speed_gain =  1;  /*DNFW*/
-  double set_speed  = .4;  /*DNFW*/
+  double set_speed  = .2;  /*DNFW*/
   double angle_gain = 1.5;  /*DNFW*/ 
   double path_gain  = 1.3;  /*DNFW*/
   

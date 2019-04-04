@@ -13,6 +13,7 @@
 #include <tf/transform_listener.h>
 
 #include <vrep_msgs/IMU.h>
+#include <sensor_msgs/Imu.h>
 #include <drive_controller_msgs/StateVector.h>
 #include <drive_controller_msgs/ErrorStates.h>
 #include <drive_controller_msgs/WheelStates.h>
@@ -32,12 +33,12 @@
 #define TIME_WINDOW_PLOT2 30.0
 #define TIME_TICK_PERIOD_PLOT2 5.0
 
-#define NUM_SERIES_PLOT3 6
-#define Y_MIN_POS_PLOT3 -0.5
-#define Y_MAX_POS_PLOT3 0.5
+#define NUM_SERIES_PLOT3 7
+#define Y_MIN_POS_PLOT3 -1.8
+#define Y_MAX_POS_PLOT3 1.8
 #define NUM_Y_TICKS_PLOT3 5
-#define TIME_WINDOW_PLOT3 30.0
-#define TIME_TICK_PERIOD_PLOT3 5.0
+#define TIME_WINDOW_PLOT3 10.0
+#define TIME_TICK_PERIOD_PLOT3 2.0
 
 #define NUM_SERIES_PLOT4 2
 #define Y_MIN_POS_PLOT4 -0.5
@@ -55,7 +56,7 @@
 
 cv::String names[] = {"Xposest", "Yposest", "Thetaest", "Xposmea", "Yposmea", "Thetamea", "ThetaPath"};
 cv::String names2[] = {"Xvelest", "Yvelest", "Omegaest", "Xvelpre", "Yvestpre", "Omegapre"};
-cv::String names3[] = {"Xaccest", "Yaccest", "Xaccmea", "Yaccmea", "Xaccpre", "Yaccpre"};
+cv::String names3[] = {"Xaccest", "Yaccest", "Xaccmea", "Yaccmea" ,"Omegamea", "Xaccpre", "Yaccpre"};
 cv::String names4[] = {"Patherr", "Angleerr"};
 cv::String names5[] = {"Leftcmd", "Rightcmd", "Leftact", "Rightact", "Leftideal", "Rightideal", "OmegaPath"};
 
@@ -74,7 +75,7 @@ dcvis_multiplot dcvmv(NUM_SERIES_PLOT2, "Velocities", Y_MIN_POS_PLOT2, Y_MAX_POS
                       TIME_WINDOW_PLOT2, TIME_TICK_PERIOD_PLOT2, names2, colors6);
                       
 dcvis_multiplot dcvma(NUM_SERIES_PLOT3, "Accelerations", Y_MIN_POS_PLOT3, Y_MAX_POS_PLOT3, NUM_Y_TICKS_PLOT3,
-                      TIME_WINDOW_PLOT3, TIME_TICK_PERIOD_PLOT3, names3, colors6);
+                      TIME_WINDOW_PLOT3, TIME_TICK_PERIOD_PLOT3, names3, colors7);
                       
 dcvis_multiplot dcerr(NUM_SERIES_PLOT4, "Error States", Y_MIN_POS_PLOT4, Y_MAX_POS_PLOT4, NUM_Y_TICKS_PLOT4,
                       TIME_WINDOW_PLOT4, TIME_TICK_PERIOD_PLOT4, names4, colors4);
@@ -100,12 +101,15 @@ void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
     dcvmp.add_point(sign*theta, t, 5);
 }
 
-void accelerationCallback(const vrep_msgs::IMU::ConstPtr &msg)
+//void accelerationCallback(const vrep_msgs::IMU::ConstPtr &msg)
+void accelerationCallback(const sensor_msgs::Imu::ConstPtr &msg)
 {
+    //sensor_msgs::ImuConstPtr
     ros::Duration plot_time = msg->header.stamp - start_time;
     double t = plot_time.toSec();
     dcvma.add_point(msg->linear_acceleration.x, t, 2);
-    dcvma.add_point(msg->linear_acceleration.y, t, 3);
+    dcvma.add_point(msg->linear_acceleration.z, t, 3);
+    dcvma.add_point(msg->angular_velocity.y, t, 4);
 }
 
 void stateVectorCallback(const drive_controller_msgs::StateVector::ConstPtr &msg)
@@ -133,8 +137,8 @@ void deltaVectorCallback(const drive_controller_msgs::StateVector::ConstPtr &msg
     dcvmv.add_point(msg->y_pos, t, 4);
     dcvmv.add_point(msg->theta, t, 5); //predicted angular vel
     
-    dcvma.add_point(msg->x_vel, t, 4); //predicted accel
-    dcvma.add_point(msg->y_vel, t, 5); //this delta vector is the change
+    dcvma.add_point(msg->x_vel, t, 5); //predicted accel
+    dcvma.add_point(msg->y_vel, t, 6); //this delta vector is the change
     //dont worry about predicted alpha
 }
 
@@ -172,8 +176,9 @@ int main(int argc, char** argv)
     ros::NodeHandle n;
     start_time = ros::Time::now();
     //listener = new tf::TransformListener();
-    ros::Subscriber posSub = n.subscribe("/vrep/pose", 100, poseCallback);
-    ros::Subscriber imuSub = n.subscribe("/vrep/imu", 100, accelerationCallback);
+    bool halfsim = true;
+    ros::Subscriber posSub = n.subscribe(halfsim ? "/tracker0/pose_estimate" : "/vrep/pose", 100, poseCallback);
+    ros::Subscriber imuSub = n.subscribe(halfsim ? "/imu" : "vrep/imu", 100, accelerationCallback);
     ros::Subscriber svSub  = n.subscribe("/position_controller/state_vector", 100, stateVectorCallback);
     ros::Subscriber dvSub  = n.subscribe("/position_controller/delta_vector", 100, deltaVectorCallback);
     ros::Subscriber esSub  = n.subscribe("/position_controller/error_states", 100, errorStatesCallback);

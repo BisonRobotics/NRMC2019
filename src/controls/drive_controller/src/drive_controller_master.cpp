@@ -61,6 +61,7 @@ int delta_vec_seq    = 0;
 int error_states_seq = 0;
 int wheel_states_seq = 0;
 int path_info_seq    = 0;
+int map_base_link_seq= 0;
 
 
 #define STATE_VECTOR_ID 0
@@ -100,6 +101,7 @@ void preemptCallback()
 geometry_msgs::TransformStamped create_tf(double x, double y, double theta, tf2::Quaternion imu_orientation, double z)
 {
   geometry_msgs::TransformStamped transform;
+  transform.header.seq = map_base_link_seq++;
   transform.header.stamp = ros::Time::now();
   transform.header.frame_id = "map";
   transform.child_frame_id = "base_link";
@@ -122,7 +124,7 @@ geometry_msgs::TransformStamped create_tf(double x, double y, double theta, tf2:
     transform.transform.translation.z =z;
     tf2::Quaternion robot_orientation;
     robot_orientation.setRPY(0.0, 0.0, theta);
-    robot_orientation = robot_orientation * imu_orientation;
+    robot_orientation = robot_orientation;/* * imu_orientation;*/
     transform.transform.rotation.x = robot_orientation.x();
     transform.transform.rotation.y = robot_orientation.y();
     transform.transform.rotation.z = robot_orientation.z();
@@ -230,7 +232,7 @@ class DriverVescCrossover : public iVescAccess
 int main(int argc, char **argv)
 {
   // read ros param for simulating
-  ros::init(argc, argv, "my_tf2_listener");
+  ros::init(argc, argv, "position_controller");
 if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
    ros::console::notifyLoggerLevelsChanged();
 }
@@ -295,11 +297,13 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     br = new DriverVescCrossover(dbr);
     bl = new DriverVescCrossover(dbl);
 
-    pos = new AprilTagTrackerInterface("/vrep/pose", .1);
-    imu = new VrepImu(0, .0001, 0, .0001);
+    //simulate with real sensors for a bit
+    //pos = new AprilTagTrackerInterface("/vrep/pose", .1);
+    //imu = new VrepImu(0, .0001, 0, .0001);
     
-    mm.giveImu(imu, 0, 0, 0);
-    mm.givePos(pos);
+    pos = new AprilTagTrackerInterface("/tracker0/pose_estimate", .1);
+    imu = new LpResearchImu("imu");
+    
   }
   else
   {
@@ -321,21 +325,33 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       }
       vesc_init_rate.sleep();
     }
-    //these will need updated with new sensors, using the same interface
-    //pos = new AprilTagTrackerInterface("/pose_estimate_filter/pose_estimate", .1);
-    //imu = new LpResearchImu("imu_base_link");
+    pos = new AprilTagTrackerInterface("/tracker0/pose_estimate", .1);
+    imu = new LpResearchImu("imu");
   }
   
-  //mm.giveImu(imu, 0, 0, 0);
-  //mm.givePos(pos);
+  ROS_DEBUG("MADE IT THROUGH 1");
+  
+  mm.giveImu(imu, 0, 0, 0);
+  mm.givePos(pos);
+  
+  ROS_DEBUG("MADE IT THROUGH 1.25");
+  
+  driver_access::ROSDriverAccess* ros_drivers; 
+  
+  if (simulating)
+  {
+      std::vector<driver_access::DriverAccess*> drivers = {dfl, dfr, dbr, dbl};
+      ros_drivers = new driver_access::ROSDriverAccess(drivers); 
+  }
 
-  std::vector<driver_access::DriverAccess*> drivers = {dfl, dfr, dbr, dbl};
-  driver_access::ROSDriverAccess ros_drivers(drivers);
 
   ros::Duration loopTime;
   bool firstTime = true;
   tf2_ros::TransformBroadcaster tfBroad;
   std::vector<std::pair<double, double> > waypoint_set;
+  
+    ROS_DEBUG("MADE IT THROUGH 1.5");
+
 
   UltraLocalizer ultraLocalizer(UltraLocalizer_default_gains, UltraLocalizer_initial_estimate);
   //SuperLocalizer superLocalizer(ROBOT_AXLE_LENGTH, 1, .5, 0, fl, fr, br, bl, /*imu,*/ pos, SuperLocalizer_default_gains);
@@ -344,6 +360,9 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   ros::Subscriber haltsub = node.subscribe("halt", 100, haltCallback);
 
   double wheel_positions[4] = { 0 };
+
+  ROS_DEBUG("MADE IT THROUGH 2");
+
 
   geometry_msgs::Point vis_point;
   // hang here until someone knows where we are
@@ -360,6 +379,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   //Can these two settling rounds be compacted into one?
   lastTime = ros::Time::now ();
+  ROS_DEBUG("MADE IT THROUGH 3");
+
   while (((ros::Time::now() - lastTime).toSec() < 2.0f + settle_time) && (ros::ok())) //((!superLocalizer.getIsDataGood() && ros::ok()))
   {
     // do initial localization
@@ -414,19 +435,23 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   }
 
   DriveController dc = DriveController(fr, fl, bl, br);
-  ROS_INFO("DC Init");
+  ROS_INFO("Drive Controller Init");
 
   server = new SimpleActionServer<FollowPathAction>(global_node, "follow_path", false);
   server->registerGoalCallback(&newGoalCallback);
   server->registerPreemptCallback(&preemptCallback);
   server->start();
-  ROS_INFO("[action_server] Started");
+  ROS_INFO("[drive controller action_server] Started");
 
   firstTime = true;
+  bool loopdebug = true; //could be a param
   while (ros::ok())
   {
-    //ROS_DEBUG("\n");
-    //ROS_DEBUG("Top");
+    if (loopdebug)
+    {
+      ROS_DEBUG("\n");
+      ROS_DEBUG("Top"); 
+    }
     // update localizer here
     if (firstTime)
     {
@@ -441,7 +466,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       currTime = ros::Time::now();
       loopTime = currTime - lastTime;
     }
-    //ROS_DEBUG("Looptime : %.5f", loopTime.toSec());
+    if (loopdebug) ROS_DEBUG("Looptime : %.5f", loopTime.toSec());
     if (simulating)
     {
       tfBroad.sendTransform(create_sim_tf(pos->getX(), pos->getY(), pos->getTheta()));
@@ -460,7 +485,10 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     wheel_states_publisher.publish(wheel_states_to_msg(dc.getWheelStates()));
     path_info_publisher.publish(path_info_to_msg(dc.getPathInfo()));
 
-    ros_drivers.publish();
+    if (simulating) 
+    {
+        ros_drivers->publish();
+    }
 
     if (newWaypointHere)
     {
@@ -470,8 +498,8 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     // update controller //Update localizer or controller? what order?
     dc.update(stateVector, loopTime.toSec());
 
-    //ROS_INFO("Paths on Stack: %d, Current Fwd: %d", dc.getPPaths(), 
-    //         (forwardPoint ? 1 : 0));
+    if (loopdebug) ROS_INFO("Paths on Stack: %d, Current Fwd: %d", dc.getPPaths(), 
+                   (forwardPoint ? 1 : 0));
     if (dc.getPPaths() >=1)
     {
       // Provide feedback
@@ -525,6 +553,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     
     delete imu;
     delete pos;
+    delete ros_drivers;
   }
   else
   {
