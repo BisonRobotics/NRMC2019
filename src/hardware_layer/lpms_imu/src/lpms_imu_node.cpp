@@ -49,7 +49,7 @@ class LpImuProxy
 
         // Get node parameters
         private_nh.param<std::string>("sensor_model", sensor_model, "DEVICE_LPMS_U2");
-        private_nh.param<std::string>("port", port, "/dev/ttyUSB0");
+        private_nh.param<std::string>("port", port, "/dev/lpms_imu");
         private_nh.param<std::string>("frame_id", frame_id, "imu");
         private_nh.param("rate", rate, 100);
 	private_nh.param<float>("clamp_val_x", cl_x, .001);
@@ -130,9 +130,9 @@ class LpImuProxy
   
     
             // Fill linear acceleration data
-            imu_msg.linear_acceleration.y = data.linAcc[0]*9.81;
-            imu_msg.linear_acceleration.x = data.linAcc[1]*9.81;
-            imu_msg.linear_acceleration.z = -data.linAcc[2]*9.81;
+            imu_msg.linear_acceleration.x = data.a[0]*9.81;
+            imu_msg.linear_acceleration.y = data.a[1]*9.81;
+            imu_msg.linear_acceleration.z = -data.a[2]*9.81;
 	             // Units are microTesla in the LPMS library, Tesla in ROS.
            // Publish the messages
             imu_pub.publish(imu_msg);

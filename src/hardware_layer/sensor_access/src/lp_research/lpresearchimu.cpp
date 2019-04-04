@@ -67,10 +67,12 @@ void LpResearchImu::imu_raw_callback(const sensor_msgs::Imu::ConstPtr &msg)
 {
   if (received_static_orientation)
   {
-    x_acc = -msg->linear_acceleration.z;
-    y_acc = msg->linear_acceleration.x;
-    omega = -msg->angular_velocity.y;
+    x_acc = msg->linear_acceleration.x;
+    y_acc = msg->linear_acceleration.z;
+    // z is y this year
+    omega = msg->angular_velocity.y;
 
+    //DO NOT USE
     orientation.setW(msg->orientation.w);
     orientation.setX(msg->orientation.x);
     orientation.setY(msg->orientation.y);
