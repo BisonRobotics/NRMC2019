@@ -253,40 +253,27 @@ void DigController::update()
           if (abs(getVibratorDuty()) > 0.0f) setVibratorDuty(0.0f);
           if (abs(getBucketDuty()) > 0.0f) setBucketDuty(0.0f);
 
+          if (backhoe_state != BackhoeState::open)
+          {
+            ROS_ERROR("[dig][digging] Backhoe must be open while digging");
+            dig_state = DigState::error;
+            stop();
+            break;
+          }
+
           switch (central_drive_state)
           {
             case CentralDriveState::at_bottom_limit:
             case CentralDriveState::near_bottom_limit:
             {
-              switch (backhoe_state)
-              {
-                case BackhoeState::closed:
-                {
-                  ROS_DEBUG("[dig][digging][near_bottom_limit][closed] Moving to dump_transition state");
-                  dig_state = DigState::dump_transition;
-                  stop();
-                  break;
-                }
-                case BackhoeState::traveling:
-                case BackhoeState::open:
-                {
-                  ROS_DEBUG("[dig][digging][near_bottom_limit][open] Closing backhoe");
-                  setCentralDriveDuty(0.0f);            // TODO continue applying force?
-                  setBackhoeDuty(BackhoeDuty::normal);  // TODO set torque instead of duty?
-                }
-                case BackhoeState::stuck:
-                {
-                  // TODO need to handle this
-                  ROS_ERROR("[dig][digging][near_bottom_limit][stuck] Need to handle this");
-                  dig_state = DigState::error;
-                  stop();
-                  break;
-                }
-              }
+              ROS_DEBUG("[dig][digging][near_bottom_limit] Moving to closing_backhoe state");
+              dig_state = DigState::closing_backhoe;
+              stop();
               break;
             }
             case CentralDriveState::digging:
             {
+              // TODO implement this functionality
               // Dig until stalled for X seconds
               break;
             }
@@ -297,7 +284,9 @@ void DigController::update()
             case CentralDriveState::near_top_limit:
             case CentralDriveState::at_top_limit:
             {
-              // Something is wrong, error state
+              ROS_ERROR("[dig][digging][default] Should not be in this central drive state");
+              dig_state = DigState::error;
+              stop();
               break;
             }
           }
@@ -305,6 +294,14 @@ void DigController::update()
         }
         case DigState::closing_backhoe:
         {
+          /*
+           * TODO this is where we stopped on Thursday
+           */
+
+          // Neither of these systems should be on in this state
+          if (abs(getVibratorDuty()) > 0.0f) setVibratorDuty(0.0f);
+          if (abs(getBucketDuty()) > 0.0f) setBucketDuty(0.0f);
+
           switch (central_drive_state)
           {
             case CentralDriveState::at_bottom_limit:
