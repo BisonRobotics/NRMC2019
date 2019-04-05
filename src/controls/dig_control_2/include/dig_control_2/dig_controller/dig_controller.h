@@ -33,10 +33,44 @@ namespace dig_control_2
       digging,
       near_dump_point,
       at_dump_point,
-      flaps_up,
+      flaps_up, // TODO define where this is
       near_top_limit,
-      at_top_limit,
-      stuck,
+      at_top_limit
+    };
+
+    /*
+          switch (central_drive_zone)
+          {
+            case CentralDriveZone::normal:
+            case CentralDriveZone::at_bottom_limit:
+            case CentralDriveZone::near_bottom_limit:
+            case CentralDriveZone::digging:
+            case CentralDriveZone::near_dump_point:
+            case CentralDriveZone::at_dump_point:
+            case CentralDriveZone::flaps_up:
+            case CentralDriveZone::near_top_limit:
+            case CentralDriveZone::at_top_limit:
+          }
+
+          switch (backhoe_state)
+          {
+            case BackhoeState::closed:
+            case BackhoeState::traveling:
+            case BackhoeState::open:
+            case BackhoeState::stuck:
+          }
+     */
+
+    enum class DigState
+    {
+      stowed,
+      dig_transition,
+      digging,
+      closing_backhoe,
+      dump_transition,
+      dumping,
+      moving_flaps_up,
+      error,
     };
 
     enum class BackhoeState
@@ -129,6 +163,7 @@ namespace dig_control_2
     Status status;
     double progress;
     CentralDriveState central_drive_state;
+    DigState dig_state;
     BackhoeState backhoe_state;
     BucketState bucket_state;
   };
