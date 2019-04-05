@@ -11,10 +11,12 @@ namespace dig_control_2
   public:
     enum class Goal
     {
-      drive_pose,
       dig,
+      finish_dig,
       dump,
-      stop,
+      finish_dump,
+      ready,
+      error,
       manual
     };
 
@@ -39,17 +41,17 @@ namespace dig_control_2
     };
 
     /*
-          switch (central_drive_zone)
+          switch (central_drive_state)
           {
-            case CentralDriveZone::normal:
-            case CentralDriveZone::at_bottom_limit:
-            case CentralDriveZone::near_bottom_limit:
-            case CentralDriveZone::digging:
-            case CentralDriveZone::near_dump_point:
-            case CentralDriveZone::at_dump_point:
-            case CentralDriveZone::flaps_up:
-            case CentralDriveZone::near_top_limit:
-            case CentralDriveZone::at_top_limit:
+            case CentralDriveState::normal:
+            case CentralDriveState::at_bottom_limit:
+            case CentralDriveState::near_bottom_limit:
+            case CentralDriveState::digging:
+            case CentralDriveState::near_dump_point:
+            case CentralDriveState::at_dump_point:
+            case CentralDriveState::flaps_up:
+            case CentralDriveState::near_top_limit:
+            case CentralDriveState::at_top_limit:
           }
 
           switch (backhoe_state)
@@ -59,18 +61,24 @@ namespace dig_control_2
             case BackhoeState::open:
             case BackhoeState::stuck:
           }
+
+          switch (bucket_state)
+          {
+            case BucketState::closed:
+            case BucketState::traveling:
+            case BucketState::open:
+            case BucketState::stuck:
+          }
      */
 
     enum class DigState
     {
-      stowed,
       dig_transition,
       digging,
       closing_backhoe,
       dump_transition,
-      dumping,
       moving_flaps_up,
-      error,
+      stow
     };
 
     enum class BackhoeState
@@ -121,6 +129,13 @@ namespace dig_control_2
     {
     public:
       static constexpr float normal = 0.4f;
+    };
+
+    class BucketDuty
+    {
+    public:
+      static constexpr float fast = 0.4f;
+      static constexpr float normal = 0.2f;
     };
 
     DigController();

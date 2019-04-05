@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="dig_control_2" type="dig_teleop_2" name="dig_teleop"/>
+</launch>

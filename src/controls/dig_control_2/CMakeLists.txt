@@ -81,6 +81,9 @@ include_directories(
 add_library(dig_controller src/dig_controller.cpp)
 target_link_libraries(dig_controller ${catkin_LIBRARIES})
 
+add_executable(dig_teleop_2 src/dig_teleop.cpp)
+target_link_libraries(dig_teleop_2 dig_controller ${catkin_LIBRARIES})
+
 
 #############
 ## Testing ##
