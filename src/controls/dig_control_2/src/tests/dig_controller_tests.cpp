@@ -34,6 +34,40 @@ using namespace dig_control_2;
   EXPECT_EQ(controller.isInternallyAllocated(), true);
 }*/
 
+TEST(DigControllerTests, initializesCorrectly)
+{
+  using nsVescAccess::limitSwitchState;
+
+  MockVescAccess central_drive;
+  MockVescAccess backhoe_actuator;
+  MockVescAccess bucket_actuator;
+  MockVescAccess vibrator;
+
+  // Initial Stop
+  EXPECT_CALL(central_drive, setDuty(0));
+  EXPECT_CALL(backhoe_actuator, setDuty(0));
+  EXPECT_CALL(bucket_actuator, setDuty(0));
+  EXPECT_CALL(vibrator, setDuty(0));
+
+  // Respond to initial state checks
+  EXPECT_CALL(central_drive, getLimitSwitchState()).WillOnce(Return(limitSwitchState::bottomOfMotion));
+  EXPECT_CALL(central_drive, getPotPosition()).WillOnce(Return(0.0f));
+  EXPECT_CALL(backhoe_actuator, getLimitSwitchState()).WillOnce(Return(limitSwitchState::bottomOfMotion));
+  EXPECT_CALL(backhoe_actuator, getLinearVelocity()).WillOnce(Return(0.0f));
+  EXPECT_CALL(bucket_actuator, getTorque()).WillOnce(Return(0.0f));
+  DigController controller(&central_drive, &backhoe_actuator, &bucket_actuator, &vibrator);
+
+  // Make sure everything initialized correctly
+  EXPECT_EQ(controller.getBucketDuty(), 0.0f);
+  EXPECT_EQ(controller.getVibratorDuty(), 0.0f);
+  EXPECT_EQ(controller.getBackhoeDuty(), 0.0f);
+  EXPECT_EQ(controller.getCentralDriveDuty(), 0.0f);
+  EXPECT_EQ(controller.getBackhoeState(), DigController::BackhoeState::open);
+  EXPECT_EQ(controller.getCentralDriveState(), DigController::CentralDriveState::at_bottom_limit);
+  EXPECT_EQ(controller.getBucketState(), DigController::BucketState::down);
+  EXPECT_EQ(controller.getControlState(), DigController::ControlState::ready);
+}
+
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv)
 {

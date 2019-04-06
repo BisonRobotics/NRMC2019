@@ -34,7 +34,7 @@ int main(int argc, char **argv)
   ros::Rate rate(50);
 
   DigController dig_controller;
-  dig_controller.setGoal(DigController::Goal::manual);
+  dig_controller.setControlState(DigController::ControlState::manual);
 
   while (ros::ok())
   {

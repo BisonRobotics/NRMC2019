@@ -16,9 +16,10 @@ DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_
 
   internally_allocated = false;
 
-  setGoal(Goal::ready);
+  bucket_state = BucketState::down;
+  setControlState(ControlState::ready);
   update();
-  if (status != Status::ready)
+  if (goal_state != ControlState::ready)
   {
     throw std::runtime_error("Something went wrong updating the dig controller state");
   }
@@ -48,13 +49,13 @@ bool DigController::isInternallyAllocated()
   return internally_allocated;
 }
 
-void DigController::setGoal(DigController::Goal goal)
+void DigController::setControlState(DigController::ControlState goal)
 {
-  if (goal == Goal::ready)
+  if (goal == ControlState::ready)
   {
     stop();
   }
-  this->goal = goal;
+  this->goal_state = goal;
 }
 
 void DigController::updateCentralDriveState()
@@ -132,18 +133,22 @@ void DigController::updateBackhoeState()
 void DigController::updateBucketState()
 {
   float torque = std::abs(bucket->getTorque());
-  if (bucket_duty > 0.0f && torque < 0.001f)
+  if (abs(bucket_duty) > 0.001f)
   {
-    bucket_state = BucketState::up;
+    if (bucket_duty > 0.0f && torque < 0.001f)
+    {
+      bucket_state = BucketState::up;
+    }
+    else if (bucket_duty < 0.0f && torque < 0.001f)
+    {
+      bucket_state = BucketState::down;
+    }
+    else
+    {
+      bucket_state = BucketState::traveling;
+    }
   }
-  else if (bucket_duty < 0.0f && torque < 0.001f)
-  {
-    bucket_state = BucketState::down;
-  }
-  else
-  {
-    bucket_state = BucketState::traveling;
-  }
+  // If duty is zero, assume that the bucket remains in same position
   // TODO check for stuck state
 }
 
@@ -155,26 +160,27 @@ void DigController::update()
   updateBucketState();
 
   // Handle state and goal
-  switch (goal)
+  switch (goal_state)
   {
-    case Goal::ready:
+    case ControlState::ready:
     {
       ROS_DEBUG("[ready] Ready for next goal");
+      break;
     }
-    case Goal::error:
+    case ControlState::error:
     {
       ROS_ERROR("[error] Encountered error");
       stop();
       break;
     }
-    case Goal::manual:
+    case ControlState::manual:
     {
       ROS_DEBUG("[manual] Manually running dig controller");
       // Keep doing whatever is currently set,
       break;
     }
-    case Goal::dig:
-    case Goal::finish_dig:
+    case ControlState::dig:
+    case ControlState::finish_dig:
     {
       // This system should never be on while digging
       if (abs(getBucketDuty()) > 0.0f) setBucketDuty(0.0f);
@@ -198,7 +204,7 @@ void DigController::update()
             case CentralDriveState::at_dump_point:
             {
               ROS_ERROR("[dig][stowed][normal] Must be stowed with flaps up");
-              goal = Goal::error;
+              goal_state = ControlState::error;
               stop();
               break;
             }
@@ -207,7 +213,7 @@ void DigController::update()
             case CentralDriveState::at_top_limit:
             {
               ROS_DEBUG("[dig][stowed][flaps_up] Stowed");
-              goal = Goal::ready;
+              goal_state = ControlState::ready;
               stop();
               break;
             }
@@ -222,7 +228,7 @@ void DigController::update()
           // Only valid state here is if the backhoe is open
           if (backhoe_state != BackhoeState::open)
           {
-            goal = Goal::error;
+            goal_state = ControlState::error;
             stop();
             ROS_ERROR("[dig][dig_transition] Backhoe must be open while traveling downward to dig");
             break;
@@ -235,7 +241,7 @@ void DigController::update()
             {
               ROS_ERROR("[dig][dig_transition] Near or at bottom limit switch during dig transition");
               // Shouldn't ever be near the bottom limit switches during this transition
-              goal = Goal::error;
+              goal_state = ControlState::error;
               stop();
               break;
             }
@@ -271,7 +277,7 @@ void DigController::update()
           if (backhoe_state != BackhoeState::open)
           {
             ROS_ERROR("[dig][digging] Backhoe must be open while digging");
-            goal = Goal::error;
+            goal_state = ControlState::error;
             stop();
             break;
           }
@@ -300,7 +306,7 @@ void DigController::update()
             case CentralDriveState::at_top_limit:
             {
               ROS_ERROR("[dig][digging][default] Should not be in this central drive state");
-              goal = Goal::error;
+              goal_state = ControlState::error;
               stop();
               break;
             }
@@ -352,7 +358,7 @@ void DigController::update()
             case CentralDriveState::at_top_limit:
             {
               ROS_ERROR("[dig][closing_backhoe][default] Should not be in this central drive state");
-              goal = Goal::error;
+              goal_state = ControlState::error;
               stop();
               break;
             }
@@ -438,7 +444,7 @@ void DigController::update()
                 {
                   ROS_WARN("[dig][dump_transition][near_dump_point][open] "
                            "Can't keep moving upward with the backhoe open");
-                  goal = Goal::error;
+                  goal_state = ControlState::error;
                   stop();
                   break;
                 }
@@ -482,7 +488,7 @@ void DigController::update()
             case CentralDriveState::at_top_limit:
             {
               ROS_ERROR("[dig][dump_transition][flaps_up] Should not be in this state");
-              goal = Goal::error;
+              goal_state = ControlState::error;
               stop();
               break;
             }
@@ -498,7 +504,7 @@ void DigController::update()
           if (backhoe_state != BackhoeState::open)
           {
             ROS_ERROR("[dig][moving_flaps_up] Backhoe should be open at this point");
-            goal = Goal::error;
+            goal_state = ControlState::error;
             stop();
             break;
           }
@@ -517,12 +523,12 @@ void DigController::update()
             case CentralDriveState::at_top_limit:
             {
               stop();
-              if (goal == Goal::dig)
+              if (goal_state == ControlState::dig)
               {
                 ROS_DEBUG("[dig][moving_flaps_up][flaps_up] Starting another dig");
                 dig_state = DigState::dig_transition;
               }
-              else if (goal == Goal::finish_dig)
+              else if (goal_state == ControlState::finish_dig)
               {
                 ROS_DEBUG("[dig][moving_flaps_up][flaps_up] Dig finished");
                 dig_state = DigState::stow;
@@ -537,7 +543,7 @@ void DigController::update()
             {
               ROS_ERROR("[dig][moving_flaps_up][near_dump_point] Should not be in this state");
               stop();
-              goal = Goal::error;
+              goal_state = ControlState::error;
               break;
             }
           }
@@ -546,7 +552,7 @@ void DigController::update()
       }
       break;
     }
-    case Goal::dump:
+    case ControlState::dump:
     {
       setCentralDriveDuty(0.0f);
       setBackhoeDuty(0.0f);
@@ -556,7 +562,7 @@ void DigController::update()
         case BucketState::up:
         {
           ROS_DEBUG("[dump][up] Transitioning to finish dump");
-          goal = Goal::finish_dump;
+          goal_state = ControlState::finish_dump;
           stop();
           break;
         }
@@ -576,7 +582,7 @@ void DigController::update()
       }
       break;
     }
-    case Goal::finish_dump:
+    case ControlState::finish_dump:
     {
       setCentralDriveDuty(0.0f);
       setBackhoeDuty(0.0f);
@@ -593,7 +599,7 @@ void DigController::update()
         case BucketState::down:
         {
           ROS_DEBUG("[dump][down] Finished dump");
-          goal = Goal::ready;
+          goal_state = ControlState::ready;
           stop();
           break;
         }
@@ -617,19 +623,9 @@ void DigController::stop()
   setVibratorDuty(0.0f);
 }
 
-DigController::Goal DigController::getGoal() const
+DigController::ControlState DigController::getControlState() const
 {
-  return goal;
-}
-
-DigController::Status DigController::getStatus() const
-{
-  return status;
-}
-
-double DigController::getProgress() const
-{
-  return progress;
+  return goal_state;
 }
 
 DigController::CentralDriveState DigController::getCentralDriveState() const
