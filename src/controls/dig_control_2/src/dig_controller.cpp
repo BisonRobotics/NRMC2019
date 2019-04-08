@@ -165,6 +165,7 @@ void DigController::update()
     case ControlState::ready:
     {
       ROS_DEBUG("[ready] Ready for next goal");
+      stop();
       break;
     }
     case ControlState::error:

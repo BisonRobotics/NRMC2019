@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     dig_controller.update();
     dig_controller.setCentralDriveDuty(left);
     dig_controller.setBackhoeDuty(right);
-    rate.sleep();
     ros::spinOnce();
+    rate.sleep();
   }
 }
