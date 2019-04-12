@@ -1,7 +1,8 @@
 #include <dig_control_2/dig_controller/dig_controller.h>
 #include <dig_control_2/dig_params.h> // Can only include once
+#include <boost/algorithm/clamp.hpp>
 
-using std::clamp;
+using boost::algorithm::clamp;
 using std::abs;
 using namespace dig_control_2;
 
@@ -647,7 +648,7 @@ DigController::BucketState DigController::getBucketState() const
 void DigController::setCentralDriveDuty(float value)
 {
   central_drive_duty = clamp(value, -MAX_CENTRAL_DRIVE_DUTY, MAX_CENTRAL_DRIVE_DUTY);
-  central_drive->setDuty(central_drive_duty);
+  central_drive->setCustom(central_drive_duty);
 }
 
 void DigController::setBackhoeDuty(float value)

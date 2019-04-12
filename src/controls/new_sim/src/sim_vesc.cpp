@@ -1,4 +1,6 @@
 #include <vesc_access/ivesc_access.h>
+#include <sim_robot/sim_vesc.h>
+
 #include "sim_robot/sim_vesc.h"
 #include "sensor_msgs/JointState.h"
 
@@ -158,4 +160,9 @@ bool SimVesc::ableToHitGround()
 void SimVesc::setDuty(float d)
 {
   this->setLinearVelocity(.5 * d);
+}
+
+void SimVesc::setCustom(float d)
+{
+  // TODO not really implemented
 }

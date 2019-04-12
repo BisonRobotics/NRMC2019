@@ -20,6 +20,7 @@ public:
   void setPotPosition(float pos);
   bool ableToHitGround();
   void setDuty(float d) override;
+  void setCustom(float d) override;   // TODO not really implemented
 
 private:
   float vel;

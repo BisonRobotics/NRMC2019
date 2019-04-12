@@ -133,14 +133,24 @@ int main(int argc, char **argv)
   ros::Subscriber joy_sub = n.subscribe("joy", 2, callback);
   ros::Rate rate(50);
 
-  //DigController dig_controller;
-  //dig_controller.setControlState(DigController::ControlState::manual);
+  DigController dig_controller;
+  dig_controller.setControlState(DigController::ControlState::manual);
 
   while (ros::ok())
   {
-    //dig_controller.update();
+    dig_controller.update();
     ros::spinOnce();
-    //dig_controller.stop();
+    if (dig_safety)
+    {
+      dig_controller.setCentralDriveDuty(central_duty);
+      dig_controller.setBackhoeDuty(backhoe_duty);
+      dig_controller.setVibratorDuty(vibrator_duty);
+      dig_controller.setBucketDuty(bucket_duty);
+    }
+    else
+    {
+      dig_controller.stop();
+    }
     rate.sleep();
   }
 }

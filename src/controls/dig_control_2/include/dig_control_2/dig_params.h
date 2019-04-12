@@ -11,7 +11,7 @@
 #define BUCKET_ID 8
 
 #define BACKHOE_DIRECTION 1.0f
-#define CENTRAL_DRIVE_DIRECTION 1.0f
+#define CENTRAL_DRIVE_DIRECTION -1.0f
 
 #define MAX_CENTRAL_DRIVE_VELOCITY 0.9425f  // in rad/s
 #define MAX_CENTRAL_DRIVE_TORQUE 10.0f     // in Nm -> the real number is 675 but we should never approach that

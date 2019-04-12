@@ -14,6 +14,7 @@ public:
   MOCK_METHOD0(getLimitSwitchState, nsVescAccess::limitSwitchState(void));
   MOCK_METHOD0(getPotPosition, float(void));
   MOCK_METHOD1(setDuty, void(float));
+  MOCK_METHOD1(setCustom, void(float));
 };
 
 #endif

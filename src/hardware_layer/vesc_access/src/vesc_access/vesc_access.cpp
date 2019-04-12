@@ -328,3 +328,8 @@ float VescAccess::getPotPosition(void)
 {
   return vesc->getADC() * rad_per_count + rad_offset;
 }
+
+void VescAccess::setCustom(float setpoint)
+{
+  this->vesc->setCustom(this->direction * setpoint);
+}
