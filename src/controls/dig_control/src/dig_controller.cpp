@@ -2,6 +2,7 @@
 #include <dig_control/dig_params.h> // Can only include once
 #include <boost/algorithm/clamp.hpp>
 
+
 using boost::algorithm::clamp;
 using std::abs;
 using namespace dig_control;
