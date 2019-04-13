@@ -1,6 +1,9 @@
 #include <teleop_interface/teleop_interface.h>
 #include <wheel_params/wheel_params.h>
+#include <boost/algorithm/clamp.hpp>
 
+
+using boost::algorithm::clamp;
 
 
 TeleopInterface::TeleopInterface(Mode mode, float max_value, iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl)
@@ -70,11 +73,6 @@ void TeleopInterface::stopMotors()
   bl->setTorque(0.0f);
 }
 
-float TeleopInterface::clamp(float number, float max, float min)
-{
-  return std::max(min, std::min(number, max));
-}
-
 void TeleopInterface::update(float left, float right)
 {
   if (std::abs(left) > 0.001f)
@@ -135,9 +133,9 @@ TeleopInterface::~TeleopInterface()
 {
   if (internally_alloc)
   {
-    delete fl;
-    delete fr;
-    delete bl;
-    delete br;
+    delete (VescAccess*)fl;
+    delete (VescAccess*)fr;
+    delete (VescAccess*)bl;
+    delete (VescAccess*)br;
   }
 }
