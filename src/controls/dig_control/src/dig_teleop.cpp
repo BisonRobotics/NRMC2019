@@ -1,12 +1,12 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
-#include <teleop_interface/teleop_interface.h>
 #include <dig_control/dig_controller/dig_controller.h>
 
 using namespace dig_control;
 
 float central_duty, backhoe_duty, vibrator_duty, bucket_duty, left_wheels, right_wheels;
 bool drive_safety, dig_safety;
+
 
 void callback(const sensor_msgs::Joy::ConstPtr &joy)
 {
@@ -133,7 +133,6 @@ int main(int argc, char **argv)
   ros::Subscriber joy_sub = n.subscribe("joy", 2, callback);
   ros::Rate rate(50);
 
-  TeleopInterface teleop(TeleopInterface::duty, 0.95f);
   DigController dig_controller;
   dig_controller.setControlState(DigController::ControlState::manual);
 
@@ -152,15 +151,6 @@ int main(int argc, char **argv)
     {
       dig_controller.stop();
     }
-    if (drive_safety)
-    {
-      teleop.update(left_wheels, right_wheels);
-    }
-    else
-    {
-      teleop.update(0.0f, 0.0f);
-    }
     rate.sleep();
   }
 }
-

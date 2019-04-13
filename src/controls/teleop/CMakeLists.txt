@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   vesc_access
+  dig_control
 )
 
 
@@ -20,7 +21,7 @@ set(GTEST_LIBRARIES gmock_main)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES teleop_interface
-#  CATKIN_DEPENDS joy rospy sensor_msgs
+  CATKIN_DEPENDS joy dig_control
 #  DEPENDS system_lib
 )
 
@@ -35,7 +36,7 @@ add_library(teleop_interface src/teleop_interface/teleop_interface.cpp)
 target_link_libraries (teleop_interface ${catkin_LIBRARIES})
 
 add_executable(teleop src/teleop.cpp)
-target_link_libraries (teleop teleop_interface)
+target_link_libraries (teleop teleop_interface ${catkin_LIBRARIES})
 
 ########
 # Test #
