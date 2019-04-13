@@ -14,10 +14,10 @@
 
 #include <vrep_msgs/IMU.h>
 #include <sensor_msgs/Imu.h>
-#include <drive_controller_msgs/StateVector.h>
-#include <drive_controller_msgs/ErrorStates.h>
-#include <drive_controller_msgs/WheelStates.h>
-#include <drive_controller_msgs/PathInfo.h>
+#include <drive_controller/StateVector.h>
+#include <drive_controller/ErrorStates.h>
+#include <drive_controller/WheelStates.h>
+#include <drive_controller/PathInfo.h>
 
 #define NUM_SERIES_PLOT1 7
 #define Y_MIN_POS_PLOT1 -5.0
@@ -112,7 +112,7 @@ void accelerationCallback(const sensor_msgs::Imu::ConstPtr &msg)
     dcvma.add_point(msg->angular_velocity.y, t, 4);
 }
 
-void stateVectorCallback(const drive_controller_msgs::StateVector::ConstPtr &msg)
+void stateVectorCallback(const drive_controller::StateVector::ConstPtr &msg)
 {
     ros::Duration plot_time = msg->header.stamp - start_time;
     double t = plot_time.toSec();
@@ -129,7 +129,7 @@ void stateVectorCallback(const drive_controller_msgs::StateVector::ConstPtr &msg
     //dcvma.add_point(msg->alpha,   t, 2); //There is no useful alpha estimate or measurement
 }
 
-void deltaVectorCallback(const drive_controller_msgs::StateVector::ConstPtr &msg)
+void deltaVectorCallback(const drive_controller::StateVector::ConstPtr &msg)
 {
     ros::Duration plot_time = msg->header.stamp - start_time;
     double t = plot_time.toSec();
@@ -142,7 +142,7 @@ void deltaVectorCallback(const drive_controller_msgs::StateVector::ConstPtr &msg
     //dont worry about predicted alpha
 }
 
-void errorStatesCallback(const drive_controller_msgs::ErrorStates::ConstPtr &msg)
+void errorStatesCallback(const drive_controller::ErrorStates::ConstPtr &msg)
 {
     ros::Duration plot_time = msg->header.stamp - start_time;
     double t = plot_time.toSec();
@@ -150,7 +150,7 @@ void errorStatesCallback(const drive_controller_msgs::ErrorStates::ConstPtr &msg
     dcerr.add_point(msg->angle_error, t, 1);
 }
 
-void wheelStatesCallback(const drive_controller_msgs::WheelStates::ConstPtr &msg)
+void wheelStatesCallback(const drive_controller::WheelStates::ConstPtr &msg)
 {
     ros::Duration plot_time = msg->header.stamp - start_time;
     double t = plot_time.toSec();
@@ -162,7 +162,7 @@ void wheelStatesCallback(const drive_controller_msgs::WheelStates::ConstPtr &msg
     dcwhe.add_point(msg->right_wheel_planned, t, 5);
 }
 
-void pathInfoCallback(const drive_controller_msgs::PathInfo::ConstPtr &msg)
+void pathInfoCallback(const drive_controller::PathInfo::ConstPtr &msg)
 {
     ros::Duration plot_time = msg->header.stamp - start_time;
     double t = plot_time.toSec();
