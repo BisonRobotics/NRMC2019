@@ -28,5 +28,7 @@
 *.out
 *.app
 
-cmake-build-debug/
+# Temporary files
+*.user
 .idea/
+cmake-build-debug/
