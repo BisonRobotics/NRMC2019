@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<package format="2">
-  <name>apriltags</name>
-  <version>0.0.0</version>
-  <description>The apriltags package</description>
-  <maintainer email="jacob.huesman@ndsu.edu">jacob</maintainer>
-  <license>TODO</license>
-  <buildtool_depend>catkin</buildtool_depend>
-</package>
