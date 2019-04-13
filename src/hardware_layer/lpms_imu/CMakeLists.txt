@@ -9,13 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
   timesync
 )
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES LpSensor
-  CATKIN_DEPENDS timesync
-  DEPENDS LpSensor)
+catkin_package(CATKIN_DEPENDS timesync)
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(${catkin_INCLUDE_DIRS})
 add_executable(lpms_imu_node src/lpms_imu_node.cpp)
 target_link_libraries(lpms_imu_node ${catkin_LIBRARIES} LpSensor)
 add_dependencies(lpms_imu_node ${catkin_EXPORTED_TARGETS})

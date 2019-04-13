@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   vesc_access
   driver_access
   localization
-  new_sim
   geometry_msgs
   visualization_msgs
   tf2
