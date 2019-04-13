@@ -2,7 +2,6 @@
 #define WHEEL_PARAMS_H
 
 #include "vesc_access/ivesc_access.h"
-#include "safety_vesc/isafety_controller.h"
 
 #define WHEEL_CAN_NETWORK ("vesc_can")
 
@@ -164,36 +163,6 @@ nsVescAccess::vesc_param_struct_t shoulder_param =
   WHEEL_CAN_NETWORK,
   .can_id = CENTRAL_DRIVE_ID,
   .name = "central_drive"
-};
-
-safetycontroller::joint_params_t linear_joint_params =
-{
-  .minimum_pos = 0,
-  .maximum_pos = LINEAR_ACTUATOR_LENGTH,
-  .safety_check_pos = SAFE_LINEAR_DISTANCE,
-  .gain = .11,
-  .setpoint_tolerance = .005,
-  .lower_limit_position = .0286,
-  .upper_limit_position = LINEAR_ACTUATOR_LENGTH,
-  .max_abs_velocity = MAX_LINEAR_ACTUATOR_VELOCITY,
-  .limit_switch_safety_margin = .001,
-  .max_abs_torque = MAX_LINEAR_ACTUATOR_TORQUE,
-  .name = "linear"
-};
-
-safetycontroller::joint_params_t central_joint_params =
-{
-  .minimum_pos = MINIMUM_CENTRAL_ANGLE,
-  .maximum_pos = MAXIMUM_CENTRAL_ANGLE,
-  .safety_check_pos = SAFE_CENTRAL_ANGLE,
-  .gain = .15,
-  .setpoint_tolerance = 0.04,
-  .lower_limit_position = MINIMUM_CENTRAL_ANGLE,
-  .upper_limit_position = MAXIMUM_CENTRAL_ANGLE,
-  .max_abs_velocity = .2,
-  .limit_switch_safety_margin = .01,
-  .max_abs_torque = MAX_CENTRAL_DRIVE_TORQUE,
-  .name = "central"
 };
 
 /*

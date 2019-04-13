@@ -58,14 +58,14 @@ target_link_libraries (vrep_position_access ${catkin_LIBRARIES})
 
 add_library (lpresearch_imu src/lp_research/lpresearchimu.cpp)
 target_link_libraries (lpresearch_imu ${catkin_LIBRARIES})
-add_executable (lpresearch_integration_test tests/lpresearchtest.cpp)
-target_link_libraries (lpresearch_integration_test lpresearch_imu ${catkin_LIBRARIES})
+#add_executable (lpresearch_integration_test tests/lpresearchtest.cpp)
+#target_link_libraries (lpresearch_integration_test lpresearch_imu ${catkin_LIBRARIES})
 
 add_library (apriltag_tracker_interface src/apriltag_tracker_interface/apriltag_tracker_interface.cpp)
 target_link_libraries (apriltag_tracker_interface ${catkin_LIBRARIES})
 
-add_executable(apriltag_integration_test tests/apriltag_integration.cpp)
-target_link_libraries(apriltag_integration_test apriltag_tracker_interface ${catkin_LIBRARIES})
+#add_executable(apriltag_integration_test tests/apriltag_integration.cpp)
+#target_link_libraries(apriltag_integration_test apriltag_tracker_interface ${catkin_LIBRARIES})
 
 
 if(DEFINED ENV{ON_ROBOT})
