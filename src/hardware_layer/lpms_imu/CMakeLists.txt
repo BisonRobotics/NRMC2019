@@ -9,24 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
   timesync
 )
 
-catkin_package(
-   CATKIN_DEPENDS timesync)
+catkin_package(CATKIN_DEPENDS timesync)
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-  include
-)
-
-set(lpms_imu_node_SRCS
-    src/lpms_imu_node.cpp)
-
-find_library(Lp_LIBRARY LpSensor)
-
-add_executable(lpms_imu_node ${lpms_imu_node_SRCS})
-
-target_link_libraries(lpms_imu_node
-  ${catkin_LIBRARIES}
-  ${Lp_LIBRARY}
- )
-
+include_directories(${catkin_INCLUDE_DIRS})
+add_executable(lpms_imu_node src/lpms_imu_node.cpp)
+target_link_libraries(lpms_imu_node ${catkin_LIBRARIES} LpSensor)
 add_dependencies(lpms_imu_node ${catkin_EXPORTED_TARGETS})
