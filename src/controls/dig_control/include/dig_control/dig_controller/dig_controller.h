@@ -32,14 +32,13 @@ namespace dig_control
 
     enum class CentralDriveState
     {
-      normal,
       at_bottom_limit,
-      near_bottom_limit,
       digging,
+      near_digging,
+      flap_transition_down,
       near_dump_point,
       at_dump_point,
-      flaps_up, // TODO define where this is
-      near_top_limit,
+      flap_transition_up,
       at_top_limit
     };
 
@@ -62,37 +61,38 @@ namespace dig_control
     class CentralDriveAngles
     {
     public:
-      static constexpr double bottom_limit   = 0.0;
-      static constexpr double digging_bottom = 0.1;
-      static constexpr double digging_top    = 0.2;
-      static constexpr double zero_angle     = 0.3;
-      static constexpr double dump_bottom    = 0.4;
-      static constexpr double dump_point     = 0.5;
-      static constexpr double dump_top       = 0.6;
-      static constexpr double near_top_limit = 0.7;
-      static constexpr double top_limit      = 0.8;
+      static constexpr int variation      =   10;
+      static constexpr int bottom_limit   =  300;
+      static constexpr int digging_bottom =  300;
+      static constexpr int digging_top    =  900;
+      static constexpr int zero_angle     = 1330;
+      static constexpr int flaps_bottom   = 2000;
+      static constexpr int dump_bottom    = 2250;
+      static constexpr int dump_point     = 2300;
+      static constexpr int dump_top       = 2350;
+      static constexpr int top_limit      = 2550;
     };
 
     class CentralDriveDuty
     {
     public:
       static constexpr float slow = 0.1f;
-      static constexpr float normal = 0.2f;
-      static constexpr float fast = 0.4f;
+      static constexpr float normal = 0.3f;
+      static constexpr float fast = 0.5f;
     };
 
     class BackhoeDuty
     {
     public:
       static constexpr float slow = 0.1f;
-      static constexpr float normal = 0.4f;
-      static constexpr float fast = 0.7f;
+      static constexpr float normal = 0.5f;
+      static constexpr float fast = 0.8f;
     };
 
     class VibratorDuty
     {
     public:
-      static constexpr float normal = 0.7f;
+      static constexpr float normal = 0.4f;
     };
 
     class BucketDuty
@@ -123,16 +123,24 @@ namespace dig_control
     CentralDriveState getCentralDriveState() const;
     BackhoeState getBackhoeState() const;
     BucketState getBucketState() const;
+    DigState getDigState() const;
     float getCentralDriveDuty() const;
     float getBackhoeDuty() const;
     float getBucketDuty() const;
     float getVibratorDuty() const;
+    int getCentralDrivePosition() const;
+    std::string getCentralDriveStateString() const;
+    std::string getBackhoeStateString() const;
+    std::string getDigStateString() const;
     bool isInternallyAllocated();
 
   private:
     iVescAccess *central_drive, *backhoe, *bucket, *vibrator;
     bool internally_allocated;
     float central_drive_duty, backhoe_duty, bucket_duty, vibrator_duty;
+    int central_drive_position;
+
+    int backhoe_stuck_count;
 
     ControlState goal_state;
     CentralDriveState central_drive_state;

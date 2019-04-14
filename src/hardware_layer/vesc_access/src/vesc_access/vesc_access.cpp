@@ -333,3 +333,8 @@ void VescAccess::setCustom(float setpoint)
 {
   this->vesc->setCustom(this->direction * setpoint);
 }
+
+int VescAccess::getADC()
+{
+  return vesc->getADC();
+}

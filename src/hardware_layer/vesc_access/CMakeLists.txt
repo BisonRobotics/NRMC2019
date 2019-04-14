@@ -22,7 +22,7 @@ set(GTEST_LIBRARIES gmock_main)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES vesc_access
+  LIBRARIES vesc_access vesc
 #  CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
 )
@@ -36,11 +36,11 @@ include_directories(
   ${GTEST_INCLUDE_DIRS}
 )
 
-add_library(vesc_lib src/vesc_control/vesc_socket_can.cpp)
-target_link_libraries(vesc_lib ${catkin_LIBRARIES})
+add_library(vesc src/vesc_control/vesc_socket_can.cpp)
+target_link_libraries(vesc ${catkin_LIBRARIES})
 
 add_library(vesc_access src/vesc_access/vesc_access.cpp)
-target_link_libraries(vesc_access ${catkin_LIBRARIES} vesc_lib)
+target_link_libraries(vesc_access ${catkin_LIBRARIES} vesc)
 
 #add_executable(vesc_access_integration_test test/vesc_access_integration_test.cpp)
 #target_link_libraries(vesc_socket_can_integration_test vesc_lib)
