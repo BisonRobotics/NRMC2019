@@ -5,6 +5,7 @@
             <geometry>
                 <mesh filename="package://description/meshes/arena.dae" />
             </geometry>
+            <origin xyz="3.695 0 -0.61" rpy="0 0 -${pi/2}"/>
         </visual>
     </link>
 </robot>
