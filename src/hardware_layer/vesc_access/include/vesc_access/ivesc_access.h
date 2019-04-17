@@ -37,6 +37,8 @@ public:
   virtual nsVescAccess::limitSwitchState getLimitSwitchState(void) = 0;
   virtual float getPotPosition(void) = 0;
   virtual void setDuty(float d) = 0;
+  virtual void setCustom(float setpoint) = 0;
+  virtual int getADC() = 0;
 
   // TODO not having virtual destructors leads to memory leaks
   //virtual ~iVescAccess() = 0;

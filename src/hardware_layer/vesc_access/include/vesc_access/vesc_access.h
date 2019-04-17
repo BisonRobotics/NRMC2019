@@ -43,7 +43,12 @@ public:
   nsVescAccess::limitSwitchState getLimitSwitchState(void) override;
   float getPotPosition(void) override;
   void setDuty(float duty) override;
+  void setCustom(float setpoint) override;
+  int getADC() override;
+
+
   float convertTorqueToCurrent(float torque);
+
   iVesc *vesc;
 private:
   void setTorqueLimit(float newtown_meters);

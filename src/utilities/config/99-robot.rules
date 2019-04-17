@@ -8,6 +8,7 @@ KERNELS=="1-1.4:1.0", DRIVERS=="gs_usb", NAME="vesc_can"
 SUBSYSTEM=="video4linux" OWNER="nrmc" GROUP="nrmc"
 # IMU
 SUBSYSTEMS=="usb-serial" OWNER="nrmc" GROUP="nrmc"
+SUBSYSTEM=="tty" ATTRS{serial}=="LPMSCU2000299" SYMLINK+="lpms_imu"
 
 # 
 # 99-robot.rules Reference

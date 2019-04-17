@@ -21,7 +21,6 @@ public:
   Mode getMode();
   void stopMotors();
   void update(float left, float right);
-  float clamp(float number, float max, float min);
   ~TeleopInterface();
   iVescAccess *fl, *fr, *br, *bl;
 

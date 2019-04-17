@@ -1,4 +1,3 @@
 <launch>
-    <node name="dig_teleop" type="dig_teleop" pkg="dig_control"/>
-    <include file="$(find dig_control)/launch/dig_master.launch"/>
+    <node pkg="dig_control_2" type="dig_teleop_2" name="dig_teleop"/>
 </launch>

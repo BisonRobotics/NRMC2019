@@ -158,7 +158,6 @@ public:
     CONTROL_MODE_CURRENT_BRAKE,
     CONTROL_MODE_POS,
     CONTROL_MODE_NONE,
-
     CONTROL_MODE_CUSTOM,
   } mc_control_mode;
 
