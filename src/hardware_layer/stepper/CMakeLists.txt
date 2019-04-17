@@ -10,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
 )
 
+link_directories(/usr/src/gmock/build)
+set(GTEST_LIBRARIES gmock_main)
+
 find_package(Boost COMPONENTS program_options timer REQUIRED)
 
 ## System dependencies are found with CMake's conventions
