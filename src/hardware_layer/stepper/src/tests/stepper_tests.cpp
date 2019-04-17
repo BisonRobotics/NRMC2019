@@ -15,13 +15,11 @@ using namespace stepper;
 TEST(TagTests, getCanID)
 {
   EXPECT_EQ(Stepper::generateCanID(1, MessageType::Error), 0b1);
-  EXPECT_EQ(Stepper::generateCanID(1, MessageType::Scan), 0b10001);
 }
 
 TEST(TagTests, getMessageType)
 {
   EXPECT_EQ(Stepper::getMessageType(0b00001), MessageType::Error);
-  EXPECT_EQ(Stepper::getMessageType(0b10001), MessageType::Scan);
 
 }
 

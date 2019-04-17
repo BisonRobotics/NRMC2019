@@ -139,31 +139,11 @@ void Vesc::setPos(float pos)
 void Vesc::setCustom(float setpoint, uint index)
 {
   setPoint(CONTROL_MODE_CUSTOM, setpoint, index);
-  // if(_enable) {
-  //	custom_control set;
-  //	set.setpointf = setpoint;
-  //	set.control_mode = CONTROL_MODE_CUSTOM;
-  //	//struct can_frame frame;
-  //	//frame.can_id = mode << 8 | _controllerID | 0x80000000;
-  //	//frame.can_dlc = sizeof(VESC_set);
-  //	//memcpy(frame.data, &set, sizeof(VESC_set));
+}
 
-  //	//write(s, &frame, sizeof(struct can_frame));
-
-  //	msg.msg_head.opcode  = TX_SETUP;
-  //	msg.msg_head.can_id  = CAN_PACKET_CONTROL << 8 | _controllerID | 0x80000000;
-  //	msg.msg_head.flags   = SETTIMER|STARTTIMER|TX_CP_CAN_ID;
-  //	msg.msg_head.nframes = 1;
-  //	msg.msg_head.count = 0;
-  //	msg.msg_head.ival1.tv_sec = 0;
-  //	msg.msg_head.ival1.tv_usec = 0;
-  //	msg.msg_head.ival2.tv_sec = 0;
-  //	msg.msg_head.ival2.tv_usec = 1000*10;
-  //	//msg.frame[0].can_id    = 0x42; /* obsolete when using TX_CP_CAN_ID */
-  //	msg.frame[0].can_dlc   = sizeof(custom_control);
-  //	memcpy(msg.frame[0].data, &set, 8);
-  //	write(sbcm, &msg, sizeof(msg));
-  //}
+void Vesc::setCustom(float setpoint)
+{
+  setPoint(CONTROL_MODE_CUSTOM, setpoint, 0);
 }
 
 void Vesc::enable()

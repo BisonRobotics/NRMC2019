@@ -17,7 +17,7 @@ TEST(TagTests, initialization)
 {
   EXPECT_EQ(Tag::getTags().size(), 0);
 
-  Tag one(1, 0.5, tf2::Transform());
+  Tag one(1, 0.5);
   EXPECT_EQ(one.getID(), 1);
   EXPECT_EQ(one.getSeq(), 0);
   EXPECT_EQ(one.getTransformsSize(), 0);
@@ -27,7 +27,7 @@ TEST(TagTests, initialization)
   EXPECT_EQ(Tag::isInitialized(), false);
   EXPECT_EQ(Tag::getListSize(), 0);
 
-  Tag two(2, 0.5, tf2::Transform());
+  Tag two(2, 0.5);
   EXPECT_EQ(two.getID(), 2);
   EXPECT_EQ(two.getSeq(), 0);
   EXPECT_EQ(two.getTransformsSize(), 0);
@@ -37,7 +37,7 @@ TEST(TagTests, initialization)
   EXPECT_EQ(Tag::isInitialized(), false);
   EXPECT_EQ(Tag::getListSize(), 0);
 
-  Tag two_2(2, 0.5, tf2::Transform());
+  Tag two_2(2, 0.5);
   EXPECT_EQ(two_2.getID(), 2);
   EXPECT_EQ(two_2.getSeq(), 0);
   EXPECT_EQ(two_2.getTransformsSize(), 0);
@@ -47,17 +47,17 @@ TEST(TagTests, initialization)
   EXPECT_EQ(Tag::isInitialized(), false);
   EXPECT_EQ(Tag::getListSize(), 0);
 
-  Tag::init(10, ros::Duration(0.5));
+  Tag::init(10, ros::Duration(0.5), false);
   EXPECT_EQ(Tag::isInitialized(), true);
   EXPECT_EQ(Tag::getListSize(), 10);
 }
 
 TEST(TagTests, equalityOperators)
 {
-  Tag one(1, 0.5, tf2::Transform());
-  Tag one_duplicate(1, 0.5, tf2::Transform());
+  Tag one(1, 0.5);
+  Tag one_duplicate(1, 0.5);
   Tag one_clone(one);
-  Tag two(2, 0.5, tf2::Transform());
+  Tag two(2, 0.5);
 
   EXPECT_EQ(one, one_duplicate);
   EXPECT_EQ(one, one_clone);
@@ -68,10 +68,10 @@ TEST(TagTests, tagVector)
 {
   EXPECT_EQ(Tag::getTags().size(), 0);
 
-  Tag one(1, 0.5, tf2::Transform());
-  Tag two(2, 0.5, tf2::Transform());
-  Tag two_duplicate(2, 0.5, tf2::Transform());
-  Tag three(3, 0.5, tf2::Transform());
+  Tag one(1, 0.5);
+  Tag two(2, 0.5);
+  Tag two_duplicate(2, 0.5);
+  Tag three(3, 0.5);
 
   TagsVector tags = Tag::getTags();
   EXPECT_EQ(one, tags[0]);
