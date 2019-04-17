@@ -65,10 +65,11 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
   p_prev_UlUr.first = left_speed;
   p_prev_UlUr.second = right_speed;
 
-  double speed_gain =  1;  /*DNFW*/
-  double set_speed  = .2;  /*DNFW*/
+  double speed_gain =   1;  /*DNFW*/
+  double set_speed  =  .2;  /*DNFW*/
   double angle_gain = 1.5;  /*DNFW*/ 
   double path_gain  = 1.3;  /*DNFW*/
+  double max_speed  = 1.0;  //You can change this one without fear
   
 
   double steering = 0;
@@ -122,7 +123,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
                                       p_omega.at((int)(index_for_t) + t_jumps)
                                        - (p_forward_point ? 2.0 : 2.0)*angle_gain*es.angle_error 
                                        - (p_forward_point ? 2.0 : 2.0)*path_gain*es.path_error,
-                                       Axelsize, 2.0);
+                                       Axelsize, max_speed);
                                        
       std::pair<double, double> UlUrIdeal = speedSteeringControl(
                                       p_speed_cmd, 

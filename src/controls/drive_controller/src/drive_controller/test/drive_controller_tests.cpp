@@ -43,7 +43,7 @@ TEST(DriveControllerTests, sscworks_1)
   EXPECT_NEAR(UlUr.first, .375, .0001);
   EXPECT_NEAR(UlUr.second, .625, .0001);
 }
-
+/*
 TEST(DriveControllerTests, gaaliWorks_1)
 {
 
@@ -73,8 +73,8 @@ TEST(DriveControllerTests, gaaliWorks_1)
                            chopsize);
 
   EXPECT_NEAR(length, 2.0913, .001);
-}
-
+}*/
+/*
 TEST(DriveControllerTests, findCPP2019works_1)
 {
 
@@ -107,7 +107,7 @@ TEST(DriveControllerTests, findCPP2019works_1)
 
   EXPECT_NEAR(par_and_err.first, .5200, .001);
   EXPECT_NEAR(par_and_err.second, -.0946, .001);
-}
+}*/
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv)
