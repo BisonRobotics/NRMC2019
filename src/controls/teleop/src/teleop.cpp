@@ -83,7 +83,7 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
     }
     else if (dp)
     {
-      central_duty = -DigController::CentralDriveDuty::fast;
+      central_duty = -DigController::CentralDriveDuty::normal;
     }
     else
     {
@@ -102,7 +102,7 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
     }
     else if (rt)
     {
-      vibrator_duty = DigController::VibratorDuty::normal;
+      vibrator_duty = 0.75;
     }
   }
   else
@@ -178,17 +178,18 @@ int main(int argc, char **argv)
     }
     if (drive_safety)
     {
+      //ROS_INFO("| L | %f | R | %f |", left_wheels, right_wheels);
       teleop.update(left_wheels, right_wheels);
     }
     else
     {
       teleop.update(0.0f, 0.0f);
     }
-    ROS_INFO("| P | %5i | DS | %15s | CD | %20s | BH | %9s |",
+    /*ROS_INFO("| P | %5i | DS | %15s | CD | %20s | BH | %9s |",
         dig_controller.getCentralDrivePosition(),
         dig_controller.getDigStateString().c_str(),
         dig_controller.getCentralDriveStateString().c_str(),
-        dig_controller.getBackhoeStateString().c_str());
+        dig_controller.getBackhoeStateString().c_str());*/
     rate.sleep();
   }
 }

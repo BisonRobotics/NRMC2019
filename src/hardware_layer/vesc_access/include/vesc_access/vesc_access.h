@@ -44,6 +44,7 @@ public:
   float getPotPosition(void) override;
   void setDuty(float duty) override;
   void setCustom(float setpoint) override;
+  void setCustom(float setpoint, uint index) override;
   int getADC() override;
 
 

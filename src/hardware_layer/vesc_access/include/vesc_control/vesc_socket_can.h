@@ -188,13 +188,14 @@ public:
 
   Vesc(char *interface, uint8_t controllerID, std::string name);
   Vesc(char *interface, uint8_t controllerID, uint32_t quirks, std::string name);
-  void setPoint(mc_control_mode mode, float setpoint);
+  void setPoint(mc_control_mode mode, float setpoint, uint index = 0);
   void setDuty(float dutyCycle) override;
   void setCurrent(float current) override;
   void setCurrentBrake(float current);
   void setRpm(float rpm) override;
   void setPos(float pos);
-  void setCustom(float setpoint);
+  void setCustom(float setpoint) override;
+  void setCustom(float setpoint, uint index) override;
 
   void enable();
   void disable();

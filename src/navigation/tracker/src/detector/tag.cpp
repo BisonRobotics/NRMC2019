@@ -10,18 +10,14 @@ bool operator == (const Tag &lhs, const Tag &rhs)
 {
   return lhs.getID()         == rhs.getID()         &&
          lhs.getSeq()        == rhs.getSeq()        &&
-         lhs.getSize()       == rhs.getSize()       &&
-         lhs.getMapToTag()   == rhs.getMapToTag()   &&
-      lhs.getRelativeTransforms() == rhs.getRelativeTransforms();
+         lhs.getSize()       == rhs.getSize();
 }
 
 bool operator != (const Tag &lhs, const Tag &rhs)
 {
   return !(lhs.getID()         == rhs.getID()         &&
            lhs.getSeq()        == rhs.getSeq()        &&
-           lhs.getSize()       == rhs.getSize()       &&
-           lhs.getMapToTag()   == rhs.getMapToTag()   &&
-      lhs.getRelativeTransforms() == rhs.getRelativeTransforms());
+           lhs.getSize()       == rhs.getSize());
 }
 }
 

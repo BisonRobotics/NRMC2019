@@ -38,7 +38,7 @@ void TeleopInterface::setMax(float max_value)
   }
   else if (mode == duty)
   {
-    this->max_value = std::abs(clamp(max_value, 0.95f, -0.95f));
+    this->max_value = std::abs(clamp(max_value, -0.95f, 0.95f));
   }
   else
   {
@@ -56,7 +56,7 @@ void TeleopInterface::setMode(TeleopInterface::Mode mode)
   this->mode = mode;
   if (mode == duty)
   {
-    this->max_value = std::abs(clamp(max_value, 0.95f, -0.95f));
+    this->max_value = std::abs(clamp(max_value, -0.95f, 0.95f));
   }
 }
 
@@ -79,13 +79,13 @@ void TeleopInterface::update(float left, float right)
   {
     if (mode == velocity)
     {
-      fl->setLinearVelocity(clamp(left*max_value, max_value, -max_value));
-      bl->setLinearVelocity(clamp(left*max_value, max_value, -max_value));
+      fl->setLinearVelocity(clamp(left*max_value, -max_value, max_value));
+      bl->setLinearVelocity(clamp(left*max_value, -max_value, max_value));
     }
     else if (mode == duty)
     {
-      fl->setDuty(clamp(left*max_value, 0.95f, -0.95f));
-      bl->setDuty(clamp(left*max_value, 0.95f, -0.95f));
+      fl->setDuty(clamp(left*max_value, -0.95f, 0.95f));
+      bl->setDuty(clamp(left*max_value, -0.95f, 0.95f));
     }
     else
     {
@@ -103,13 +103,13 @@ void TeleopInterface::update(float left, float right)
   {
     if (mode == velocity)
     {
-      fr->setLinearVelocity(clamp(right*max_value, max_value, -max_value));
-      br->setLinearVelocity(clamp(right*max_value, max_value, -max_value));
+      fr->setLinearVelocity(clamp(right*max_value, -max_value, max_value));
+      br->setLinearVelocity(clamp(right*max_value, -max_value, max_value));
     }
     else if (mode == duty)
     {
-      fr->setDuty(clamp(right*max_value, 0.95f, -0.95f));
-      br->setDuty(clamp(right*max_value, 0.95f, -0.95f));
+      fr->setDuty(clamp(right*max_value, -0.95f, 0.95f));
+      br->setDuty(clamp(right*max_value, -0.95f, 0.95f));
     }
     else
     {
