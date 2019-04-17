@@ -83,7 +83,7 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
     }
     else if (dp)
     {
-      central_duty = -DigController::CentralDriveDuty::fast;
+      central_duty = -DigController::CentralDriveDuty::normal;
     }
     else
     {
@@ -102,7 +102,7 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
     }
     else if (rt)
     {
-      vibrator_duty = DigController::VibratorDuty::normal;
+      vibrator_duty = 0.75;
     }
   }
   else

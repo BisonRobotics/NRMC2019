@@ -43,7 +43,7 @@ public:
   nsVescAccess::limitSwitchState getLimitSwitchState(void) override;
   float getPotPosition(void) override;
   void setDuty(float duty) override;
-  void setCustom(float setpoint) override;
+  void setCustom(float setpoint, uint index = 0) override;
   int getADC() override;
 
 

@@ -71,13 +71,20 @@ struct can_msg
   struct bcm_msg_head msg_head;
   struct can_frame frame[1];
 } msg;
-void Vesc::setPoint(mc_control_mode mode, float setpoint)
+void Vesc::setPoint(mc_control_mode mode, float setpoint, uint index)
 {
   if (_enable)
   {
     custom_control set;
     set.setpointf = setpoint;
-    set.control_mode = mode;
+    if (mode == mc_control_mode::CONTROL_MODE_CUSTOM)
+    {
+      set.control_mode = mode + index;
+    }
+    else
+    {
+      set.control_mode = mode;
+    }
     // struct can_frame frame;
     // frame.can_id = mode << 8 | _controllerID | 0x80000000;
     // frame.can_dlc = sizeof(VESC_set);
@@ -129,9 +136,9 @@ void Vesc::setPos(float pos)
 {
   setPoint(CONTROL_MODE_POS, pos);
 }
-void Vesc::setCustom(float setpoint)
+void Vesc::setCustom(float setpoint, uint index)
 {
-  setPoint(CONTROL_MODE_CUSTOM, setpoint);
+  setPoint(CONTROL_MODE_CUSTOM, setpoint, index);
   // if(_enable) {
   //	custom_control set;
   //	set.setpointf = setpoint;

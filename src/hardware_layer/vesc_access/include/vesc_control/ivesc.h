@@ -13,7 +13,7 @@ public:
   virtual bool getForLimit(void) = 0;
   virtual bool getRevLimit(void) = 0;
   virtual void setDuty(float duty) = 0;
-  virtual void setCustom(float setpoint) = 0;
+  virtual void setCustom(float setpoint, uint index = 0) = 0;
 };
 
 class VescException : public std::runtime_error

@@ -329,9 +329,9 @@ float VescAccess::getPotPosition(void)
   return vesc->getADC() * rad_per_count + rad_offset;
 }
 
-void VescAccess::setCustom(float setpoint)
+void VescAccess::setCustom(float setpoint, uint index)
 {
-  this->vesc->setCustom(this->direction * setpoint);
+    this->vesc->setCustom(this->direction * setpoint, index);
 }
 
 int VescAccess::getADC()

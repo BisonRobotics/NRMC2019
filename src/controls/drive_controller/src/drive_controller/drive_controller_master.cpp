@@ -227,7 +227,7 @@ class DriverVescCrossover : public iVescAccess
     float getPotPosition(void) 
       {return face->getPosition();}
     void setDuty(float d) {}
-    void setCustom(float v) {}
+    void setCustom(float v, uint index = 0) {}
     int getADC() {return -1;}
 };
 
