@@ -72,7 +72,7 @@ endif()
 ## Testing ##
 #############
 
-#catkin_add_gtest(test_drive_controller include/drive_controller/drive_controller.h src/drive_controller/test/drive_controller_tests.cpp)
+catkin_add_gtest(test_drive_controller include/drive_controller/drive_controller.h src/drive_controller/test/drive_controller_tests.cpp)
 if(TARGET test_drive_controller)
   target_link_libraries(test_drive_controller drive_controller ${catkin_LIBRARIES} gmock_main)
 endif()
