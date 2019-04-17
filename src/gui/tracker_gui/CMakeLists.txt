@@ -35,6 +35,9 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 # Based off of example: https://github.com/ros-visualization/rqt_common_plugins/blob/...
 # 619481f13084db01c7e2233b754bb0409ce1c44a/rqt_image_view/CMakeLists.txt
+if(DEFINED ENV{ON_ROBOT})
+    message(AUTHOR_WARNING " ON_ROBOT set, not building visuals or simulation")
+else()
 if (${Qt5Core_FOUND} AND ${Qt5Gui_FOUND} AND ${Qt5Widgets_FOUND})
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
     qt5_wrap_cpp(tracker_gui_MOC include/tracker_gui/tracker_gui.h)
@@ -50,5 +53,6 @@ if (${Qt5Core_FOUND} AND ${Qt5Gui_FOUND} AND ${Qt5Widgets_FOUND})
             ${OpenCV_LIBS})
     add_dependencies(tracker_gui ${catkin_EXPORTED_TARGETS})
 else()
-  message(AUTHOR_WARNING "The qt5 library is not available, qt_joystick will not be built")
+  message(AUTHOR_WARNING "The qt5 library is not available, tracker_gui will not be built")
+endif()
 endif()
