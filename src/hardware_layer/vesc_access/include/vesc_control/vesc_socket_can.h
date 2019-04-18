@@ -194,7 +194,8 @@ public:
   void setCurrentBrake(float current);
   void setRpm(float rpm) override;
   void setPos(float pos);
-  void setCustom(float setpoint, uint index = 0);
+  void setCustom(float setpoint) override;
+  void setCustom(float setpoint, uint index) override;
 
   void enable();
   void disable();
