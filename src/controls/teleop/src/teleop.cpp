@@ -64,11 +64,11 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
     }
     else if (a)
     {
-      backhoe_duty = -DigController::BackhoeDuty::fast;
+      backhoe_duty = -DigController::BackhoeDuty::normal;
     }
     else if (b)
     {
-      backhoe_duty = DigController::BackhoeDuty::slow;
+      backhoe_duty = DigController::BackhoeDuty::fast;
     }
 
     // Update central drive
