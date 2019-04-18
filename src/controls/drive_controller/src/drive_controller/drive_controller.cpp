@@ -5,7 +5,7 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
 : front_right_wheel(fr), front_left_wheel (fl), back_left_wheel(bl), back_right_wheel(br),
   p_theta(Gchopsize), p_omega(Gchopsize), p_alpha(Gchopsize), p_lengths(Gchopsize),
   p_x(Gchopsize), p_y(Gchopsize), p_length(0), p_paths(0), p_last_closest_t(0), p_closest_t(0),
-  p_speed_cmd(0), p_prev_UlUr(0,0), p_prev_theta(0), p_prev_omega(0)
+  p_speed_cmd(0), p_prev_UlUr(0,0), p_prev_theta(0), p_prev_omega(0), max_speed(1.0)
 {
   delta.alpha = 0;
   delta.omega = 0;
@@ -426,4 +426,9 @@ DriveController_ns::path_info DriveController::getPathInfo()
       path_i.path_omega = 0;
     }
     return path_i;
+}
+
+void DriveController::setMaxSpeed(double speed)
+{
+    max_speed = speed;
 }
