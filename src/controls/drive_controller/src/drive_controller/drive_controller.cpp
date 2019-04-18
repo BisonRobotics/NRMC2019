@@ -69,7 +69,6 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
   double set_speed  =  .2;  /*DNFW*/
   double angle_gain = 1.5;  /*DNFW*/ 
   double path_gain  = 1.3;  /*DNFW*/
-  double max_speed  = 1.0;  //You can change this one without fear
   
 
   double steering = 0;
