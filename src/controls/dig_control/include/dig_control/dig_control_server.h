@@ -8,14 +8,18 @@
 
 namespace dig_control
 {
-  class DigControllerServer
+  class DigControlServer
   {
   public:
-    DigControllerServer(ros::NodeHandle *nh);
+    explicit DigControlServer(ros::NodeHandle *nh);
+
+    void digCallback(const actionlib::SimpleActionServer<DigAction>::GoalConstPtr &goal);
+    void dumpCallback(const actionlib::SimpleActionServer<DumpAction>::GoalConstPtr &goal);
 
   private:
-    actionlib::SimpleActionServer<dig_control::DumpAction> dump_server;
+    ros::NodeHandle *nh;
     actionlib::SimpleActionServer<dig_control::DigAction> dig_server;
+    actionlib::SimpleActionServer<dig_control::DumpAction> dump_server;
   };
 }
 

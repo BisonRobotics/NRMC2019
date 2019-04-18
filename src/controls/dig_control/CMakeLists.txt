@@ -39,7 +39,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES dig_controller
-  CATKIN_DEPENDS roscpp message_generation
+  CATKIN_DEPENDS roscpp message_generation actionlib_msgs
   #  DEPENDS system_lib
 )
 
@@ -59,9 +59,9 @@ target_link_libraries(dig_controller ${catkin_LIBRARIES})
 add_dependencies(dig_controller ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
-#add_executable(dig_control_server src/dig_control_server.cpp)
-#target_link_libraries(dig_control_server dig_controller ${catkin_LIBRARIES})
-#add_dependencies(dig_controller ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_executable(dig_control_server src/dig_control_server.cpp)
+target_link_libraries(dig_control_server dig_controller ${catkin_LIBRARIES})
+add_dependencies(dig_control_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 #############
 ## Testing ##
