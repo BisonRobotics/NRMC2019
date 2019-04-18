@@ -125,7 +125,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       */
       
       es.angle_error = angleDiff(sv.theta,p_theta.at((int)(index_for_t) + t_jumps));
-      p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd - set_speed)*dt;
+      p_speed_cmd = std::min(max_speed - steering, p_speed_cmd - speed_gain*(p_speed_cmd - set_speed)*dt);
       
       //Get wheel velocities
       std::pair<double, double> UlUr = speedSteeringControl(

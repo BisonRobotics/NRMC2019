@@ -99,7 +99,7 @@ Frosty_ns::StateResult FrostyStateMachine::update(double dt)
         res = state6CheckGoToHopper();
         if (res == Frosty_ns::StateResult::SUCCESS)
         {
-            state = 7; //start again (havent dumped ever tho)
+            state = 7; 
         }
         else
         {
@@ -134,7 +134,9 @@ void FrostyStateMachine::state1StartInit(double t)
 
 Frosty_ns::StateResult FrostyStateMachine::state1CheckInit()
 {
-    if (time > 10 || (path_alc->isServerConnected() && dig_alc->isServerConnected()))
+    // check driving and digging nodes to make sure they are up and ready
+    // if actionlib server connects, they are ready.
+    if (/*time > 10 ||*/ (path_alc->isServerConnected() /*&& dig_alc->isServerConnected()*/))
     {
         return Frosty_ns::StateResult::SUCCESS;
     }
@@ -142,9 +144,6 @@ Frosty_ns::StateResult FrostyStateMachine::state1CheckInit()
     {
         return Frosty_ns::StateResult::IN_PROCESS;
     }
-    
-    //TODO: check driving and digging nodes to make sure they are up and ready
-    // if actionlib server connects, they are ready?
 }
 
 void FrostyStateMachine::state2StartGoToDig()
@@ -196,10 +195,7 @@ void FrostyStateMachine::state8CheckDumpCallback(const actionlib::SimpleClientGo
 
 Frosty_ns::StateResult FrostyStateMachine::state3CheckGoToDig()
 {
-    //check progress from actinlib feedback
-    //actionlib::SimpleClientGoalState state = path_alc->getState();
-    //state = path_alc->getState();
-    if (FrostyStateMachine::state3_done) //TODO use done callback instead for thread safety/sense stuff
+    if (FrostyStateMachine::state3_done) 
     {
         FrostyStateMachine::need2_dig = true;
         return Frosty_ns::StateResult::SUCCESS;
@@ -263,10 +259,8 @@ void FrostyStateMachine::state5StartGoToHopper()
 
 Frosty_ns::StateResult FrostyStateMachine::state6CheckGoToHopper()
 {
-    //check progress from actinlib feedback
-    //actionlib::SimpleClientGoalState state = path_alc->getState();
-    //state = path_alc->getState();
-    if (FrostyStateMachine::state3_done) //TODO use done callback instead for thread safety/sense stuff
+    //check progress from actionlib feedback
+    if (FrostyStateMachine::state3_done)
     {
         FrostyStateMachine::state3_done = false;
         return Frosty_ns::StateResult::SUCCESS;
