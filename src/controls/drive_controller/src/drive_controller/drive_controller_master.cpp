@@ -90,7 +90,6 @@ void newGoalCallback() //technically called in another thread
 
   forwardPoint = (segment.direction_of_travel == 1 ? true : false);
   newWaypointHere = true;
-  //server->acceptNewGoal();
 }
 
 void preemptCallback()
@@ -300,12 +299,12 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
     br = new DriverVescCrossover(dbr);
     bl = new DriverVescCrossover(dbl);
 
-    //simulate with real sensors for a bit
-    //pos = new AprilTagTrackerInterface("/vrep/pose", .1);
-    //imu = new VrepImu(0, .0001, 0, .0001);
-    
-    pos = new AprilTagTrackerInterface("/tracker0/pose_estimate", .1);
-    imu = new LpResearchImu("imu");
+    //These are the simulated sensors
+    pos = new AprilTagTrackerInterface("/vrep/pose", .1);
+    imu = new VrepImu(0, .0001, 0, .0001);
+    //These are the real sensors
+    //pos = new AprilTagTrackerInterface("/tracker0/pose_estimate", .1);
+    //imu = new LpResearchImu("imu");
     
   }
   else
@@ -357,7 +356,6 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
 
   UltraLocalizer ultraLocalizer(UltraLocalizer_default_gains, UltraLocalizer_initial_estimate);
-  //SuperLocalizer superLocalizer(ROBOT_AXLE_LENGTH, 1, .5, 0, fl, fr, br, bl, /*imu,*/ pos, SuperLocalizer_default_gains);
   
   LocalizerInterface::stateVector stateVector;
   ros::Subscriber haltsub = node.subscribe("halt", 100, haltCallback);
@@ -411,15 +409,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
         ROS_WARN ("BAD POS");
     }*/
   }
-/*
-  ROS_INFO ("Localization Settling Round 2!");
-  lastTime = ros::Time::now ();
-  while (((ros::Time::now()-lastTime).toSec()<settle_time) && (ros::ok()))
-  {
-    ultraLocalizer.updateEstimate(UltraLocalizer_zero_vector, mm.getMeasured(.02));
-    rate.sleep();
-  }
-*/
+
   ROS_INFO ("Localization Settled!");
   ros::spinOnce ();
 
@@ -475,11 +465,11 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       tfBroad.sendTransform(create_sim_tf(pos->getX(), pos->getY(), pos->getTheta()));
     }
 
-    //ultra localizer goes here
     ultraLocalizer.updateEstimate(UltraLocalizer_zero_vector/*dc.getDeltaStateVector()*/,
                                   mm.getMeasured(loopTime.toSec()));
-    //superLocalizer.updateStateVector(loopTime.toSec());
     stateVector = ultraLocalizer.getStateVector();
+    
+    //Publish Everything
 
     tfBroad.sendTransform(create_tf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, imu->getOrientation(), pos->getZ()));
     state_vector_publisher.publish(localizer_sv_to_msg(ultraLocalizer.getStateVector(), STATE_VECTOR_ID));
@@ -495,8 +485,15 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
     if (newWaypointHere)
     {
-      dc.addPath(curr_path, forwardPoint);
-      newWaypointHere = false;
+      //Enforce that path beginning is near the robot.  
+      DriveController_ns::bezier_path clean_path = curr_path;
+      if (!dc.cleanPath(&clean_path, stateVector.x_pos, stateVector.y_pos, stateVector.theta, forwardPoint))
+      {
+          ROS_WARN("HAD TO MOVE PATH MORE THAN MARGIN.");
+      }
+      dc.addPath(clean_path, forwardPoint); //Note, Current behavior is that the drive controller will
+      newWaypointHere = false;             // ignore paths if they are published before it is finished.
+                                           // This means a path must be aborted to be can-celled.
     }
     // update controller //Update localizer or controller? what order?
     dc.update(stateVector, loopTime.toSec());

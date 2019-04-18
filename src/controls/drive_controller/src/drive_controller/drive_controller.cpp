@@ -42,6 +42,17 @@ void DriveController::addPath(DriveController_ns::bezier_path path, bool forward
  return;
 }
 
+bool DriveController::cleanPath(DriveController_ns::bezier_path *path, double x, double y, double theta, bool fwd)
+{
+    double the_sign = fwd ? -1: 1;
+    double margin = .1; //10 cm behind
+    //if path was pretty clean to start
+    bool ret = ((path->x1 -  x)*(path->x1 -  x) + (path->y1  - y)*(path->y1  - y) < .3*.3); //about 1 ft radius
+    path->x1 = x + margin*the_sign*std::cos(theta);
+    path->y1 = y + margin*the_sign*std::sin(theta);
+    return ret;
+}
+
 void DriveController::haltAndAbort()
 {
   front_right_wheel->setLinearVelocity(0);
