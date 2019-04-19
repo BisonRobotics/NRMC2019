@@ -11,6 +11,7 @@ DigControlServer::DigControlServer(ros::NodeHandle *nh, DigControllerInterface *
   server(*nh, "action", false)
 {
   joy_subscriber = nh->subscribe("/joy", 1, &DigControlServer::joyCallback, this);
+  joint_publisher = nh->advertise<sensor_msgs::JointState>("/joint_states", 1);
   debug_publisher = nh->advertise<dig_control::Debug>("debug", 10);
   controller->setControlState(ControlState::manual);
   server.registerGoalCallback(boost::bind(&DigControlServer::goalCallback, this));
@@ -208,9 +209,23 @@ ControlState DigControlServer::toControlState(DigControlGoal goal)
 
 void DigControlServer::update()
 {
+  // Update
   controller->update();
   seq++;
 
+  // Feedback
+  if (server.isActive())
+  {
+    DigControlFeedback feedback;
+    feedback.control_state       = (DigControlFeedback::_control_state_type)       controller->getControlState();
+    feedback.dig_state           = (DigControlFeedback::_dig_state_type)           controller->getDigState();
+    feedback.backhoe_state       = (DigControlFeedback::_backhoe_state_type)       controller->getBackhoeState();
+    feedback.central_drive_state = (DigControlFeedback::_central_drive_state_type) controller->getCentralDriveState();
+    feedback.bucket_state        = (DigControlFeedback::_bucket_state_type)        controller->getBucketState();
+    server.publishFeedback(feedback);
+  }
+
+  // Teleop
   ControlState dig_state = controller->getControlState();
   if (dig_safety)
   {
@@ -233,6 +248,7 @@ void DigControlServer::update()
     controller->stop();
   }
 
+  // Info
   if (debug)
   {
     Debug message;
@@ -256,16 +272,27 @@ void DigControlServer::update()
     debug_publisher.publish(message);
   }
 
-  if (server.isActive())
-  {
-    DigControlFeedback feedback;
-    feedback.control_state       = (DigControlFeedback::_control_state_type)       controller->getControlState();
-    feedback.dig_state           = (DigControlFeedback::_dig_state_type)           controller->getDigState();
-    feedback.backhoe_state       = (DigControlFeedback::_backhoe_state_type)       controller->getBackhoeState();
-    feedback.central_drive_state = (DigControlFeedback::_central_drive_state_type) controller->getCentralDriveState();
-    feedback.bucket_state        = (DigControlFeedback::_bucket_state_type)        controller->getBucketState();
-    server.publishFeedback(feedback);
-  }
+  // Visuals
+  sensor_msgs::JointState joint_angles;
+  joint_angles.header.stamp = ros::Time::now();
+  joint_angles.header.seq = seq;
+  joint_angles.name.emplace_back("frame_to_monoboom");
+  joint_angles.name.emplace_back("frame_to_gravel_bucket");
+  joint_angles.name.emplace_back("monoboom_to_bucket");
+  joint_angles.name.emplace_back("left_flap_joint");
+  joint_angles.name.emplace_back("right_flap_joint");
+  joint_angles.position.push_back(0.0f);
+  joint_angles.position.push_back(0.0f);
+  joint_angles.position.push_back(0.0f);
+  joint_angles.position.push_back(0.0f);
+  joint_angles.position.push_back(0.0f);
+  joint_publisher.publish(joint_angles);
+}
+
+double DigControlServer::getPolyfit(double *c, double x)
+{
+  using std::pow;
+  return c[0]*pow(x,4) + c[1]*pow(x,3) + c[2]*pow(x,2) + c[3]*x + c[4];
 }
 
 int main(int argc, char* argv[])

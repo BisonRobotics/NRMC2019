@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   vesc_access
   std_msgs
+  sensor_msgs
   actionlib_msgs
   actionlib
 )
