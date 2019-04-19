@@ -33,7 +33,7 @@ public:
     int getState();
     Frosty_ns::StateResult update(double dt);
     ~FrostyStateMachine();
-private:
+//private:
     //need path planning actionlib client
     actionlib::SimpleActionClient<navigation_msgs::FollowPathAction> *path_alc;
     //need dig/dump actionlib client //wait

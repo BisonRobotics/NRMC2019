@@ -69,6 +69,7 @@ public:
                                          std::vector<double>  &y,
                                          std::vector<double> &theta, int chopsize);
    void firstOrderModel(std::pair<double, double> UlUr, double world_theta, double omega_est, double dt, double *xyth);
+   bool cleanPath(DriveController_ns::bezier_path *path, double x, double y, double theta, bool fwd);
    
 private:
   static const int Gchopsize = 100;
@@ -89,6 +90,7 @@ private:
   double p_closest_t;
 
   double p_speed_cmd;
+  double p_steering_cmd;
 
   LocalizerInterface::stateVector delta;
   std::pair<double,double> p_prev_UlUr;
