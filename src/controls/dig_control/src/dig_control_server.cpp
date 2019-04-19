@@ -99,19 +99,14 @@ void DigControlServer::goalCallback(const actionlib::SimpleActionServer<DigContr
 
 void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
 {
-  bool dig_safety;
-
   bool x  = joy->buttons[0] == 1; // Bucket down
   bool a  = joy->buttons[1] == 1; // Linear actuator in
   bool b  = joy->buttons[2] == 1; // Linear actuator out
   bool y  = joy->buttons[3] == 1; // Bucket up
-  bool lb = joy->buttons[4] == 1; // Drive safety
-  bool rb = joy->buttons[5] == 1; // Dig safety
+  bool rb = joy->buttons[5] == 1; // Safety
   bool lt = joy->buttons[6] == 1; // Vibrator off
   bool rt = joy->buttons[7] == 1; // Vibrator on
   bool st = joy->buttons[9] == 1; // Start automatic dig
-  float ls = joy->axes[1];        // Left wheels
-  float rs = joy->axes[3];        // Right wheels
   bool up = joy->axes[5] >  0.5;  // Central drive up (Up on left pad)
   bool dp = joy->axes[5] < -0.5;  // Central drive down (Down on left pad)
 
@@ -237,7 +232,7 @@ void DigControlServer::update()
 
 int main(int argc, char* argv[])
 {
-  ros::init(argc, argv, "tracker_node");
+  ros::init(argc, argv, "dig_control_server");
   ros::NodeHandle nh;
   DigController controller;
   DigControlServer server(&nh, &controller);
