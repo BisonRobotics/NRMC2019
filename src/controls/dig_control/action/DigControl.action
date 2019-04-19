@@ -1,0 +1,12 @@
+# goal
+uint8 control_state
+---
+# result
+uint8 control_state
+---
+# feedback
+uint8 control_state
+uint8 dig_state
+uint8 central_drive_state
+uint8 backhoe_state
+uint8 bucket_state

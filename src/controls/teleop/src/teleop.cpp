@@ -49,11 +49,11 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
     }
     else if (x)
     {
-      bucket_duty = -DigController::BucketDuty::fast;
+      bucket_duty = -BucketDuty::fast;
     }
     else if (y)
     {
-      bucket_duty = DigController::BucketDuty::fast;
+      bucket_duty = BucketDuty::fast;
     }
 
     // Update backhoe (Maintain state)
@@ -64,11 +64,11 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
     }
     else if (a)
     {
-      backhoe_duty = -DigController::BackhoeDuty::normal;
+      backhoe_duty = -BackhoeDuty::normal;
     }
     else if (b)
     {
-      backhoe_duty = DigController::BackhoeDuty::fast;
+      backhoe_duty = BackhoeDuty::fast;
     }
 
     // Update central drive
@@ -79,11 +79,11 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
     }
     else if (up)
     {
-      central_duty = DigController::CentralDriveDuty::fast;
+      central_duty = CentralDriveDuty::fast;
     }
     else if (dp)
     {
-      central_duty = -DigController::CentralDriveDuty::normal;
+      central_duty = -CentralDriveDuty::normal;
     }
     else
     {
@@ -137,33 +137,33 @@ int main(int argc, char **argv)
 
   TeleopInterface teleop(TeleopInterface::duty, 0.95f);
   DigController dig_controller;
-  dig_controller.setControlState(DigController::ControlState::manual);
+  dig_controller.setControlState(ControlState::manual);
 
   while (ros::ok())
   {
     dig_controller.update();
     ros::spinOnce();
-    DigController::ControlState dig_state = dig_controller.getControlState();
+    ControlState dig_state = dig_controller.getControlState();
     if (dig_safety)
     {
-      if (dig_state == DigController::ControlState::error)
+      if (dig_state == ControlState::error)
       {
         ROS_ERROR("Dig controller is in an error state");
         dig_controller.stop();
       }
       else if (automatic_dig)
       {
-        if (dig_controller.getControlState() != DigController::ControlState::dig)
+        if (dig_controller.getControlState() != ControlState::dig)
         {
           ROS_INFO("Setting control mode to dig");
-          dig_controller.setControlState(DigController::ControlState::dig);
+          dig_controller.setControlState(ControlState::dig);
         }
       }
       else
       {
-        if (dig_controller.getControlState() != DigController::ControlState::manual)
+        if (dig_controller.getControlState() != ControlState::manual)
         {
-          dig_controller.setControlState(DigController::ControlState::manual);
+          dig_controller.setControlState(ControlState::manual);
         }
         dig_controller.setCentralDriveDuty(central_duty);
         dig_controller.setBackhoeDuty(backhoe_duty);
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
     }
     else
     {
-      dig_controller.setControlState(DigController::ControlState::manual);
+      dig_controller.setControlState(ControlState::manual);
       dig_controller.stop();
     }
     if (drive_safety)

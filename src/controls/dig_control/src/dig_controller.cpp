@@ -53,7 +53,7 @@ bool DigController::isInternallyAllocated()
   return internally_allocated;
 }
 
-void DigController::setControlState(DigController::ControlState goal)
+void DigController::setControlState(ControlState goal)
 {
   if (goal == ControlState::ready)
   {
@@ -661,27 +661,27 @@ void DigController::stop()
   setVibratorDuty(0.0f);
 }
 
-DigController::ControlState DigController::getControlState() const
+ControlState DigController::getControlState() const
 {
   return goal_state;
 }
 
-DigController::CentralDriveState DigController::getCentralDriveState() const
+CentralDriveState DigController::getCentralDriveState() const
 {
   return central_drive_state;
 }
 
-DigController::BackhoeState DigController::getBackhoeState() const
+BackhoeState DigController::getBackhoeState() const
 {
   return backhoe_state;
 }
 
-DigController::BucketState DigController::getBucketState() const
+BucketState DigController::getBucketState() const
 {
   return bucket_state;
 }
 
-DigController::DigState DigController::getDigState() const
+DigState DigController::getDigState() const
 {
   return dig_state;
 }
@@ -739,7 +739,62 @@ int DigController::getCentralDrivePosition() const
 
 std::string DigController::getCentralDriveStateString() const // Max 20 characters
 {
-  switch (central_drive_state)
+  return to_string(central_drive_state);
+}
+
+std::string DigController::getBackhoeStateString() const // Max 9 characters
+{
+  return to_string(backhoe_state);
+}
+
+std::string DigController::getDigStateString() const // Max 15 characters
+{
+  return to_string(dig_state);
+}
+
+std::string dig_control::to_string(ControlState state)
+{
+  switch (state)
+  {
+    case ControlState::dig:
+      return "dig";
+    case ControlState::manual:
+      return "manual";
+    case ControlState::error:
+      return "error";
+    case ControlState::ready:
+      return "ready";
+    case ControlState::finish_dump:
+      return "finish_dump";
+    case ControlState::finish_dig:
+      return "finish_dig";
+    case ControlState::dump:
+      return "dump";
+  }
+}
+
+std::string dig_control::to_string(DigState state)
+{
+  switch (state)
+  {
+    case DigState::dig_transition:
+      return "dig_transition";
+    case DigState::digging:
+      return "digging";
+    case DigState::closing_backhoe:
+      return "closing_backhoe";
+    case DigState::dump_transition:
+      return "dump_transition";
+    case DigState::moving_flaps_up:
+      return "moving_flaps_up";
+    case DigState::stow:
+      return "stow";
+  }
+}
+
+std::string dig_control::to_string(CentralDriveState state)
+{
+  switch (state)
   {
     case CentralDriveState::near_digging:
       return "normal";
@@ -760,9 +815,9 @@ std::string DigController::getCentralDriveStateString() const // Max 20 characte
   }
 }
 
-std::string DigController::getBackhoeStateString() const // Max 9 characters
+std::string dig_control::to_string(BackhoeState state)
 {
-  switch (backhoe_state)
+  switch (state)
   {
     case BackhoeState::open:
       return "open";
@@ -775,21 +830,17 @@ std::string DigController::getBackhoeStateString() const // Max 9 characters
   }
 }
 
-std::string DigController::getDigStateString() const // Max 15 characters
+std::string dig_control::to_string(BucketState state)
 {
-  switch (dig_state)
+  switch (state)
   {
-    case DigState::dig_transition:
-      return "dig_transition";
-    case DigState::digging:
-      return "digging";
-    case DigState::closing_backhoe:
-      return "closing_backhoe";
-    case DigState::dump_transition:
-      return "dump_transition";
-    case DigState::moving_flaps_up:
-      return "moving_flaps_up";
-    case DigState::stow:
-      return "stow";
+    case BucketState::down:
+      return "down";
+    case BucketState::stuck:
+      return "stuck";
+    case BucketState::traveling:
+      return "traveling";
+    case BucketState::up:
+      return "up";
   }
 }

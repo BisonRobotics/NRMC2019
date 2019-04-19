@@ -18,7 +18,7 @@ set(GTEST_LIBRARIES gmock_main)
 
 add_action_files(
   DIRECTORY action
-  FILES Dig.action Dump.action
+  FILES DigControl.action Dump.action Dig.action
 )
 
 generate_messages(
