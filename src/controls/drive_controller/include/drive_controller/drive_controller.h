@@ -52,6 +52,7 @@ public:
    DriveController_ns::error_state getErrorStates();
    DriveController_ns::wheel_state getWheelStates();
    DriveController_ns::path_info getPathInfo();
+   void setMaxSpeed(double speed);
 //protected:
    double angleDiff(double angle1,double angle2);
    std::pair<double, double> speedSteeringControl(double speed, double steering, 
@@ -72,6 +73,7 @@ public:
 private:
   static const int Gchopsize = 100;
   static constexpr double Axelsize = 1.0;
+  double max_speed;
   iVescAccess *front_left_wheel, *front_right_wheel, *back_right_wheel, *back_left_wheel;
   std::vector<double>  p_theta;
   std::vector<double>  p_omega;

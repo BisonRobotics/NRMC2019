@@ -438,6 +438,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   }
 
   DriveController dc = DriveController(fr, fl, bl, br);
+  dc.setMaxSpeed(MAX_WHEEL_VELOCITY);
   ROS_INFO("Drive Controller Init");
 
   server = new SimpleActionServer<FollowPathAction>(global_node, "follow_path", false);
