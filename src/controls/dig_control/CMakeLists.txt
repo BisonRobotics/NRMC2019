@@ -63,6 +63,10 @@ add_executable(dig_control_server src/dig_control_server.cpp)
 target_link_libraries(dig_control_server dig_controller ${catkin_LIBRARIES})
 add_dependencies(dig_control_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+#add_executable(dig_control_server_integration_test src/tests/dig_control_server_integration_test.cpp)
+#target_link_libraries(dig_control_server_integration_test dig_controller ${catkin_LIBRARIES})
+#add_dependencies(dig_control_server_integration_test ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 #############
 ## Testing ##
 #############
