@@ -78,7 +78,7 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
 
   double speed_gain =   1;  /*DNFW*/
   double set_speed  =  .5;  /*DNFW*/
-  double angle_gain = 4.5;  /*DNFW*/ 
+  double angle_gain = 3.5;  /*DNFW*/ 
   double path_gain  = 5.3;  /*DNFW*/
   
   //find closest index and path error
@@ -124,8 +124,10 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       std::pair<double, double> UlUr = speedSteeringControl(
                                       p_speed_cmd, 
                                       steering
-                                       - (p_forward_point ? 2.0 : 2.0)*angle_gain*es.angle_error 
-                                       - (p_forward_point ? 2.0 : -2.0)*path_gain*es.path_error,
+                                       - (std::abs(es.angle_error) < .2 ? 
+                                        (p_forward_point ? 2.0 : .5)*angle_gain*es.angle_error :
+                                         4.0*(p_forward_point ? 2.0 : .5)*angle_gain*es.angle_error)
+                                       - (p_forward_point ? 2.0 : -3.0)*path_gain*es.path_error,
                                        Axelsize, max_speed);
                                        
       std::pair<double, double> UlUrIdeal = speedSteeringControl(
