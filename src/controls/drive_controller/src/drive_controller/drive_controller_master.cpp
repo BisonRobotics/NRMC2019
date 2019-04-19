@@ -72,24 +72,34 @@ DriveController_ns::bezier_path curr_path;
 SimpleActionServer<FollowPathAction> *server;
 
 void newGoalCallback() //technically called in another thread
+
 {
- ROS_INFO("[action_server] Moving toward goal");
-  //ros::Rate rate(1.0);
-  const FollowPathGoalConstPtr &goal = server->acceptNewGoal();
+    if (!newWaypointHere)
+    {
+        ROS_INFO("[dc_master]: Moving toward goal");
+        //ros::Rate rate(1.0);
+        const FollowPathGoalConstPtr &goal = server->acceptNewGoal();
 
-  // Get path
-  BezierSegment segment = goal->path[0];
-  curr_path.x1 = segment.p0.x;
-  curr_path.y1 = segment.p0.y;
-  curr_path.x2 = segment.p1.x;
-  curr_path.y2 = segment.p1.y;
-  curr_path.x3 = segment.p2.x;
-  curr_path.y3 = segment.p2.y;
-  curr_path.x4 = segment.p3.x;
-  curr_path.y4 = segment.p3.y;
+        // Get path
+        BezierSegment segment = goal->path[0];
+        curr_path.x1 = segment.p0.x;
+        curr_path.y1 = segment.p0.y;
+        curr_path.x2 = segment.p1.x;
+        curr_path.y2 = segment.p1.y;
+        curr_path.x3 = segment.p2.x;
+        curr_path.y3 = segment.p2.y;
+        curr_path.x4 = segment.p3.x;
+        curr_path.y4 = segment.p3.y;
 
-  forwardPoint = (segment.direction_of_travel == 1 ? true : false);
-  newWaypointHere = true;
+        forwardPoint = (segment.direction_of_travel == 1 ? true : false);
+        newWaypointHere = true;
+    }
+    else
+    {
+        ROS_WARN("[dc_master]: Posted paths too fast to drive controller.");
+        //server->setAborted();
+    }
+
 }
 
 void preemptCallback()
@@ -494,7 +504,7 @@ int main(int argc, char **argv)
       }
       dc.addPath(clean_path, forwardPoint); //Note, Current behavior is that the drive controller will
       newWaypointHere = false;             // ignore paths if they are published before it is finished.
-                                           // This means a path must be aborted to be can-celled.
+                                           // This means a path must be aborted to be canceled.
     }
     // update controller //Update localizer or controller? what order?
     dc.update(stateVector, loopTime.toSec());

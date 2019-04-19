@@ -5,7 +5,7 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
 : front_right_wheel(fr), front_left_wheel (fl), back_left_wheel(bl), back_right_wheel(br),
   p_theta(Gchopsize), p_omega(Gchopsize), p_alpha(Gchopsize), p_lengths(Gchopsize),
   p_x(Gchopsize), p_y(Gchopsize), p_length(0), p_paths(0), p_last_closest_t(0), p_closest_t(0),
-  p_speed_cmd(0), p_prev_UlUr(0,0), p_prev_theta(0), p_prev_omega(0), max_speed(1.0)
+  p_speed_cmd(0), p_prev_UlUr(0,0), p_prev_theta(0), p_prev_omega(0), max_speed(1.0), p_steering_cmd(0)
 {
   delta.alpha = 0;
   delta.omega = 0;
@@ -76,9 +76,9 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
   p_prev_UlUr.first = left_speed;
   p_prev_UlUr.second = right_speed;
 
-  double speed_gain =   1;  /*DNFW*/
-  double set_speed  =  .5;  /*DNFW*/
-  double angle_gain = 3.5;  /*DNFW*/ 
+  double speed_gain =  .5;  /*DNFW*/
+  double set_speed  = 0.9*max_speed;  /*DNFW*/
+  double angle_gain = 2.5;  /*DNFW*/ 
   double path_gain  = 5.3;  /*DNFW*/
   
   //find closest index and path error
@@ -118,16 +118,19 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
       */
       double steering = p_omega.at((int)(index_for_t) + t_jumps);
       es.angle_error = angleDiff(sv.theta,p_theta.at((int)(index_for_t) + t_jumps));
-      p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd -std::min(max_speed - Axelsize/2.0 * steering* p_speed_cmd,set_speed))*dt;
-      
+      double spd_trac = std::min(std::max(max_speed - Axelsize/2.0 * std::abs(steering)* p_speed_cmd,0.05), set_speed);
+      p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd - spd_trac)*dt;
+ 
+      p_steering_cmd = (p_forward_point ? 2.0 : 2.0)*angle_gain*es.angle_error;
+      double path_err_comp = (p_forward_point ? 2.0 : -2.0)*path_gain*es.path_error;
       //Get wheel velocities
       std::pair<double, double> UlUr = speedSteeringControl(
                                       p_speed_cmd, 
-                                      steering
-                                       - (std::abs(es.angle_error) < .2 ? 
-                                        (p_forward_point ? 2.0 : .5)*angle_gain*es.angle_error :
-                                         4.0*(p_forward_point ? 2.0 : .5)*angle_gain*es.angle_error)
-                                       - (p_forward_point ? 2.0 : -3.0)*path_gain*es.path_error,
+                                      steering - p_steering_cmd - path_err_comp,
+                                       //- (std::abs(es.angle_error) < .2 ? 
+                                       // (p_forward_point ? 2.0 : .5)*angle_gain*es.angle_error :
+                                       //  1.0*(p_forward_point ? 2.0 : .5)*angle_gain*es.angle_error)
+                                       //- (p_forward_point ? 2.0 : -3.0)*path_gain*es.path_error,
                                        Axelsize, max_speed);
                                        
       std::pair<double, double> UlUrIdeal = speedSteeringControl(
@@ -215,6 +218,9 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
     ws.left_wheel_command  = 0;
     ws.right_wheel_command = 0;
     
+    p_speed_cmd = 0;
+    p_steering_cmd = 0;
+    
     return false;
   }
 }
@@ -280,9 +286,11 @@ std::pair<double, double> DriveController::speedSteeringControl(double speed,   
   UlUr.first = 0;
   UlUr.second = 0;
   
-  UlUr.first = speed/AxelLen + .5*(steering*speed);
-  UlUr.second = speed/AxelLen - .5*(steering*speed);
-  
+  double omega = std::min(std::max(-MaxSpeed * (2.0/AxelLen), steering*speed), MaxSpeed * (2.0/AxelLen));
+  double speed_lim = std::max(std::min(speed, MaxSpeed - AxelLen/2.0 * std::abs(omega)), .01);
+  UlUr.first  = speed_lim - .5*(omega)*AxelLen;
+  UlUr.second = speed_lim + .5*(omega)*AxelLen;
+  /*
   double a = (1 - steering * AxelLen/2.0) /
              (1 + steering * AxelLen/2.0); 
   if (a > 1.0)
@@ -290,13 +298,13 @@ std::pair<double, double> DriveController::speedSteeringControl(double speed,   
       double b = (1 + steering * AxelLen/2.0) /
                  (1 - steering * AxelLen/2.0);
       UlUr.first  = MaxSpeed;
-      UlUr.second = b*UlUr.second;
+      UlUr.second = b*UlUr.first;
   }
   else
   {
       UlUr.second = MaxSpeed;
       UlUr.first = a*UlUr.second;
-  }
+  }*/
 
   /* if speed is negative */
   /* positve radius is backwards and to the right (same circle as positive */

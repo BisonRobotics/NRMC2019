@@ -90,6 +90,7 @@ private:
   double p_closest_t;
 
   double p_speed_cmd;
+  double p_steering_cmd;
 
   LocalizerInterface::stateVector delta;
   std::pair<double,double> p_prev_UlUr;
