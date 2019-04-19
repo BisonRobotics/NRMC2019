@@ -12,7 +12,7 @@ namespace dig_control
   class DigControlServer
   {
   public:
-    explicit DigControlServer(ros::NodeHandle *nh, DigController *controller);
+    explicit DigControlServer(ros::NodeHandle *nh, DigControllerInterface *controller);
 
     void goalCallback();
     void preemptCallback();
@@ -32,7 +32,7 @@ namespace dig_control
     actionlib::SimpleActionServer<dig_control::DigControlAction> server;
     uint32_t seq;
     bool debug;
-    DigController *controller;
+    DigControllerInterface *controller;
   };
 }
 

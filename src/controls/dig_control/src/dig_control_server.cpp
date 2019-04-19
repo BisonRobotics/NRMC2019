@@ -5,7 +5,7 @@
 using namespace dig_control;
 
 
-DigControlServer::DigControlServer(ros::NodeHandle *nh, DigController *controller) :
+DigControlServer::DigControlServer(ros::NodeHandle *nh, DigControllerInterface *controller) :
   dig_safety(false), backhoe_duty(0.0f), bucket_duty(0.0f), central_duty(0.0f), vibrator_duty(0.0f),
   nh(nh), controller(controller), debug(true), seq(0),
   server(*nh, "action", false)
@@ -272,8 +272,9 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "dig_control_server");
   ros::NodeHandle nh("~");
-  DigController controller;
-  DigControlServer server(&nh, &controller);
+  DigControllerInterface *controller;
+  controller = new DigController;
+  DigControlServer server(&nh, controller);
   ros::Rate rate(50);
   while (ros::ok())
   {
@@ -281,7 +282,7 @@ int main(int argc, char* argv[])
     ros::spinOnce();
     rate.sleep();
   }
-  controller.stop();
+  controller->stop();
 }
 
 

@@ -62,7 +62,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(dig_controller src/dig_controller.cpp)
+add_library(dig_controller src/dig_controller.cpp src/dig_controller_sim.cpp)
 target_link_libraries(dig_controller ${catkin_LIBRARIES})
 add_dependencies(dig_controller ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
@@ -77,6 +77,10 @@ add_dependencies(dig_control_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_executable(dig_control_client_example src/dig_control_client_example.cpp)
 target_link_libraries(dig_control_client_example dig_control_client dig_controller ${catkin_LIBRARIES})
 add_dependencies(dig_control_client_example ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(record_dig_cycle src/record_dig_cycle.cpp)
+target_link_libraries(record_dig_cycle ${catkin_LIBRARIES})
+add_dependencies(record_dig_cycle ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 #############
 ## Testing ##
