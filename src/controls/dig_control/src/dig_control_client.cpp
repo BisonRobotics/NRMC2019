@@ -3,8 +3,12 @@
 using namespace dig_control;
 
 DigControlClient::DigControlClient() :
-  client("dig_control_server", true), control_state(ControlState::ready),
-  dig_state(DigState::stow), central_drive_state(CentralDriveState::near_dump_point),
+  client("dig_control_server/action", true),
+  boostDoneCallback(boost::bind(&DigControlClient::doneCallback, this, _1, _2)),
+  boostActiveCallback(boost::bind(&DigControlClient::activeCallback, this)),
+  boostFeedbackCallback(boost::bind(&DigControlClient::feedbackCallback, this, _1)),
+  control_state(ControlState::ready),
+  dig_state(DigState::dig_transition), central_drive_state(CentralDriveState::near_dump_point),
   backhoe_state(BackhoeState::open), bucket_state(BucketState::down)
 {
   ROS_INFO("Waiting for dig_control_server to start");
@@ -16,7 +20,7 @@ void DigControlClient::setControlState(ControlState state)
 {
   dig_control::DigControlGoal goal;
   goal.control_state = (uint8_t)state;
-  client.sendGoal(goal);
+  client.sendGoal(goal, boostDoneCallback, boostActiveCallback, boostFeedbackCallback);
 }
 
 void DigControlClient::doneCallback(const actionlib::SimpleClientGoalState &state,
@@ -37,6 +41,11 @@ void DigControlClient::feedbackCallback(const dig_control::DigControlFeedbackCon
   central_drive_state = (CentralDriveState)feedback->central_drive_state;
   backhoe_state       =      (BackhoeState)feedback->backhoe_state;
   bucket_state        =       (BucketState)feedback->bucket_state;
+  /*ROS_INFO("| CS | %s | DS | %s | CD | %s | BH | %s |",
+    to_string(control_state).c_str(),
+    to_string(dig_state).c_str(),
+    to_string(central_drive_state).c_str(),
+    to_string(backhoe_state).c_str());*/
 }
 
 ControlState DigControlClient::getControlState() const

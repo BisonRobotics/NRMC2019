@@ -1,16 +1,11 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
-#include <actionlib/client/simple_action_client.h>
-#include <actionlib/client/terminal_state.h>
-#include <dig_control/DigControlAction.h>
-#include <dig_control/dig_controller.h>
+#include <dig_control/dig_control_client.h>
+
+using namespace dig_control;
 
 bool dig_safety, change_dig_state;
-actionlib::SimpleActionClient<dig_control::DigControlAction> *client;
-
-void doneCallback(){}
-void activeCallback(){}
-void feedbackCallback(){}
+DigControlClient *client;
 
 void callback(const sensor_msgs::Joy::ConstPtr &joy)
 {
@@ -20,19 +15,30 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
   dig_safety = rb;
   change_dig_state = st; // Maintain automatic digging until safety is released
 
-  dig_control::DigControlGoal goal;
-  if (change_dig_state)
+  if (dig_safety)
   {
-    goal.control_state = (uint8_t)dig_control::ControlState::dig;
-    if (client->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+    if (change_dig_state)
     {
-      client->sendGoal(goal);
+      ROS_INFO("[callback] %s", to_string(client->getControlState()).c_str());
+      switch (client->getControlState())
+      {
+        case ControlState::dig:
+        {
+
+          client->setControlState(ControlState::finish_dig);
+          break;
+        }
+        default:
+        {
+          client->setControlState(ControlState::dig);
+          break;
+        }
+      }
     }
   }
   else
   {
-    goal.control_state = (uint8_t)dig_control::ControlState::manual;
-    client->sendGoal(goal);
+    client->setControlState(ControlState::manual);
   }
 
   //ROS_INFO("[teleop] Dv = %i,L = %4.2f, R = %4.2f",
@@ -47,14 +53,8 @@ int main(int argc, char **argv)
   dig_safety = false;
 
   ros::init(argc, argv, "dig_teleop");
-  ros::NodeHandle n;
-  ros::Subscriber joy_sub = n.subscribe("joy", 2, callback);
-  client = new actionlib::SimpleActionClient<dig_control::DigControlAction>("dig_control_server", true);
-  ros::Rate rate(50);
-
-  ROS_INFO("Waiting for dig_control_server to start");
-  client->waitForServer();
-  ROS_INFO("Connected to dig_control_server");
-  // Spin until shutdown
+  ros::NodeHandle nh;
+  ros::Subscriber joy_sub = nh.subscribe("joy", 2, callback);
+  client = new DigControlClient;
   ros::spin();
 }

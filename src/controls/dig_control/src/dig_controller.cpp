@@ -21,6 +21,7 @@ DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_
 
   backhoe_stuck_count = 0;
   bucket_state = BucketState::down;
+  dig_state = DigState::dig_transition;
   setControlState(ControlState::ready);
   update();
   if (goal_state != ControlState::ready)
@@ -59,6 +60,10 @@ void DigController::setControlState(ControlState goal)
   {
     stop();
   }
+  else if (goal == ControlState::dig)
+  {
+    dig_state = DigState::dig_transition;
+  }
   this->goal_state = goal;
 }
 
@@ -81,6 +86,11 @@ void DigController::updateCentralDriveState()
            central_drive_position <  CentralDriveAngles::digging_top    - CentralDriveAngles::variation)
   {
     central_drive_state = CentralDriveState::digging;
+  }
+  else if (central_drive_position >= CentralDriveAngles::digging_top + CentralDriveAngles::variation &&
+           central_drive_position < CentralDriveAngles::flaps_bottom - CentralDriveAngles::variation)
+  {
+    central_drive_state = CentralDriveState::near_digging;
   }
   else if (central_drive_position >= CentralDriveAngles::flaps_bottom + CentralDriveAngles::variation &&
            central_drive_position < CentralDriveAngles::dump_bottom   - CentralDriveAngles::variation)
@@ -197,33 +207,40 @@ void DigController::update()
       {
         case DigState::stow:
         {
-          // TODO this should probably actively stow the backhoe
           // This system should not be on in this state
           if (abs(getVibratorDuty()) > 0.0f) setVibratorDuty(0.0f);
 
           switch (central_drive_state)
           {
-            case CentralDriveState::near_digging:
+
+            case CentralDriveState::at_bottom_limit:
+            case CentralDriveState::digging:
             {
-              // TODO assumes that backhoe is open, handle the case where it isn't
-              ROS_DEBUG("[dig][stowed][flaps_up] Stowed");
-              goal_state = ControlState::ready;
+              ROS_ERROR("[dig][stowed][digging] Should not be attempting to stow backhoe in digging position");
+              goal_state = ControlState::error;
               stop();
               break;
             }
-            case CentralDriveState::at_bottom_limit:
-            case CentralDriveState::digging:
+            case CentralDriveState::near_digging:
             case CentralDriveState::flap_transition_down:
             case CentralDriveState::near_dump_point:
             case CentralDriveState::at_dump_point:
             case CentralDriveState::flap_transition_up:
             case CentralDriveState::at_top_limit:
             {
-              ROS_ERROR("[dig][stowed][other] Expected to be stored in \"normal\" position");
-              goal_state = ControlState::error;
-              stop();
+              if (central_drive_position <= CentralDriveAngles::stow_position)
+              {
+                goal_state = ControlState::ready;
+                dig_state = DigState::dig_transition;
+                stop();
+              }
+              else
+              {
+                setCentralDriveDuty(-CentralDriveDuty::normal);
+              }
               break;
             }
+
           }
           break;
         }
@@ -752,6 +769,16 @@ std::string DigController::getDigStateString() const // Max 15 characters
   return to_string(dig_state);
 }
 
+std::string DigController::getControlStateString() const
+{
+  return to_string(goal_state);
+}
+
+std::string DigController::getBucketStateString() const
+{
+  return to_string(bucket_state);
+}
+
 std::string dig_control::to_string(ControlState state)
 {
   switch (state)
@@ -796,12 +823,12 @@ std::string dig_control::to_string(CentralDriveState state)
 {
   switch (state)
   {
-    case CentralDriveState::near_digging:
-      return "normal";
     case CentralDriveState::at_bottom_limit:
       return "at_bottom_limit";
     case CentralDriveState::digging:
       return "digging";
+    case CentralDriveState::near_digging:
+      return "near_digging";
     case CentralDriveState::flap_transition_down:
       return "flap_transition_down";
     case CentralDriveState::near_dump_point:

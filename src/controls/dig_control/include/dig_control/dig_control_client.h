@@ -5,6 +5,7 @@
 #include <dig_control/DigControlAction.h>
 #include <dig_control/dig_controller.h>
 #include <actionlib/client/simple_action_client.h>
+#include "actionlib/client/simple_goal_state.h"
 
 namespace dig_control
 {
@@ -27,6 +28,11 @@ namespace dig_control
 
   private:
     actionlib::SimpleActionClient<dig_control::DigControlAction> client;
+    boost::function<void (const actionlib::SimpleClientGoalState&,
+                          const DigControlResultConstPtr&)> boostDoneCallback;
+    boost::function<void ()> boostActiveCallback;
+    boost::function<void (const DigControlFeedbackConstPtr&)> boostFeedbackCallback;
+
     ControlState control_state;
     DigState dig_state;
     CentralDriveState central_drive_state;

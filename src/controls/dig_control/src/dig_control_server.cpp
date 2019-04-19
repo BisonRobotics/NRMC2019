@@ -1,4 +1,5 @@
 #include <dig_control/dig_control_server.h>
+#include <dig_control/Debug.h>
 
 
 using namespace dig_control;
@@ -6,10 +7,11 @@ using namespace dig_control;
 
 DigControlServer::DigControlServer(ros::NodeHandle *nh, DigController *controller) :
   dig_safety(false), backhoe_duty(0.0f), bucket_duty(0.0f), central_duty(0.0f), vibrator_duty(0.0f),
-  nh(nh), controller(controller),
-  server(*nh, "dig_control_server", false)
+  nh(nh), controller(controller), debug(true), seq(0),
+  server(*nh, "action", false)
 {
-  joy_subscriber = nh->subscribe("joy", 1, &DigControlServer::joyCallback, this);
+  joy_subscriber = nh->subscribe("/joy", 1, &DigControlServer::joyCallback, this);
+  debug_publisher = nh->advertise<dig_control::Debug>("debug", 10);
   controller->setControlState(ControlState::manual);
   server.registerGoalCallback(boost::bind(&DigControlServer::goalCallback, this));
   server.registerPreemptCallback(boost::bind(&DigControlServer::preemptCallback, this));
@@ -57,7 +59,6 @@ void DigControlServer::goalCallback()
       if (current_state == ControlState::dig)
       {
         controller->setControlState(request);
-        server.acceptNewGoal();
       }
       else
       {
@@ -74,7 +75,6 @@ void DigControlServer::goalCallback()
       if (current_state == ControlState::dump)
       {
         controller->setControlState(request);
-        server.acceptNewGoal();
       }
       else
       {
@@ -209,6 +209,7 @@ ControlState DigControlServer::toControlState(DigControlGoal goal)
 void DigControlServer::update()
 {
   controller->update();
+  seq++;
 
   ControlState dig_state = controller->getControlState();
   if (dig_safety)
@@ -232,6 +233,24 @@ void DigControlServer::update()
     controller->stop();
   }
 
+  if (debug)
+  {
+    Debug message;
+    message.header.stamp = ros::Time::now();
+    message.header.seq = seq;
+    message.central_position = controller->getCentralDrivePosition();
+    message.duty.backhoe = controller->getBackhoeDuty();
+    message.duty.vibrator = controller->getVibratorDuty();
+    message.duty.bucket = controller->getBucketDuty();
+    message.duty.central = controller->getCentralDriveDuty();
+    message.state.control = controller->getControlStateString();
+    message.state.central_drive = controller->getCentralDriveStateString();
+    message.state.backhoe = controller->getBackhoeStateString();
+    message.state.bucket = controller->getBucketStateString();
+    message.state.dig = controller->getDigStateString();
+    debug_publisher.publish(message);
+  }
+
   if (server.isActive())
   {
     DigControlFeedback feedback;
@@ -247,7 +266,7 @@ void DigControlServer::update()
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "dig_control_server");
-  ros::NodeHandle nh;
+  ros::NodeHandle nh("~");
   DigController controller;
   DigControlServer server(&nh, &controller);
   ros::Rate rate(50);

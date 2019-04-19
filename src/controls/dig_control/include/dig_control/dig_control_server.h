@@ -28,8 +28,10 @@ namespace dig_control
 
     ros::NodeHandle *nh;
     ros::Subscriber joy_subscriber;
+    ros::Publisher debug_publisher;
     actionlib::SimpleActionServer<dig_control::DigControlAction> server;
-    bool active_request;
+    uint32_t seq;
+    bool debug;
     DigController *controller;
   };
 }

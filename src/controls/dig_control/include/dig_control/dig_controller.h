@@ -69,6 +69,7 @@ namespace dig_control
     static constexpr int digging_bottom =  300;
     static constexpr int digging_top    =  900;
     static constexpr int zero_angle     = 1330;
+    static constexpr int stow_position  = 1650;
     static constexpr int flaps_bottom   = 2000;
     static constexpr int dump_bottom    = 2250;
     static constexpr int dump_point     = 2300;
@@ -136,9 +137,11 @@ namespace dig_control
     float getBucketDuty() const;
     float getVibratorDuty() const;
     int getCentralDrivePosition() const;
+    std::string getControlStateString() const;
     std::string getCentralDriveStateString() const;
     std::string getBackhoeStateString() const;
     std::string getDigStateString() const;
+    std::string getBucketStateString() const;
     bool isInternallyAllocated();
 
   private:

@@ -6,6 +6,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   vesc_access
+  std_msgs
   actionlib_msgs
   actionlib
 )
@@ -15,6 +16,12 @@ find_package(Boost REQUIRED COMPONENTS system)
 link_directories(/usr/src/gmock/build)
 set(GTEST_LIBRARIES gmock_main)
 
+add_message_files(
+  FILES
+  State.msg
+  Duty.msg
+  Debug.msg
+)
 
 add_action_files(
   DIRECTORY action
@@ -67,7 +74,7 @@ target_link_libraries(dig_control_client ${catkin_LIBRARIES})
 add_dependencies(dig_control_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(dig_control_client_example src/dig_control_client_example.cpp)
-target_link_libraries(dig_control_client_example dig_control_client ${catkin_LIBRARIES})
+target_link_libraries(dig_control_client_example dig_control_client dig_controller ${catkin_LIBRARIES})
 add_dependencies(dig_control_client_example ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 #############
