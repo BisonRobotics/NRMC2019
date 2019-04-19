@@ -14,9 +14,9 @@ namespace dig_control
   public:
     explicit DigControlServer(ros::NodeHandle *nh, DigController *controller);
 
-    void goalCallback(const actionlib::SimpleActionServer<DigControlAction>::GoalConstPtr &goal);
-    void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
+    void goalCallback();
     void preemptCallback();
+    void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
     void update();
 
     static DigControlResult toResult(ControlState state);

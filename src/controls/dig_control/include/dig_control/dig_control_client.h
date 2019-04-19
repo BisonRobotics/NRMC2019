@@ -1,0 +1,9 @@
+#ifndef DIG_CONTROL_DIG_CONTROL_CLIENT_H
+#define DIG_CONTROL_DIG_CONTROL_CLIENT_H
+
+namespace dig_control
+{
+
+}
+
+#endif //DIG_CONTROL_DIG_CONTROL_CLIENT_H

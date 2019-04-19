@@ -7,21 +7,22 @@ using namespace dig_control;
 DigControlServer::DigControlServer(ros::NodeHandle *nh, DigController *controller) :
   dig_safety(false), backhoe_duty(0.0f), bucket_duty(0.0f), central_duty(0.0f), vibrator_duty(0.0f),
   nh(nh), controller(controller),
-  server(*nh, "dig_control", boost::bind(&DigControlServer::goalCallback, this, _1), false)
+  server(*nh, "dig_control_server", false)
 {
   joy_subscriber = nh->subscribe("joy", 1, &DigControlServer::joyCallback, this);
   controller->setControlState(ControlState::manual);
-  //server.registerPreemptCallback(boost::bind(&DigControlServer::preemptCallback, this));
+  server.registerGoalCallback(boost::bind(&DigControlServer::goalCallback, this));
+  server.registerPreemptCallback(boost::bind(&DigControlServer::preemptCallback, this));
   server.start();
 }
 
-void DigControlServer::goalCallback(const actionlib::SimpleActionServer<DigControlAction>::GoalConstPtr &goal)
+void DigControlServer::goalCallback()
 {
-  ROS_INFO("[digControlGoalCallback]");
+  auto goal = server.acceptNewGoal();
   ControlState request = toControlState(*goal);
   ControlState current_state = controller->getControlState();
 
-  ROS_INFO("[DigControlServer::goalCallback] Request to change control state from %s to %s",
+  ROS_INFO("[DigControlServer::goalCallback] Request for %s to %s",
             to_string(current_state).c_str(), to_string(request).c_str());
   switch (request)
   {
@@ -40,7 +41,6 @@ void DigControlServer::goalCallback(const actionlib::SimpleActionServer<DigContr
       if (current_state == ControlState::ready || current_state == ControlState::manual)
       {
         controller->setControlState(request);
-        server.acceptNewGoal();
       }
       else
       {
@@ -95,6 +95,13 @@ void DigControlServer::goalCallback(const actionlib::SimpleActionServer<DigContr
                 to_string(current_state).c_str(), to_string(request).c_str());
     }
   }
+}
+
+void DigControlServer::preemptCallback()
+{
+  ControlState current_state = controller->getControlState();
+  server.setPreempted(toResult(current_state));
+  ROS_INFO("[DigControlServer::preemptCallback] Preempting from %s", to_string(current_state).c_str());
 }
 
 void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
@@ -187,11 +194,6 @@ void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
   }
 }
 
-void DigControlServer::preemptCallback()
-{
-  ROS_INFO("[digControlPreemptCallback]");
-}
-
 DigControlResult DigControlServer::toResult(ControlState state)
 {
   DigControlResult result;
@@ -207,6 +209,7 @@ ControlState DigControlServer::toControlState(DigControlGoal goal)
 void DigControlServer::update()
 {
   controller->update();
+
   ControlState dig_state = controller->getControlState();
   if (dig_safety)
   {
@@ -227,6 +230,17 @@ void DigControlServer::update()
   {
     controller->setControlState(ControlState::manual);
     controller->stop();
+  }
+
+  if (server.isActive())
+  {
+    DigControlFeedback feedback;
+    feedback.control_state       = (DigControlFeedback::_control_state_type)       controller->getControlState();
+    feedback.dig_state           = (DigControlFeedback::_dig_state_type)           controller->getDigState();
+    feedback.backhoe_state       = (DigControlFeedback::_backhoe_state_type)       controller->getBackhoeState();
+    feedback.central_drive_state = (DigControlFeedback::_central_drive_state_type) controller->getCentralDriveState();
+    feedback.bucket_state        = (DigControlFeedback::_bucket_state_type)        controller->getBucketState();
+    server.publishFeedback(feedback);
   }
 }
 
