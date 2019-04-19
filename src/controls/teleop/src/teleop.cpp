@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <teleop_interface/teleop_interface.h>
-#include <dig_control/dig_controller/dig_controller.h>
+#include <dig_control/dig_controller.h>
 
 using namespace dig_control;
 
@@ -64,11 +64,11 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
     }
     else if (a)
     {
-      backhoe_duty = -DigController::BackhoeDuty::fast;
+      backhoe_duty = -DigController::BackhoeDuty::normal;
     }
     else if (b)
     {
-      backhoe_duty = DigController::BackhoeDuty::normal;
+      backhoe_duty = DigController::BackhoeDuty::fast;
     }
 
     // Update central drive

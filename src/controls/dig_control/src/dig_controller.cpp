@@ -1,4 +1,4 @@
-#include <dig_control/dig_controller/dig_controller.h>
+#include <dig_control/dig_controller.h>
 #include <dig_control/dig_params.h> // Can only include once
 #include <boost/algorithm/clamp.hpp>
 

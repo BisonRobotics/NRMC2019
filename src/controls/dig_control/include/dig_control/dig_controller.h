@@ -1,8 +1,8 @@
 #ifndef DIG_CONTROL_2_DIG_CONTROLLER_H
 #define DIG_CONTROL_2_DIG_CONTROLLER_H
 
-#include <vesc_access/ivesc_access.h>
-#include <vesc_access/vesc_access.h>
+#include "../../../../hardware_layer/vesc_access/include/vesc_access/ivesc_access.h"
+#include "../../../../hardware_layer/vesc_access/include/vesc_access/vesc_access.h"
 
 namespace dig_control
 {

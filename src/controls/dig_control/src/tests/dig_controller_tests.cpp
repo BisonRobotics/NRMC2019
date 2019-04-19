@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 #include <ros/ros.h>
 
-#include <dig_control/dig_controller/dig_controller.h>
+#include <dig_control/dig_controller.h>
 
 using ::testing::AtLeast;
 using ::testing::Return;
