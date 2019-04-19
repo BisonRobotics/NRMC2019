@@ -58,13 +58,16 @@ add_library(dig_controller src/dig_controller.cpp)
 target_link_libraries(dig_controller ${catkin_LIBRARIES})
 add_dependencies(dig_controller ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-
 add_executable(dig_control_server src/dig_control_server.cpp)
 target_link_libraries(dig_control_server dig_controller ${catkin_LIBRARIES})
 add_dependencies(dig_control_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_library(dig_control_client src/dig_control_client.cpp)
+target_link_libraries(dig_control_client ${catkin_LIBRARIES})
+add_dependencies(dig_control_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 add_executable(dig_control_client_example src/dig_control_client_example.cpp)
-target_link_libraries(dig_control_client_example ${catkin_LIBRARIES})
+target_link_libraries(dig_control_client_example dig_control_client ${catkin_LIBRARIES})
 add_dependencies(dig_control_client_example ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 #############
