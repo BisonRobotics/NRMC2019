@@ -18,6 +18,7 @@ set(GTEST_LIBRARIES gmock_main)
 
 add_message_files(
   FILES
+  StateString.msg
   State.msg
   Duty.msg
   Debug.msg

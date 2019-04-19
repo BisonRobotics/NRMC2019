@@ -1,5 +1,5 @@
-string control
-string dig
-string central_drive
-string backhoe
-string bucket
+uint8 control
+uint8 dig
+uint8 central_drive
+uint8 backhoe
+uint8 bucket

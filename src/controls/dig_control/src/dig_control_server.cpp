@@ -248,6 +248,11 @@ void DigControlServer::update()
     message.state.backhoe = controller->getBackhoeStateString();
     message.state.bucket = controller->getBucketStateString();
     message.state.dig = controller->getDigStateString();
+    message.state_i.control = (uint8_t)controller->getControlState();
+    message.state_i.central_drive = (uint8_t)controller->getCentralDriveState();
+    message.state_i.dig = (uint8_t)controller->getDigState();
+    message.state_i.backhoe = (uint8_t)controller->getBackhoeState();
+    message.state_i.bucket = (uint8_t)controller->getBucketState();
     debug_publisher.publish(message);
   }
 

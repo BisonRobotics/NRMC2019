@@ -1,4 +1,6 @@
 Header header
 int32 central_position
-State state
+StateString state
 Duty duty
+State state_i
+
