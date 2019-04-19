@@ -77,17 +77,10 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
   p_prev_UlUr.second = right_speed;
 
   double speed_gain =   1;  /*DNFW*/
-  double set_speed  =  .2;  /*DNFW*/
-  double angle_gain = 1.5;  /*DNFW*/ 
-  double path_gain  = 1.3;  /*DNFW*/
+  double set_speed  =  .5;  /*DNFW*/
+  double angle_gain = 4.5;  /*DNFW*/ 
+  double path_gain  = 5.3;  /*DNFW*/
   
-
-  double steering = 0;
-  //limit denominator for steering
-    if (std::abs(left_speed + right_speed) < .01)
-        {steering =  (2/Axelsize) * (right_speed - left_speed)/.01;}
-    else
-        {steering = (2/Axelsize) * (right_speed - left_speed)/(left_speed + right_speed);}
   //find closest index and path error
     p_last_closest_t = p_closest_t;
     std::pair<double, double> par_and_err = findCPP2019(sv.x_pos, sv.y_pos, p_x, p_y, p_theta, Gchopsize);
@@ -123,22 +116,22 @@ bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
           t_jumps = t_jumps+1;
       } 
       */
-      
+      double steering = p_omega.at((int)(index_for_t) + t_jumps);
       es.angle_error = angleDiff(sv.theta,p_theta.at((int)(index_for_t) + t_jumps));
-      p_speed_cmd = std::min(max_speed - steering, p_speed_cmd - speed_gain*(p_speed_cmd - set_speed)*dt);
+      p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd -std::min(max_speed - Axelsize/2.0 * steering* p_speed_cmd,set_speed))*dt;
       
       //Get wheel velocities
       std::pair<double, double> UlUr = speedSteeringControl(
                                       p_speed_cmd, 
-                                      p_omega.at((int)(index_for_t) + t_jumps)
+                                      steering
                                        - (p_forward_point ? 2.0 : 2.0)*angle_gain*es.angle_error 
-                                       - (p_forward_point ? 2.0 : 2.0)*path_gain*es.path_error,
+                                       - (p_forward_point ? 2.0 : -2.0)*path_gain*es.path_error,
                                        Axelsize, max_speed);
                                        
       std::pair<double, double> UlUrIdeal = speedSteeringControl(
                                       p_speed_cmd, 
-                                      p_omega.at((int)(index_for_t) + t_jumps),
-                                      Axelsize, 2.0);
+                                      steering,
+                                      Axelsize, max_speed);
                                        
       ws.left_wheel_actual  = .5 * (front_left_wheel->getLinearVelocity() + back_left_wheel->getLinearVelocity());
       ws.right_wheel_actual = .5 * (front_right_wheel->getLinearVelocity() + back_right_wheel->getLinearVelocity());
@@ -284,6 +277,24 @@ std::pair<double, double> DriveController::speedSteeringControl(double speed,   
   std::pair<double, double> UlUr;
   UlUr.first = 0;
   UlUr.second = 0;
+  
+  UlUr.first = speed/AxelLen + .5*(steering*speed);
+  UlUr.second = speed/AxelLen - .5*(steering*speed);
+  
+  double a = (1 - steering * AxelLen/2.0) /
+             (1 + steering * AxelLen/2.0); 
+  if (a > 1.0)
+  {
+      double b = (1 + steering * AxelLen/2.0) /
+                 (1 - steering * AxelLen/2.0);
+      UlUr.first  = MaxSpeed;
+      UlUr.second = b*UlUr.second;
+  }
+  else
+  {
+      UlUr.second = MaxSpeed;
+      UlUr.first = a*UlUr.second;
+  }
 
   /* if speed is negative */
   /* positve radius is backwards and to the right (same circle as positive */
@@ -294,7 +305,7 @@ std::pair<double, double> DriveController::speedSteeringControl(double speed,   
   /* sign of speed indicates direction */
   /* Speed is .5*(LeftAngularVel + RightAngularVel)*WheelRadius; (angularVel in Rad) */
   /* Turn Radius is DistanceBetweenWheels/2 * (LeftAngularVel + RightAngularVel)/(RightAngularVel - LeftAngularVel) */
-  if (std::abs(steering) < 1000.0 && std::abs(steering) > .01) {
+ /* if (std::abs(steering) < 1000.0 && std::abs(steering) > .01) {
     UlUr.first = (4.0 * (1.0 / steering) * speed / AxelLen - 2.0 * speed) * AxelLen /
       ((1.0 / steering) * 4.0);
     UlUr.second = 2.0 * speed - UlUr.first;
@@ -318,7 +329,7 @@ std::pair<double, double> DriveController::speedSteeringControl(double speed,   
   {
     UlUr.first =  speed;
     UlUr.second = speed;
-  }
+  }*/
 
    return UlUr;
 }

@@ -12,10 +12,10 @@ int main (int argc, char **argv)
     ros::NodeHandle nh;
     ros::Rate r (10);
     
-    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug)) 
-    {
-      ros::console::notifyLoggerLevelsChanged();
-    }
+    //if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug)) 
+   // {
+   //   ros::console::notifyLoggerLevelsChanged();
+   // }
     ROS_DEBUG("Debug info shown.");
     ROS_WARN("HELLO");
     
@@ -101,6 +101,12 @@ int main (int argc, char **argv)
         }
         FSM.state5StartGoToHopper();
         while (FSM.state6CheckGoToHopper() != Frosty_ns::StateResult::SUCCESS)
+        {
+          r.sleep();
+          ros::spinOnce();
+        }
+        //dump here
+        for (int index = 0; index < 30; index++)
         {
           r.sleep();
           ros::spinOnce();

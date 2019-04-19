@@ -235,9 +235,9 @@ int main(int argc, char **argv)
 {
   // read ros param for simulating
   ros::init(argc, argv, "position_controller");
-if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
-   ros::console::notifyLoggerLevelsChanged();
-}
+//if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+ //  ros::console::notifyLoggerLevelsChanged();////
+//}
 
   ros::NodeHandle node("~");
   ros::NodeHandle global_node;
@@ -438,7 +438,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
   ROS_INFO("[drive controller action_server] Started");
 
   firstTime = true;
-  bool loopdebug = true; //could be a param
+  bool loopdebug = true && false; //could be a param
   while (ros::ok())
   {
     if (loopdebug)

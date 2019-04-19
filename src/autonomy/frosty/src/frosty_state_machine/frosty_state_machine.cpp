@@ -153,14 +153,14 @@ void FrostyStateMachine::state2StartGoToDig()
     //make goal
     
     navigation_msgs::BezierSegment segment_1;
-    segment_1.p0.x = 1;
-    segment_1.p0.y = 0;
+    segment_1.p0.x = 3;
+    segment_1.p0.y = 2;
     segment_1.p1.x = 2;
     segment_1.p1.y = 0;
     segment_1.p2.x = 3;
     segment_1.p2.y = 0;
     segment_1.p3.x = 4;
-    segment_1.p3.y = 0;
+    segment_1.p3.y = 1;
     segment_1.path_cost = 0; //free
     segment_1.min_radius = .1;
     segment_1.direction_of_travel = 1; //static_cast<int8_t>(navigation_msgs::Direction::forward); //aka 1
@@ -236,9 +236,9 @@ void FrostyStateMachine::state5StartGoToHopper()
     //make goal
     
     navigation_msgs::BezierSegment segment_1;
-    segment_1.p0.x = 4;
-    segment_1.p0.y = 0;
-    segment_1.p1.x = 3;
+    segment_1.p0.x = 3;
+    segment_1.p0.y = -1;
+    segment_1.p1.x = 2.5;
     segment_1.p1.y = 0;
     segment_1.p2.x = 2;
     segment_1.p2.y = 0;
