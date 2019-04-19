@@ -36,7 +36,7 @@
     </xacro:if>
 
     <!-- Define apriltag locations -->
-    <link name="tag0" />
+    <!--<link name="tag0" />
     <link name="tag1" />
     <link name="tag4" />
 
@@ -57,7 +57,7 @@
         <origin xyz="0 -0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
         <parent link="map" />
         <child link = "tag4" />
-    </joint>
+    </joint>-->
 
     <!-- Define linkages and joints -->
     <link name="base_link" />
@@ -344,7 +344,7 @@
         <joint name="map_to_base_link" type="fixed">
             <parent link="map"/>
             <child link="base_link"/>
-            <origin xyz="${0.0254*245} ${42*0.0254} 0" rpy="0 0 ${-pi/2}" />
+            <origin xyz="${42*0.0254} ${0.0254*245} 0" rpy="0 0 ${-pi/2}" />
         </joint>
     </xacro:if>
 </robot>
