@@ -21,7 +21,7 @@ namespace dig_control
     double getCentralDriveAngle() const;
     double getBackhoeAngle() const;
     double getFlapsAngle() const;
-    static double getPolyFit(const double params[], double angle);
+    static double polyFit(const double *params, double angle);
 
     static DigControlResult toResult(ControlState state);
     static ControlState toControlState(DigControlGoal goal);

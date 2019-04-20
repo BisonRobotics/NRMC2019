@@ -291,7 +291,7 @@ void DigControlServer::update()
   joint_publisher.publish(joint_angles);
 }
 
-double DigControlServer::getPolyFit(const double c[], double x)
+double DigControlServer::polyFit(const double *c, double x)
 {
   using std::pow;
   return c[0]*pow(x,4) + c[1]*pow(x,3) + c[2]*pow(x,2) + c[3]*x + c[4];
@@ -305,13 +305,25 @@ double DigControlServer::getCentralDriveAngle() const
 double DigControlServer::getBackhoeAngle() const
 {
   static constexpr double monoboom_params[] = {-.0808, -0.0073,  0.0462,  0.9498,  -0.0029};
-  return -getPolyFit(monoboom_params, getCentralDriveAngle());
+  return -polyFit(monoboom_params, getCentralDriveAngle());
 }
 
 double DigControlServer::getFlapsAngle() const
 {
   static constexpr double flap_params[] = {85.0010, -376.8576, 620.7329, -453.8172, 126.0475};
-  return getPolyFit(flap_params, getCentralDriveAngle());
+  double central_angle = getCentralDriveAngle();
+  if (central_angle < 1.275 && central_angle > 0.785)
+  {
+    return -(polyFit(flap_params, central_angle) - M_PI_4);
+  }
+  else if (central_angle >= 1.275)
+  {
+    return M_PI_4;
+  }
+  else
+  {
+    return -1.45;
+  }
 }
 
 int main(int argc, char* argv[])
