@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
   actionlib
   actionlib_msgs
+  dig_control
 )
 
 # Declare that this catkin package's runtime dependencies

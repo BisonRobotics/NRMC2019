@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 #include <ros/ros.h>
 
-#include <dig_control/dig_controller/dig_controller.h>
+#include <dig_control/dig_controller.h>
 
 using ::testing::AtLeast;
 using ::testing::Return;
@@ -64,10 +64,10 @@ TEST(DigControllerTests, initializesCorrectly)
   EXPECT_EQ(controller.getVibratorDuty(), 0.0f);
   EXPECT_EQ(controller.getBackhoeDuty(), 0.0f);
   EXPECT_EQ(controller.getCentralDriveDuty(), 0.0f);
-  EXPECT_EQ(controller.getBackhoeState(), DigController::BackhoeState::open);
-  EXPECT_EQ(controller.getCentralDriveState(), DigController::CentralDriveState::at_bottom_limit);
-  EXPECT_EQ(controller.getBucketState(), DigController::BucketState::down);
-  EXPECT_EQ(controller.getControlState(), DigController::ControlState::ready);
+  EXPECT_EQ(controller.getBackhoeState(), BackhoeState::open);
+  EXPECT_EQ(controller.getCentralDriveState(), CentralDriveState::at_bottom_limit);
+  EXPECT_EQ(controller.getBucketState(), BucketState::down);
+  EXPECT_EQ(controller.getControlState(), ControlState::ready);
 }
 
 TEST(DigControllerTests, setControlState)
@@ -94,15 +94,15 @@ TEST(DigControllerTests, setControlState)
   DigController controller(&central_drive, &backhoe_actuator, &bucket_actuator, &vibrator);
 
   // Test setting control states
-  EXPECT_EQ(controller.getControlState(), DigController::ControlState::ready);
-  controller.setControlState(DigController::ControlState::manual);
+  EXPECT_EQ(controller.getControlState(), ControlState::ready);
+  controller.setControlState(ControlState::manual);
   EXPECT_CALL(central_drive, setCustom(0));
   EXPECT_CALL(backhoe_actuator, setCustom(0));
   EXPECT_CALL(bucket_actuator, setDuty(0));
   EXPECT_CALL(vibrator, setDuty(0));
-  EXPECT_EQ(controller.getControlState(), DigController::ControlState::manual);
-  controller.setControlState(DigController::ControlState::ready);
-  EXPECT_EQ(controller.getControlState(), DigController::ControlState::ready);
+  EXPECT_EQ(controller.getControlState(), ControlState::manual);
+  controller.setControlState(ControlState::ready);
+  EXPECT_EQ(controller.getControlState(), ControlState::ready);
 }
 
 /*TEST(DigControllerTests, manualControls)
@@ -141,8 +141,8 @@ TEST(DigControllerTests, setControlState)
   for (int i = 0; i < 5; i++) controller.update();
 
   // Set control state to manual
-  EXPECT_EQ(controller.getControlState(), DigController::ControlState::ready);
-  controller.setControlState(DigController::ControlState::manual);
+  EXPECT_EQ(controller.getControlState(), ControlState::ready);
+  controller.setControlState(ControlState::manual);
 }*/
 
 

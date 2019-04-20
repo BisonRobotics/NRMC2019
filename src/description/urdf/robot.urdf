@@ -28,15 +28,23 @@
 
     <!-- Pull in parameters -->
     <xacro:arg name="fixed_central_drive" default="1" />
-    <xacro:property name="central_drive_joints_type" value="revolute" />
+    <xacro:property name="central_drive_joint_type" value="revolute" />
     <xacro:property name="monoboom_angle" value="0" />
     <xacro:if value="$(arg fixed_central_drive)">
-        <xacro:property name="central_drive_joints_type" value="revolute" />
+        <xacro:property name="central_drive_joint_type" value="fixed" />
         <xacro:property name="monoboom_angle" value="${-pi*0.28}" />
     </xacro:if>
 
+    <xacro:arg name="fixed_drivetrains" default="0" />
+    <xacro:property name="drivetrain_joint_type" value="revolute" />
+    <xacro:if value="$(arg fixed_drivetrains)">
+        <xacro:property name="drivetrain_joint_type" value="fixed" />
+    </xacro:if>
+
+
+
     <!-- Define apriltag locations -->
-    <link name="tag0" />
+    <!--<link name="tag0" />
     <link name="tag1" />
     <link name="tag4" />
 
@@ -57,7 +65,7 @@
         <origin xyz="0 -0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
         <parent link="map" />
         <child link = "tag4" />
-    </joint>
+    </joint>-->
 
     <!-- Define linkages and joints -->
     <link name="base_link" />
@@ -103,7 +111,7 @@
             </visual>
         </link>
 
-        <joint name="${x_name}_${y_name}_wheel_joint" type="revolute">
+        <joint name="${x_name}_${y_name}_wheel_joint" type="${drivetrain_joint_type}">
             <parent link="frame"/>
             <child link="${x_name}_${y_name}_wheel"/>
             <origin xyz="${xdist} ${y_dir*0.257109468} -0.5055752" />
@@ -117,13 +125,13 @@
     <xacro:wheel x_name="back"  y_name="right" rot="${pi/2}"  r_z="1.575" y_dir="-1.15" xdist="0.1655676" color="gold"  />
 
 
-    <link name="central_drive">
+    <!--<link name="central_drive">
         <visual>
             <geometry>
-                    <mesh filename="package://description/meshes/central_drive.stl" />
-                </geometry>
-                <origin xyz="0.125 0.03 -0.375" rpy="0 0 1.57" />
-                <material name="black" />
+                <mesh filename="package://description/meshes/central_drive.stl" />
+            </geometry>
+            <origin xyz="0.125 0.03 -0.375" rpy="0 0 1.57" />
+            <material name="black" />
         </visual>
     </link>
 
@@ -131,7 +139,7 @@
         <parent link="frame"/>
         <child link="central_drive"/>
         <origin xyz="0 0 0" rpy="0 0 0" />
-    </joint>
+    </joint>-->
 
     <link name="computer_box">
         <visual>
@@ -175,7 +183,7 @@
         </visual>
     </link>
 
-    <joint name="frame_to_monoboom" type="${central_drive_joints_type}">
+    <joint name="frame_to_monoboom" type="${central_drive_joint_type}">
         <origin xyz="0.98 0 -0.365" rpy="1.57 ${monoboom_angle} 3.14" />
         <axis xyz="0 0 -1" />
         <parent link="frame" />
@@ -193,7 +201,7 @@
         </visual>
     </link>
 
-    <joint name="monoboom_to_bucket" type="${central_drive_joints_type}">
+    <joint name="monoboom_to_bucket" type="${central_drive_joint_type}">
         <origin xyz="0.55 0 0" rpy="0 0 3.14" />
         <axis xyz="0 0 1" />
         <parent link="backhoe_monoboom" />
@@ -211,7 +219,7 @@
         </visual>
     </link>
 
-    <joint name="frame_to_gravel_bucket" type="${central_drive_joints_type}">
+    <joint name="frame_to_gravel_bucket" type="${central_drive_joint_type}">
 
         <origin xyz="0 0 0" rpy="0 0 0" />
         <axis xyz="0 -1 0" />
@@ -230,7 +238,7 @@
         </visual>
     </link>
 
-    <joint name="left_flap_joint" type="${central_drive_joints_type}">
+    <joint name="left_flap_joint" type="${central_drive_joint_type}">
         <origin xyz="0.53 0.125 -0.2" rpy="1.57 0 -1.57" />
         <axis xyz="0 0 1" />
         <parent link="frame" />
@@ -250,7 +258,7 @@
         </visual>
     </link>
 
-    <joint name="right_flap_joint" type="${central_drive_joints_type}">
+    <joint name="right_flap_joint" type="${central_drive_joint_type}">
         <origin xyz="0.53 -0.125 -0.2" rpy="1.57 0 -1.57" />
         <axis xyz="0 0 -1" />
         <parent link="frame" />
@@ -344,7 +352,7 @@
         <joint name="map_to_base_link" type="fixed">
             <parent link="map"/>
             <child link="base_link"/>
-            <origin xyz="${0.0254*245} ${42*0.0254} 0" rpy="0 0 ${-pi/2}" />
+            <origin xyz="${42*0.0254} ${0.0254*245} 0" rpy="0 0 ${-pi/2}" />
         </joint>
     </xacro:if>
 </robot>
