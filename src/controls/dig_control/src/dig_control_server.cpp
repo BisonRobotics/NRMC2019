@@ -299,9 +299,10 @@ double DigControlServer::polyFit(const double *c, double x)
 
 double DigControlServer::getCentralDriveAngle() const
 {
-  return 9.1473E-4 * controller->getCentralDrivePosition() - 1.04;//- 0.3;//- 0.82;
+  return 9.1473E-4 * controller->getCentralDrivePosition() - 1.04;
 }
 
+// The point where the backhoe starts moving back down on the potentiometer is at 2714
 double DigControlServer::getBackhoeAngle() const
 {
   static constexpr double monoboom_params[] = {-.0808, -0.0073,  0.0462,  0.9498,  -0.0029};
