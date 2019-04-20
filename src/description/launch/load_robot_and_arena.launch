@@ -7,9 +7,13 @@
       - Monoboom linear actuator to backhoe curl
   -->
   <arg name="test_urdf" default="false" />
-  <arg name="fixed_central_drive" default="true" />
+  <arg name="fixed_central_drive" default="false" />
+  <arg name="fixed_drivetrains" default="false" />
   <param name="arena_description" command="$(find xacro)/xacro --inorder $(find description)/urdf/arena.urdf" />
-  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find description)/urdf/robot.urdf test_urdf:=$(arg test_urdf) fixed_central_drive:=$(arg fixed_central_drive)" />
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find description)/urdf/robot.urdf
+                                            test_urdf:=$(arg test_urdf)
+                                            fixed_central_drive:=$(arg fixed_central_drive)
+                                            fixed_drivetrains:=$(arg fixed_drivetrains)" />
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
     <param name="ignore_timestamp" type="bool" value="true" />
   </node>

@@ -18,15 +18,18 @@ namespace dig_control
     void preemptCallback();
     void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
     void update();
-    static double getPolyfit(double *params, double angle);
+    double getCentralDriveAngle() const;
+    double getBackhoeAngle() const;
+    double getFlapsAngle() const;
+    static double getPolyFit(const double params[], double angle);
 
     static DigControlResult toResult(ControlState state);
     static ControlState toControlState(DigControlGoal goal);
 
   private:
-    static constexpr double monoboom_params[] = {-.0808, -0.0073,  0.0462,  0.9498,  -0.0029};
-    static constexpr double flap_params[] = {85.0010, -376.8576, 620.7329, -453.8172, 126.0475};
-
+    // Minimum 0.22
+    // Dump angle 2.12 // Austin has it at 1.3
+    // Maximum 2.35
     bool dig_safety;
     float backhoe_duty, bucket_duty, central_duty, vibrator_duty;
     uint32_t seq;

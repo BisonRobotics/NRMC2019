@@ -3,11 +3,12 @@
     Launches the nodes necessary for urdf development
   -->
   <arg name="test_urdf" value="true" />
-  <arg name="fixed_central_drive" default="true" />
+  <arg name="fixed_central_drive" default="false" />
+  <arg name="fixed_drivetrains" default="true" />
   <!--<include file="$(find description)/launch/rviz.launch" />-->
   <include file="$(find description)/launch/load_robot_and_arena.launch" pass_all_args="true" />
   <arg name="source_list" default="[bucket_joint_states]"/>
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+  <!--<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
     <rosparam param="source_list" subst_value="True">$(arg source_list)</rosparam>
-  </node>
+  </node>-->
 </launch>

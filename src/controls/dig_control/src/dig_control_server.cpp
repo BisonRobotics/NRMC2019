@@ -276,23 +276,42 @@ void DigControlServer::update()
   sensor_msgs::JointState joint_angles;
   joint_angles.header.stamp = ros::Time::now();
   joint_angles.header.seq = seq;
+  joint_angles.name.emplace_back("central_drive");
   joint_angles.name.emplace_back("frame_to_monoboom");
   joint_angles.name.emplace_back("frame_to_gravel_bucket");
   joint_angles.name.emplace_back("monoboom_to_bucket");
   joint_angles.name.emplace_back("left_flap_joint");
   joint_angles.name.emplace_back("right_flap_joint");
+  joint_angles.position.push_back(getCentralDriveAngle());
+  joint_angles.position.push_back(getBackhoeAngle());
   joint_angles.position.push_back(0.0f);
   joint_angles.position.push_back(0.0f);
-  joint_angles.position.push_back(0.0f);
-  joint_angles.position.push_back(0.0f);
-  joint_angles.position.push_back(0.0f);
+  joint_angles.position.push_back(getFlapsAngle());
+  joint_angles.position.push_back(getFlapsAngle());
   joint_publisher.publish(joint_angles);
 }
 
-double DigControlServer::getPolyfit(double *c, double x)
+double DigControlServer::getPolyFit(const double c[], double x)
 {
   using std::pow;
   return c[0]*pow(x,4) + c[1]*pow(x,3) + c[2]*pow(x,2) + c[3]*x + c[4];
+}
+
+double DigControlServer::getCentralDriveAngle() const
+{
+  return 9.1473E-4 * controller->getCentralDrivePosition() - 1.04;//- 0.3;//- 0.82;
+}
+
+double DigControlServer::getBackhoeAngle() const
+{
+  static constexpr double monoboom_params[] = {-.0808, -0.0073,  0.0462,  0.9498,  -0.0029};
+  return -getPolyFit(monoboom_params, getCentralDriveAngle());
+}
+
+double DigControlServer::getFlapsAngle() const
+{
+  static constexpr double flap_params[] = {85.0010, -376.8576, 620.7329, -453.8172, 126.0475};
+  return getPolyFit(flap_params, getCentralDriveAngle());
 }
 
 int main(int argc, char* argv[])
