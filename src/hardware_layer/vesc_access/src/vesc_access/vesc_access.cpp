@@ -344,9 +344,9 @@ int VescAccess::getADC()
   return vesc->getADC();
 }
 
-float VescAccess::getInCurrent()
+float VescAccess::getCurrent()
 {
-  return vesc->getInCurrent();
+  return vesc->getCurrent();
 }
 
 int VescAccess::getTachometer()

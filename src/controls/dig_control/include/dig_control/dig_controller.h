@@ -37,6 +37,10 @@ namespace dig_control
     float getBackhoeDuty() const override;
     float getBucketDuty() const override;
     float getVibratorDuty() const override;
+    float getCentralDriveCurrent() const override;
+    float getBackhoeCurrent() const override;
+    float getBucketCurrent() const override;
+    float getVibratorCurrent() const override;
     int getCentralDrivePosition() const override;
     int getBackhoePosition() const override;
     std::string getControlStateString() const override;
@@ -45,6 +49,8 @@ namespace dig_control
     std::string getDigStateString() const override;
     std::string getBucketStateString() const override;
 
+    void lowPassFilter(float &value, float sample, float filter_constant);
+
     bool isInternallyAllocated();
 
   private:
@@ -52,6 +58,7 @@ namespace dig_control
     bool internally_allocated;
     bool floor_test;
     float central_drive_duty, backhoe_duty, bucket_duty, vibrator_duty;
+    float backhoe_current, bucket_current, central_current, vibrator_current;
     int central_drive_position;
 
     int backhoe_stuck_count;

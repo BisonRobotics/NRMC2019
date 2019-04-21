@@ -3,6 +3,8 @@
 
 #include "vesc_access/ivesc_access.h"
 
+#define FILTER_CONSTANT 0.04f
+
 #define VESC_CAN_NETWORK ("vesc_can")
 
 #define CENTRAL_DRIVE_ID 5

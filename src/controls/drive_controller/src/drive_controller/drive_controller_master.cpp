@@ -239,7 +239,7 @@ class DriverVescCrossover : public iVescAccess
     void setCustom(float v) {}
     void setCustom(float v, uint index) {}
     int getADC() {return -1;}
-    float getInCurrent() {return -1.0;};
+    float getCurrent() {return -1.0;};
     int getTachometer() {return -1;};
     float getVin() {return -1;};
     bool encoderIndexFound() {return true;};

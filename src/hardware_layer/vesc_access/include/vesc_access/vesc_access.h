@@ -46,7 +46,7 @@ public:
   void setCustom(float setpoint) override;
   void setCustom(float setpoint, uint index) override;
   int getADC() override;
-  float getInCurrent() override;
+  float getCurrent() override;
   int getTachometer() override;
   float getVin() override;
   bool encoderIndexFound() override;

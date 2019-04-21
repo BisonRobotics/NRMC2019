@@ -21,7 +21,7 @@ add_message_files(
   FILES
   StateString.msg
   State.msg
-  Duty.msg
+  DriveValues.msg
   Debug.msg
 )
 

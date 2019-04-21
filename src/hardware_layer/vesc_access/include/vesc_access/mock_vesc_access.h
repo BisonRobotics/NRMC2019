@@ -17,7 +17,7 @@ public:
   MOCK_METHOD1(setCustom, void(float));
   MOCK_METHOD2(setCustom, void(float, uint));
   MOCK_METHOD0(getADC, int(void));
-  MOCK_METHOD0(getInCurrent, float(void));
+  MOCK_METHOD0(getCurrent, float(void));
   MOCK_METHOD0(getTachometer, int(void));
   MOCK_METHOD0(getVin, float(void));
   MOCK_METHOD0(encoderIndexFound, bool(void));

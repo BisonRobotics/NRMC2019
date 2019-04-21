@@ -263,6 +263,10 @@ void DigControlServer::update()
     message.duty.vibrator = controller->getVibratorDuty();
     message.duty.bucket = controller->getBucketDuty();
     message.duty.central = controller->getCentralDriveDuty();
+    message.current.backhoe = controller->getBackhoeCurrent();
+    message.current.vibrator = controller->getVibratorCurrent();
+    message.current.bucket = controller->getBucketCurrent();
+    message.current.central = controller->getCentralDriveCurrent();
     message.state.control = controller->getControlStateString();
     message.state.central_drive = controller->getCentralDriveStateString();
     message.state.backhoe = controller->getBackhoeStateString();

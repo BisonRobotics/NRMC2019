@@ -96,7 +96,8 @@ namespace dig_control
   class VibratorDuty
   {
   public:
-    static constexpr float normal = 0.4f;
+    //static constexpr float normal = 0.4f;
+    static constexpr float normal = 0.0f;
   };
 
   class BucketDuty
@@ -129,6 +130,10 @@ namespace dig_control
     virtual float getBackhoeDuty() const = 0;
     virtual float getBucketDuty() const = 0;
     virtual float getVibratorDuty() const = 0;
+    virtual float getCentralDriveCurrent() const = 0;
+    virtual float getBackhoeCurrent() const = 0;
+    virtual float getBucketCurrent() const = 0;
+    virtual float getVibratorCurrent() const = 0;
     virtual int getCentralDrivePosition() const = 0;
     virtual int getBackhoePosition() const = 0;
     virtual std::string getControlStateString() const = 0;

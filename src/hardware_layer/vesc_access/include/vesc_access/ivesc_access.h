@@ -40,7 +40,7 @@ public:
   virtual void setCustom(float setpoint) = 0;
   virtual void setCustom(float setpoint, uint index) = 0;
   virtual int getADC() = 0;
-  virtual float getInCurrent() = 0;
+  virtual float getCurrent() = 0;
   virtual int getTachometer() = 0;
   virtual float getVin() = 0;
   virtual bool encoderIndexFound() = 0;

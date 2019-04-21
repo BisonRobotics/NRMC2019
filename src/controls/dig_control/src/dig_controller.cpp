@@ -17,6 +17,11 @@ DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_
   this->bucket = bucket_actuator;
   this->vibrator = vibrator;
 
+  central_current = 0.0f;
+  backhoe_current = 0.0f;
+  bucket_current = 0.0f;
+  vibrator_current = 0.0f;
+
   internally_allocated = false;
   this->floor_test = floor_test;
 
@@ -74,6 +79,11 @@ void DigController::updateCentralDriveState()
   bool top_limit = (limit_switch_state == nsVescAccess::limitSwitchState::topOfMotion);
   bool bottom_limit = (limit_switch_state == nsVescAccess::limitSwitchState::bottomOfMotion);
   central_drive_position = central_drive->getADC();
+  float current = central_drive->getCurrent();
+  if (std::abs(current) < 100.0f)
+  {
+    lowPassFilter(central_current, current, FILTER_CONSTANT);
+  }
 
   if (top_limit || central_drive_position >= CentralDriveAngles::top_limit)
   {
@@ -123,6 +133,11 @@ void DigController::updateBackhoeState()
   bool top_limit = (limit_switch_state == nsVescAccess::limitSwitchState::topOfMotion);
   bool bottom_limit = (limit_switch_state == nsVescAccess::limitSwitchState::bottomOfMotion);
   double velocity = backhoe->getLinearVelocity();
+  double current = backhoe->getCurrent();
+  if (std::abs(current) < 100.0f)
+  {
+    lowPassFilter(backhoe_current, current, FILTER_CONSTANT);
+  }
 
   if (top_limit)
   {
@@ -152,6 +167,12 @@ void DigController::updateBackhoeState()
 void DigController::updateBucketState()
 {
   float torque = std::abs(bucket->getTorque());
+  float current = bucket->getCurrent();
+  if (std::abs(current) < 100.0f)
+  {
+    lowPassFilter(bucket_current, current, FILTER_CONSTANT);
+  }
+
   if (abs(bucket_duty) > 0.001f)
   {
     if (bucket_duty > 0.0f && torque < 0.001f)
@@ -177,6 +198,13 @@ void DigController::update()
   updateCentralDriveState();
   updateBackhoeState();
   updateBucketState();
+  {
+    float current = vibrator->getCurrent();
+    if (std::abs(current) < 100.0f)
+    {
+      lowPassFilter(vibrator_current, current, FILTER_CONSTANT);
+    }
+  }
 
   // Handle state and goal
   switch (goal_state)
@@ -784,6 +812,26 @@ float DigController::getVibratorDuty() const
   return vibrator_duty;
 }
 
+float DigController::getCentralDriveCurrent() const
+{
+  return std::round(central_current * 100.0f) / 100.0f;
+}
+
+float DigController::getBackhoeCurrent() const
+{
+  return std::round(backhoe_current * 100.0f) / 100.0f;
+}
+
+float DigController::getBucketCurrent() const
+{
+  return std::round(bucket_current * 100.0f) / 100.0f;
+}
+
+float DigController::getVibratorCurrent() const
+{
+  return std::round(vibrator_current * 100.0f) / 100.0f;
+}
+
 int DigController::getCentralDrivePosition() const
 {
   return central_drive_position;
@@ -817,6 +865,12 @@ std::string DigController::getControlStateString() const
 std::string DigController::getBucketStateString() const
 {
   return to_string(bucket_state);
+}
+
+// This is the filter the VESC uses
+void DigController::lowPassFilter(float &value, float sample, float filter_constant)
+{
+  value -= filter_constant * (value - sample);
 }
 
 std::string dig_control::to_string(ControlState state)

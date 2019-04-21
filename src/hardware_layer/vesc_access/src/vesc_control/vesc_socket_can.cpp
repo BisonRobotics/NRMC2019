@@ -126,7 +126,7 @@ void Vesc::setCurrentBrake(float current)
 }
 void Vesc::setRpm(float rpm)
 {
-   sensor_msgs::JointState msg;
+  sensor_msgs::JointState msg;
   msg.name.push_back(this->name+"command");
   msg.velocity.push_back(rpm);
   js_command_pub.publish (msg);
