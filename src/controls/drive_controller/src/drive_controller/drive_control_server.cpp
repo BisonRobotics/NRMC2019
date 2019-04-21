@@ -7,7 +7,7 @@ using namespace drive_controller;
 
 DriveControlServer::DriveControlServer(ros::NodeHandle *nh, DriveController *controller, TeleopInterface *teleop) :
   nh(nh), controller(controller), teleop(teleop), debug(true), server(*nh, "action", false),
-  state(ControlState::ready), safety(false), teleop_left(0.0f), teleop_right(0.0f), seq(0)
+  state(ControlState::manual), safety(false), teleop_left(0.0f), teleop_right(0.0f), seq(0)
 {
   joy_subscriber = nh->subscribe("/joy", 1, &DriveControlServer::joyCallback, this);
   joint_publisher = nh->advertise<sensor_msgs::JointState>("/joint_states", 1);
@@ -173,13 +173,15 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "drive_control_server");
   ros::NodeHandle nh("~");
+  double max_velocity; nh.param<double>("max_velocity", max_velocity, 0.4);
+
   iVescAccess *fr, *fl, *br, *bl;
   fr = new VescAccess(front_right_param);
   fl = new VescAccess(front_left_param);
   br = new VescAccess(back_right_param);
   bl = new VescAccess(back_left_param);
   DriveController controller(fr, fl, bl, br);
-  TeleopInterface teleop(TeleopInterface::Mode::velocity, 0.5, fl, fr, br, bl);
+  TeleopInterface teleop(TeleopInterface::Mode::velocity, max_velocity, fl, fr, br, bl);
   DriveControlServer server(&nh, &controller, &teleop);
   ros::Rate rate(50);
   while (ros::ok())

@@ -44,7 +44,10 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
   }
   else
   {
-    client->setControlState(ControlState::manual);
+    if (client->getControlState() != ControlState::manual)
+    {
+      client->setControlState(ControlState::manual);
+    }
   }
 
   //ROS_INFO("[teleop] Dv = %i,L = %4.2f, R = %4.2f",

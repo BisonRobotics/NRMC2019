@@ -58,7 +58,7 @@ int main(int argc, char **argv)
   br = new VescAccess(back_right_param);
   bl = new VescAccess(back_left_param);
   TeleopInterface teleop(TeleopInterface::Mode::velocity, 0.5, fl, fr, br, bl);
-  
+
   while (ros::ok())
   {
     ros::spinOnce();
