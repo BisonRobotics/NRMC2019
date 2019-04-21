@@ -287,7 +287,7 @@ void DigControlServer::update()
   sensor_msgs::JointState joint_angles;
   joint_angles.header.stamp = ros::Time::now();
   joint_angles.header.seq = seq;
-  joint_angles.name.emplace_back("central_drive");
+  joint_angles.name.emplace_back("frame_to_central_drive");
   joint_angles.name.emplace_back("frame_to_monoboom");
   joint_angles.name.emplace_back("frame_to_gravel_bucket");
   joint_angles.name.emplace_back("monoboom_to_bucket");

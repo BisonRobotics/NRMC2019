@@ -5,9 +5,9 @@
 
 namespace tracker
 {
-  Tag tag0(0, 0.4318);
-  Tag tag1(1, 0.4318);
-  Tag tag4(4, 0.2);
+  Tag tag1(1, 0.381);
+  //Tag tag1(1, 0.4318);
+  //Tag tag4(4, 0.2);
 
   //Tag tag3(3, 0.101);
   //Tag tag4(4, 0.101);

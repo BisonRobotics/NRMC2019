@@ -85,6 +85,10 @@ add_executable(pose_estimate_filter src/pose_estimate_filter/pose_estimate_filte
 target_link_libraries(pose_estimate_filter ${catkin_LIBRARIES})
 target_link_libraries(pose_estimate_filter PoseEstimateFilter)
 
+add_executable(ultra_localizer_node src/ultra_localizer/ultra_localizer_node.cpp)
+target_link_libraries(ultra_localizer_node ultra_localizer_lib measurement_manager_lib ${catkin_LIBRARIES})
+
+
 #add_executable(test_imu_orientation tests/imu_test.cpp)
 #target_link_libraries(test_imu_orientation ${catkin_LIBRARIES} lpresearch_imu)
 

@@ -53,7 +53,7 @@ Thread::Thread(std::string name) :
   tags = Tag::getTags();
   Tag::setTransformCaches(&tags, "right");
 
-  camera = initializeOCam(tracker::right_camera, 225, 89);
+  camera = initializeOCam(tracker::right_camera, 54, 89);
   if (camera == nullptr)
   {
     ROS_WARN("Camera 0 handle invalid, shutting down");
@@ -174,17 +174,17 @@ void Thread::thread()
       if (tags[i].relativeTransformUpdated() &&
           tags[i].stepperTransformUpdated())
       {
-        if (tags[i].getID() == 0)
+        if (tags[i].getID() == 1)
         {
           geometry_msgs::PoseStamped pose_estimate = tags[i].estimatePose();
           pose_pub.publish(pose_estimate);
         }
-        else if (tags[i].getID() == 1)
+        /*else if (tags[i].getID() == 1)
         {
           //geometry_msgs::PoseStamped pose_estimate = (*tags)[i].estimatePose();
           //pose_estimate.pose.position.z = 1.0;
           //pose_pub1.publish(pose_estimate);
-        }
+        }*/
       }
     }
 
@@ -194,7 +194,7 @@ void Thread::thread()
     double gain = 0.4;
     for (int i = 0; i < tags.size(); i++)
     {
-      if (tags[i].getID() == 0)
+      if (tags[i].getID() == 1)
       {
         //printf("size %i\n", tags[i].getRelativeTransformsSize());
         try

@@ -8,7 +8,7 @@
   -->
   <arg name="test_urdf" default="false" />
   <arg name="fixed_central_drive" default="false" />
-  <arg name="fixed_drivetrains" default="false" />
+  <arg name="fixed_drivetrains" default="true" />
   <param name="arena_description" command="$(find xacro)/xacro --inorder $(find description)/urdf/arena.urdf" />
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find description)/urdf/robot.urdf
                                             test_urdf:=$(arg test_urdf)
@@ -16,6 +16,10 @@
                                             fixed_drivetrains:=$(arg fixed_drivetrains)" />
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
     <param name="ignore_timestamp" type="bool" value="true" />
+  </node>
+  <node name="arena_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <remap from="robot_description" to="arena_description" />
+    <remap from="joint_states" to="null_joint_states" />
   </node>
 
 </launch>
