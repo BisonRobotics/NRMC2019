@@ -63,6 +63,8 @@ namespace dig_control
 
     int backhoe_stuck_count;
 
+    ros::Time last_bucket_state_change;
+
     ControlState goal_state;
     CentralDriveState central_drive_state;
     DigState dig_state;

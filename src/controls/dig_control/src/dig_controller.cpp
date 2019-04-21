@@ -166,27 +166,35 @@ void DigController::updateBackhoeState()
 
 void DigController::updateBucketState()
 {
-  float torque = std::abs(bucket->getTorque());
   float current = bucket->getCurrent();
   if (std::abs(current) < 100.0f)
   {
     lowPassFilter(bucket_current, current, FILTER_CONSTANT);
   }
-
-  if (abs(bucket_duty) > 0.001f)
+  if (ros::Time::now() - last_bucket_state_change >= ros::Duration(1.0))
   {
-    if (bucket_duty > 0.0f && torque < 0.001f)
+    if (abs(bucket_duty) > 0.001f)
     {
-      bucket_state = BucketState::up;
+      if (std::abs(bucket_current) >= 0.5)
+      {
+        if (bucket_state != BucketState::traveling) last_bucket_state_change = ros::Time::now();
+        bucket_state = BucketState::traveling;
+      }
+      else if (bucket_duty > 0.0f && bucket_state != BucketState::down)
+      {
+        if (bucket_state != BucketState::up) last_bucket_state_change = ros::Time::now();
+        bucket_state = BucketState::up;
+      }
+      else if (bucket_duty < 0.0f && bucket_state != BucketState::up)
+      {
+        if (bucket_state != BucketState::down) last_bucket_state_change = ros::Time::now();
+        bucket_state = BucketState::down;
+      }
     }
-    else if (bucket_duty < 0.0f && torque < 0.001f)
-    {
-      bucket_state = BucketState::down;
-    }
-    else
-    {
-      bucket_state = BucketState::traveling;
-    }
+  }
+
+  else
+  {
   }
   // If duty is zero, assume that the bucket remains in same position
   // TODO check for stuck state
@@ -814,22 +822,22 @@ float DigController::getVibratorDuty() const
 
 float DigController::getCentralDriveCurrent() const
 {
-  return std::round(central_current * 100.0f) / 100.0f;
+  return central_current;
 }
 
 float DigController::getBackhoeCurrent() const
 {
-  return std::round(backhoe_current * 100.0f) / 100.0f;
+  return backhoe_current;
 }
 
 float DigController::getBucketCurrent() const
 {
-  return std::round(bucket_current * 100.0f) / 100.0f;
+  return bucket_current;
 }
 
 float DigController::getVibratorCurrent() const
 {
-  return std::round(vibrator_current * 100.0f) / 100.0f;
+  return vibrator_current;
 }
 
 int DigController::getCentralDrivePosition() const
