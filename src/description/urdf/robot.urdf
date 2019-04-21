@@ -202,7 +202,7 @@
     </link>
 
     <joint name="monoboom_to_bucket" type="${central_drive_joint_type}">
-        <origin xyz="0.55 0 0" rpy="0 0 3.14" />
+        <origin xyz="0.55 0 0" rpy="0 0 ${20*pi/180}" />
         <axis xyz="0 0 1" />
         <parent link="backhoe_monoboom" />
         <child link="bucket_backhoe" />

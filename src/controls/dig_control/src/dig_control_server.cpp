@@ -7,6 +7,9 @@ using namespace dig_control;
 
 DigControlServer::DigControlServer(ros::NodeHandle *nh, DigControllerInterface *controller) :
   dig_safety(false), backhoe_duty(0.0f), bucket_duty(0.0f), central_duty(0.0f), vibrator_duty(0.0f),
+  monoboom_params{-.0808, -0.0073,  0.0462,  0.9498,  -0.0029},
+  flap_params{85.0010, -376.8576, 620.7329, -453.8172, 126.0475},
+  backhoe_params{12.852515, -29.737412, 26.138260, -9.193020, 0.699974, 2.190548, 0.004798},
   nh(nh), controller(controller), debug(true), seq(0),
   server(*nh, "action", false)
 {
@@ -284,18 +287,23 @@ void DigControlServer::update()
   joint_angles.name.emplace_back("left_flap_joint");
   joint_angles.name.emplace_back("right_flap_joint");
   joint_angles.position.push_back(getCentralDriveAngle());
+  joint_angles.position.push_back(getMonoBoomAngle());
+  joint_angles.position.push_back(0.0f);
   joint_angles.position.push_back(getBackhoeAngle());
-  joint_angles.position.push_back(0.0f);
-  joint_angles.position.push_back(0.0f);
   joint_angles.position.push_back(getFlapsAngle());
   joint_angles.position.push_back(getFlapsAngle());
   joint_publisher.publish(joint_angles);
 }
 
-double DigControlServer::polyFit(const double *c, double x)
+double DigControlServer::polyFit(const std::vector<double> &p, double x)
 {
-  using std::pow;
-  return c[0]*pow(x,4) + c[1]*pow(x,3) + c[2]*pow(x,2) + c[3]*x + c[4];
+  int s = (int)p.size() - 1;
+  double y = 0.0;
+  for (int i = 0; i <= s; i++)
+  {
+    y += p[i]*std::pow(x, s-i);
+  }
+  return y;
 }
 
 double DigControlServer::getCentralDriveAngle() const
@@ -304,17 +312,13 @@ double DigControlServer::getCentralDriveAngle() const
 }
 
 // The point where the backhoe starts moving back down on the potentiometer is at 2714
-double DigControlServer::getBackhoeAngle() const
+double DigControlServer::getMonoBoomAngle() const
 {
-  static constexpr double monoboom_params[] = {-.0808, -0.0073,  0.0462,  0.9498,  -0.0029};
   return -polyFit(monoboom_params, getCentralDriveAngle());
 }
 
-
-
 double DigControlServer::getFlapsAngle() const
 {
-  static constexpr double flap_params[] = {85.0010, -376.8576, 620.7329, -453.8172, 126.0475};
   double central_angle = getCentralDriveAngle();
   if (central_angle < 1.275 && central_angle > 0.785)
   {
@@ -330,11 +334,9 @@ double DigControlServer::getFlapsAngle() const
   }
 }
 
-double DigControlServer::getBackhoeBucketAngle() const
+double DigControlServer::getBackhoeAngle() const
 {
-  static constexpr double backhoe_bucket_params[] = {0.1606, -9.7061, 219.4693, -2182.1424, 8078.3566};
-  return 1.0;
-  //return polyFit()
+  return -polyFit(backhoe_params, controller->getBackhoePosition() / 10500.0 * 0.85 + 0.15);
 }
 
 int main(int argc, char* argv[])
