@@ -867,7 +867,18 @@ std::string DigController::getBucketStateString() const
   return to_string(bucket_state);
 }
 
-// This is the filter the VESC uses
+/**
+ * A simple low pass filter from the VESC firmware
+ *
+ * @param value
+ * The filtered value.
+ *
+ * @param sample
+ * Next sample.
+ *
+ * @param filter_constant
+ * Filter constant. Range 0.0 to 1.0, where 1.0 gives the unfiltered value.
+ */
 void DigController::lowPassFilter(float &value, float sample, float filter_constant)
 {
   value -= filter_constant * (value - sample);
