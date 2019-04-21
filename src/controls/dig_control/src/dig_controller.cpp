@@ -10,7 +10,7 @@ using namespace dig_control;
 // TODO add initialize mode
 
 DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_actuator,
-                             iVescAccess *bucket_actuator, iVescAccess *vibrator)
+                             iVescAccess *bucket_actuator, iVescAccess *vibrator, bool floor_test)
 {
   this->central_drive = central_drive;
   this->backhoe = backhoe_actuator;
@@ -18,6 +18,7 @@ DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_
   this->vibrator = vibrator;
 
   internally_allocated = false;
+  this->floor_test = floor_test;
 
   backhoe_stuck_count = 0;
   bucket_state = BucketState::down;
@@ -30,9 +31,9 @@ DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_
   }
 }
 
-DigController::DigController() :
+DigController::DigController(bool floor_test) :
     DigController(new VescAccess(central_drive_param),   new VescAccess(backhoe_actuator_param),
-                  new VescAccess(bucket_actuator_param), new VescAccess(vibrator_param))
+                  new VescAccess(bucket_actuator_param), new VescAccess(vibrator_param), floor_test)
 {
   internally_allocated = true;
 }
@@ -78,7 +79,8 @@ void DigController::updateCentralDriveState()
   {
     central_drive_state = CentralDriveState::at_top_limit;
   }
-  else if (bottom_limit || central_drive_position <= CentralDriveAngles::bottom_limit)
+  else if (bottom_limit || central_drive_position <= CentralDriveAngles::bottom_limit ||
+          (floor_test   && central_drive_position <= CentralDriveAngles::floor_limit))
   {
     central_drive_state = CentralDriveState::at_bottom_limit;
   }
@@ -194,6 +196,36 @@ void DigController::update()
     case ControlState::manual:
     {
       ROS_DEBUG("[manual] Manually running dig controller");
+      switch (central_drive_state)
+      {
+        case CentralDriveState::at_bottom_limit:
+        {
+          if (central_drive_duty < 0.0f)
+          {
+            setCentralDriveDuty(0.0f);
+          }
+          break;
+        }
+        case CentralDriveState::at_top_limit:
+        {
+          if (central_drive_duty > 0.0f)
+          {
+            setCentralDriveDuty(0.0);
+          }
+          break;
+        }
+        case CentralDriveState::digging:
+        case CentralDriveState::near_digging:
+        case CentralDriveState::flap_transition_down:
+        case CentralDriveState::near_dump_point:
+        case CentralDriveState::at_dump_point:
+        case CentralDriveState::flap_transition_up:
+        {
+          // Do nothing
+          break;
+        }
+
+      }
       // Keep doing whatever is currently set,
       break;
     }
@@ -261,13 +293,6 @@ void DigController::update()
           switch (central_drive_state)
           {
             case CentralDriveState::at_bottom_limit:
-            {
-              ROS_ERROR("[dig][dig_transition] At bottom limit switch during dig transition");
-              // Shouldn't ever be near the bottom limit switches during this transition
-              goal_state = ControlState::error;
-              stop();
-              break;
-            }
             case CentralDriveState::digging:
             {
               ROS_DEBUG("[dig][dig_transition] Start digging");
@@ -705,7 +730,19 @@ DigState DigController::getDigState() const
 
 void DigController::setCentralDriveDuty(float value)
 {
-  central_drive_duty = clamp(value, -MAX_CENTRAL_DRIVE_DUTY, MAX_CENTRAL_DRIVE_DUTY);
+  // Enforce limits
+  if (central_drive_state == CentralDriveState::at_bottom_limit)
+  {
+    central_drive_duty = clamp(value, 0.0f, MAX_CENTRAL_DRIVE_DUTY);
+  }
+  else if (central_drive_state == CentralDriveState::at_top_limit)
+  {
+    central_drive_duty = clamp(value, -MAX_CENTRAL_DRIVE_DUTY, 0.0f);
+  }
+  else
+  {
+    central_drive_duty = clamp(value, -MAX_CENTRAL_DRIVE_DUTY, MAX_CENTRAL_DRIVE_DUTY);
+  }
   central_drive->setCustom(central_drive_duty);
 }
 
@@ -752,7 +789,10 @@ int DigController::getCentralDrivePosition() const
   return central_drive_position;
 }
 
-
+int DigController::getBackhoePosition() const
+{
+  return backhoe->getTachometer();
+}
 
 std::string DigController::getCentralDriveStateString() const // Max 20 characters
 {

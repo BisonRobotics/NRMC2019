@@ -236,9 +236,14 @@ class DriverVescCrossover : public iVescAccess
     float getPotPosition(void) 
       {return face->getPosition();}
     void setDuty(float d) {}
-  void setCustom(float v) {}
-  void setCustom(float v, uint index) {}
+    void setCustom(float v) {}
+    void setCustom(float v, uint index) {}
     int getADC() {return -1;}
+    float getInCurrent() {return -1.0;};
+    int getTachometer() {return -1;};
+    float getVin() {return -1;};
+    bool encoderIndexFound() {return true;};
+    bool isAlive() {return true;};
 };
 
 int main(int argc, char **argv)

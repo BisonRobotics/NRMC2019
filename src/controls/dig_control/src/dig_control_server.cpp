@@ -255,6 +255,7 @@ void DigControlServer::update()
     message.header.stamp = ros::Time::now();
     message.header.seq = seq;
     message.central_position = controller->getCentralDrivePosition();
+    message.backhoe_position = controller->getBackhoePosition();
     message.duty.backhoe = controller->getBackhoeDuty();
     message.duty.vibrator = controller->getVibratorDuty();
     message.duty.bucket = controller->getBucketDuty();
@@ -309,6 +310,8 @@ double DigControlServer::getBackhoeAngle() const
   return -polyFit(monoboom_params, getCentralDriveAngle());
 }
 
+
+
 double DigControlServer::getFlapsAngle() const
 {
   static constexpr double flap_params[] = {85.0010, -376.8576, 620.7329, -453.8172, 126.0475};
@@ -327,12 +330,21 @@ double DigControlServer::getFlapsAngle() const
   }
 }
 
+double DigControlServer::getBackhoeBucketAngle() const
+{
+  static constexpr double backhoe_bucket_params[] = {0.1606, -9.7061, 219.4693, -2182.1424, 8078.3566};
+  return 1.0;
+  //return polyFit()
+}
+
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "dig_control_server");
   ros::NodeHandle nh("~");
+  bool floor_test;
+  nh.param<bool>("floor_test", floor_test, true);
   DigControllerInterface *controller;
-  controller = new DigController;
+  controller = new DigController(floor_test);
   DigControlServer server(&nh, controller);
   ros::Rate rate(50);
   while (ros::ok())

@@ -11,9 +11,9 @@ namespace dig_control
   class DigController : public DigControllerInterface
   {
   public:
-    DigController();
+    DigController(bool floor_test = false);
     DigController(iVescAccess *central_drive,   iVescAccess *backhoe_actuator,
-                  iVescAccess *bucket_actuator, iVescAccess *vibrator);
+                  iVescAccess *bucket_actuator, iVescAccess *vibrator, bool floor_test = false);
     ~DigController();
 
     void update() override;
@@ -38,6 +38,7 @@ namespace dig_control
     float getBucketDuty() const override;
     float getVibratorDuty() const override;
     int getCentralDrivePosition() const override;
+    int getBackhoePosition() const override;
     std::string getControlStateString() const override;
     std::string getCentralDriveStateString() const override;
     std::string getBackhoeStateString() const override;
@@ -49,6 +50,7 @@ namespace dig_control
   private:
     iVescAccess *central_drive, *backhoe, *bucket, *vibrator;
     bool internally_allocated;
+    bool floor_test;
     float central_drive_duty, backhoe_duty, bucket_duty, vibrator_duty;
     int central_drive_position;
 

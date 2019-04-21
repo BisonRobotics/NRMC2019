@@ -343,3 +343,28 @@ int VescAccess::getADC()
 {
   return vesc->getADC();
 }
+
+float VescAccess::getInCurrent()
+{
+  return vesc->getInCurrent();
+}
+
+int VescAccess::getTachometer()
+{
+  return vesc->getTachometer();
+}
+
+float VescAccess::getVin()
+{
+  return vesc->getVin();
+}
+
+bool VescAccess::encoderIndexFound()
+{
+  return vesc->encoderIndexFound();
+}
+
+bool VescAccess::isAlive()
+{
+  return vesc->isAlive();
+}

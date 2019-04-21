@@ -204,10 +204,10 @@ public:
   float getCurrent() override;
   float getDutyCycle();
   float getPosition();
-  int getTachometer();
+  int getTachometer() override;
   float getWattHours();
-  float getInCurrent();
-  float getVin();
+  float getInCurrent() override;
+  float getVin() override;
   float getTempMotor();
   float getTempPCB();
   mc_fault_code getFaultCode();
@@ -218,6 +218,6 @@ public:
   int getADC() override;
   std::string name;
   void resetWattHours();
-  bool encoderIndexFound();
-  bool isAlive();
+  bool encoderIndexFound() override;
+  bool isAlive() override;
 };

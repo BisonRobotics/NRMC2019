@@ -125,6 +125,11 @@ int DigControllerSim::getCentralDrivePosition() const
   return central_position[i];
 }
 
+int DigControllerSim::getBackhoePosition() const
+{
+  return 0;
+}
+
 std::string DigControllerSim::getControlStateString() const
 {
   return to_string(goal_state[i]);

@@ -67,6 +67,7 @@ namespace dig_control
     static constexpr int bottom_limit   =  300;
     static constexpr int digging_bottom =  300;
     static constexpr int digging_top    =  900;
+    static constexpr int floor_limit    = 1250;//1146;
     static constexpr int zero_angle     = 1330;
     static constexpr int stow_position  = 1650;
     static constexpr int flaps_bottom   = 2000;
@@ -129,7 +130,7 @@ namespace dig_control
     virtual float getBucketDuty() const = 0;
     virtual float getVibratorDuty() const = 0;
     virtual int getCentralDrivePosition() const = 0;
-
+    virtual int getBackhoePosition() const = 0;
     virtual std::string getControlStateString() const = 0;
     virtual std::string getCentralDriveStateString() const = 0;
     virtual std::string getBackhoeStateString() const = 0;

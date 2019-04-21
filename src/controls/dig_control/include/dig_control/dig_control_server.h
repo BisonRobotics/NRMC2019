@@ -20,6 +20,7 @@ namespace dig_control
     void update();
     double getCentralDriveAngle() const;
     double getBackhoeAngle() const;
+    double getBackhoeBucketAngle() const;
     double getFlapsAngle() const;
     static double polyFit(const double *params, double angle);
 
