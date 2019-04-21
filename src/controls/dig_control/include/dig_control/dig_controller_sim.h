@@ -32,6 +32,7 @@ namespace dig_control
     float getVibratorDuty() const override;
     int getCentralDrivePosition() const override;
     int getBackhoePosition() const override;
+    float getBucketPosition() const override;
     std::string getControlStateString() const override;
     std::string getCentralDriveStateString() const override;
     std::string getBackhoeStateString() const override;

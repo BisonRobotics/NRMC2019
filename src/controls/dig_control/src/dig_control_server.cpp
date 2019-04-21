@@ -7,6 +7,7 @@ using namespace dig_control;
 
 DigControlServer::DigControlServer(ros::NodeHandle *nh, DigControllerInterface *controller) :
   dig_safety(false), backhoe_duty(0.0f), bucket_duty(0.0f), central_duty(0.0f), vibrator_duty(0.0f),
+  central_drive_angle(0.0f),
   monoboom_params{-.0808, -0.0073,  0.0462,  0.9498,  -0.0029},
   flap_params{85.0010, -376.8576, 620.7329, -453.8172, 126.0475},
   backhoe_params{12.852515, -29.737412, 26.138260, -9.193020, 0.699974, 2.190548, 0.004798},
@@ -214,6 +215,7 @@ void DigControlServer::update()
 {
   // Update
   controller->update();
+  updateCentralDriveAngle();
   seq++;
 
   // Feedback
@@ -257,8 +259,9 @@ void DigControlServer::update()
     Debug message;
     message.header.stamp = ros::Time::now();
     message.header.seq = seq;
-    message.central_position = controller->getCentralDrivePosition();
-    message.backhoe_position = controller->getBackhoePosition();
+    message.position.central = controller->getCentralDrivePosition();
+    message.position.backhoe = controller->getBackhoePosition();
+    message.position.bucket = controller->getBucketPosition();
     message.duty.backhoe = controller->getBackhoeDuty();
     message.duty.vibrator = controller->getVibratorDuty();
     message.duty.bucket = controller->getBucketDuty();
@@ -268,12 +271,12 @@ void DigControlServer::update()
     message.current.bucket = controller->getBucketCurrent();
     message.current.central = controller->getCentralDriveCurrent();
     message.state.control = controller->getControlStateString();
-    message.state.central_drive = controller->getCentralDriveStateString();
+    message.state.central = controller->getCentralDriveStateString();
     message.state.backhoe = controller->getBackhoeStateString();
     message.state.bucket = controller->getBucketStateString();
     message.state.dig = controller->getDigStateString();
     message.state_i.control = (uint8_t)controller->getControlState();
-    message.state_i.central_drive = (uint8_t)controller->getCentralDriveState();
+    message.state_i.central = (uint8_t)controller->getCentralDriveState();
     message.state_i.dig = (uint8_t)controller->getDigState();
     message.state_i.backhoe = (uint8_t)controller->getBackhoeState();
     message.state_i.bucket = (uint8_t)controller->getBucketState();
@@ -292,7 +295,7 @@ void DigControlServer::update()
   joint_angles.name.emplace_back("right_flap_joint");
   joint_angles.position.push_back(getCentralDriveAngle());
   joint_angles.position.push_back(getMonoBoomAngle());
-  joint_angles.position.push_back(0.0f);
+  joint_angles.position.push_back(getBucketAngle());
   joint_angles.position.push_back(getBackhoeAngle());
   joint_angles.position.push_back(getFlapsAngle());
   joint_angles.position.push_back(getFlapsAngle());
@@ -310,9 +313,14 @@ double DigControlServer::polyFit(const std::vector<double> &p, double x)
   return y;
 }
 
+void DigControlServer::updateCentralDriveAngle()
+{
+  lowPassFilter<double>(central_drive_angle, 9.1473E-4 * controller->getCentralDrivePosition() - 1.04, 0.1);
+}
+
 double DigControlServer::getCentralDriveAngle() const
 {
-  return 9.1473E-4 * controller->getCentralDrivePosition() - 1.04;
+  return central_drive_angle;
 }
 
 // The point where the backhoe starts moving back down on the potentiometer is at 2714
@@ -341,6 +349,12 @@ double DigControlServer::getFlapsAngle() const
 double DigControlServer::getBackhoeAngle() const
 {
   return -polyFit(backhoe_params, controller->getBackhoePosition() / 10500.0 * 0.85 + 0.15);
+}
+
+double DigControlServer::getBucketAngle() const
+{
+  // arccos((5^2 + 12^2 - x^2)/(2*5*12)) - arccos((5^2 + 12^2 - 10^2)/(2*5*12))
+  return std::acos((169.0 - std::pow(controller->getBucketPosition(), 2.0)) / 120.0) - 0.958192;
 }
 
 int main(int argc, char* argv[])

@@ -4,16 +4,18 @@
 
 using namespace dig_control;
 
-bool dig_safety, change_dig_state;
+bool dig_safety, change_dig_state, change_dump_state;
 DigControlClient *client;
 
 void callback(const sensor_msgs::Joy::ConstPtr &joy)
 {
   bool rb = joy->buttons[5] == 1; // Dig safety
+  bool bt = joy->buttons[8] == 1; // Start automatic dump
   bool st = joy->buttons[9] == 1; // Start automatic dig
 
   dig_safety = rb;
   change_dig_state = st; // Maintain automatic digging until safety is released
+  change_dump_state = bt;
 
   if (dig_safety)
   {
@@ -24,7 +26,6 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
       {
         case ControlState::dig:
         {
-
           client->setControlState(ControlState::finish_dig);
           break;
         }
@@ -34,6 +35,11 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
           break;
         }
       }
+    }
+    else if (change_dump_state)
+    {
+      ROS_INFO("[callback] %s", to_string(client->getControlState()).c_str());
+      client->setControlState(ControlState::dump);
     }
   }
   else

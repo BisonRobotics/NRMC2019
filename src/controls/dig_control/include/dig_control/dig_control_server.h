@@ -18,10 +18,12 @@ namespace dig_control
     void preemptCallback();
     void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
     void update();
+    void updateCentralDriveAngle();
     double getCentralDriveAngle() const;
     double getMonoBoomAngle() const;
     double getBackhoeAngle() const;
     double getFlapsAngle() const;
+    double getBucketAngle() const;
     static double polyFit(const std::vector<double> &p, double x);
 
     static DigControlResult toResult(ControlState state);
@@ -36,6 +38,7 @@ namespace dig_control
     uint32_t seq;
     bool debug;
     std::vector<double> monoboom_params, flap_params, backhoe_params;
+    double central_drive_angle;
 
     ros::NodeHandle *nh;
     ros::Subscriber joy_subscriber;

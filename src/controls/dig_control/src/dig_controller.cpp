@@ -21,6 +21,8 @@ DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_
   backhoe_current = 0.0f;
   bucket_current = 0.0f;
   vibrator_current = 0.0f;
+  bucket_position = 10.0f;
+  last_bucket_state_change = ros::Time::now();
 
   internally_allocated = false;
   this->floor_test = floor_test;
@@ -82,7 +84,7 @@ void DigController::updateCentralDriveState()
   float current = central_drive->getCurrent();
   if (std::abs(current) < 100.0f)
   {
-    lowPassFilter(central_current, current, FILTER_CONSTANT);
+    lowPassFilter<float>(central_current, current, FILTER_CONSTANT);
   }
 
   if (top_limit || central_drive_position >= CentralDriveAngles::top_limit)
@@ -136,7 +138,7 @@ void DigController::updateBackhoeState()
   double current = backhoe->getCurrent();
   if (std::abs(current) < 100.0f)
   {
-    lowPassFilter(backhoe_current, current, FILTER_CONSTANT);
+    lowPassFilter<float>(backhoe_current, current, FILTER_CONSTANT);
   }
 
   if (top_limit)
@@ -169,32 +171,40 @@ void DigController::updateBucketState()
   float current = bucket->getCurrent();
   if (std::abs(current) < 100.0f)
   {
-    lowPassFilter(bucket_current, current, FILTER_CONSTANT);
+    lowPassFilter<float>(bucket_current, current, 0.03);
   }
-  if (ros::Time::now() - last_bucket_state_change >= ros::Duration(1.0))
+  bool debounce = ros::Time::now() - last_bucket_state_change >= ros::Duration(1.0f);
+  if (abs(bucket_duty) > 0.001f)
   {
-    if (abs(bucket_duty) > 0.001f)
+    if (std::abs(bucket_current) >= 0.4)
     {
-      if (std::abs(bucket_current) >= 0.5)
+      if (bucket_state != BucketState::traveling && debounce)
       {
-        if (bucket_state != BucketState::traveling) last_bucket_state_change = ros::Time::now();
+        last_bucket_state_change = ros::Time::now();
         bucket_state = BucketState::traveling;
       }
-      else if (bucket_duty > 0.0f && bucket_state != BucketState::down)
+      // 14 seconds to travel from 10 inches to 16 inches
+      float progress = (float)((ros::Time::now() - last_bucket_state_change).toSec() / 14.0 * 6.0);
+      bucket_position = (bucket_duty >= 0.0f) ? progress + 10.0f : 16.0f - progress;
+    }
+    else if (bucket_duty > 0.0f && bucket_state != BucketState::down)
+    {
+      if (bucket_state != BucketState::up && debounce)
       {
-        if (bucket_state != BucketState::up) last_bucket_state_change = ros::Time::now();
+        last_bucket_state_change = ros::Time::now();
         bucket_state = BucketState::up;
       }
-      else if (bucket_duty < 0.0f && bucket_state != BucketState::up)
+      bucket_position = 16.0f;
+    }
+    else if (bucket_duty < 0.0f && bucket_state != BucketState::up)
+    {
+      if (bucket_state != BucketState::down && debounce)
       {
-        if (bucket_state != BucketState::down) last_bucket_state_change = ros::Time::now();
+        last_bucket_state_change = ros::Time::now();
         bucket_state = BucketState::down;
       }
+      bucket_position = 10.0f;
     }
-  }
-
-  else
-  {
   }
   // If duty is zero, assume that the bucket remains in same position
   // TODO check for stuck state
@@ -210,7 +220,7 @@ void DigController::update()
     float current = vibrator->getCurrent();
     if (std::abs(current) < 100.0f)
     {
-      lowPassFilter(vibrator_current, current, FILTER_CONSTANT);
+      lowPassFilter<float>(vibrator_current, current, FILTER_CONSTANT);
     }
   }
 
@@ -298,9 +308,17 @@ void DigController::update()
             {
               if (central_drive_position <= CentralDriveAngles::stow_position)
               {
-                goal_state = ControlState::ready;
-                dig_state = DigState::dig_transition;
-                stop();
+                setCentralDriveDuty(0.0f);
+                if (getBackhoePosition() > 100)
+                {
+                  goal_state = ControlState::ready;
+                  dig_state = DigState::dig_transition;
+
+                }
+                else
+                {
+                  setBackhoeDuty(BackhoeDuty::slow);
+                }
               }
               else
               {
@@ -686,13 +704,13 @@ void DigController::update()
         case BucketState::traveling:
         {
           ROS_DEBUG("[dump][traveling] Moving bucket up");
-          setBucketDuty(BucketDuty::normal);
+          setBucketDuty(BucketDuty::fast);
           break;
         }
         case BucketState::stuck:
         {
           ROS_ERROR("[dump][stuck] Bucket is stuck, keep trying");
-          setBucketDuty(BucketDuty::normal);
+          setBucketDuty(BucketDuty::fast);
           break;
         }
       }
@@ -709,7 +727,7 @@ void DigController::update()
         case BucketState::traveling:
         {
           ROS_DEBUG("[dump][traveling] Finishing dump");
-          setBucketDuty(-BucketDuty::normal);
+          setBucketDuty(-BucketDuty::fast);
           break;
         }
         case BucketState::down:
@@ -722,7 +740,7 @@ void DigController::update()
         case BucketState::stuck:
         {
           ROS_ERROR("[dump][stuck] Bucket is stuck, keep trying");
-          setBucketDuty(-BucketDuty::normal);
+          setBucketDuty(-BucketDuty::fast);
           break;
         }
       }
@@ -850,6 +868,11 @@ int DigController::getBackhoePosition() const
   return backhoe->getTachometer();
 }
 
+float DigController::getBucketPosition() const
+{
+  return bucket_position;
+}
+
 std::string DigController::getCentralDriveStateString() const // Max 20 characters
 {
   return to_string(central_drive_state);
@@ -875,22 +898,7 @@ std::string DigController::getBucketStateString() const
   return to_string(bucket_state);
 }
 
-/**
- * A simple low pass filter from the VESC firmware
- *
- * @param value
- * The filtered value.
- *
- * @param sample
- * Next sample.
- *
- * @param filter_constant
- * Filter constant. Range 0.0 to 1.0, where 1.0 gives the unfiltered value.
- */
-void DigController::lowPassFilter(float &value, float sample, float filter_constant)
-{
-  value -= filter_constant * (value - sample);
-}
+
 
 std::string dig_control::to_string(ControlState state)
 {

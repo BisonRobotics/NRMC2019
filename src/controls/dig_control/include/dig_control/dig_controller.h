@@ -7,6 +7,23 @@
 
 namespace dig_control
 {
+  /**
+ * A simple low pass filter from the VESC firmware
+ *
+ * @param value
+ * The filtered value.
+ *
+ * @param sample
+ * Next sample.
+ *
+ * @param filter_constant
+ * Filter constant. Range 0.0 to 1.0, where 1.0 gives the unfiltered value.
+ */
+  template <typename type>
+  void lowPassFilter(type &value, type sample, type filter_constant)
+  {
+    value -= filter_constant * (value - sample);
+  }
 
   class DigController : public DigControllerInterface
   {
@@ -43,13 +60,12 @@ namespace dig_control
     float getVibratorCurrent() const override;
     int getCentralDrivePosition() const override;
     int getBackhoePosition() const override;
+    float getBucketPosition() const override;
     std::string getControlStateString() const override;
     std::string getCentralDriveStateString() const override;
     std::string getBackhoeStateString() const override;
     std::string getDigStateString() const override;
     std::string getBucketStateString() const override;
-
-    void lowPassFilter(float &value, float sample, float filter_constant);
 
     bool isInternallyAllocated();
 
@@ -60,6 +76,7 @@ namespace dig_control
     float central_drive_duty, backhoe_duty, bucket_duty, vibrator_duty;
     float backhoe_current, bucket_current, central_current, vibrator_current;
     int central_drive_position;
+    float bucket_position;
 
     int backhoe_stuck_count;
 

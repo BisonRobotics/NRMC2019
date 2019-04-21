@@ -136,6 +136,7 @@ namespace dig_control
     virtual float getVibratorCurrent() const = 0;
     virtual int getCentralDrivePosition() const = 0;
     virtual int getBackhoePosition() const = 0;
+    virtual float getBucketPosition() const = 0;
     virtual std::string getControlStateString() const = 0;
     virtual std::string getCentralDriveStateString() const = 0;
     virtual std::string getBackhoeStateString() const = 0;

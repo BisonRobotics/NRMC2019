@@ -22,6 +22,7 @@ add_message_files(
   StateString.msg
   State.msg
   DriveValues.msg
+  DrivePositions.msg
   Debug.msg
 )
 
