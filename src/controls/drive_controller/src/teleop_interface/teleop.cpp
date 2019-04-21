@@ -1,9 +1,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <teleop_interface/teleop_interface.h>
-#include <dig_control/dig_controller.h>
-
-using namespace dig_control;
+#include <wheel_params/wheel_params.h>
 
 float left_wheels, right_wheels;
 bool drive_safety;
@@ -54,8 +52,13 @@ int main(int argc, char **argv)
   ros::Subscriber joy_sub = n.subscribe("joy", 2, callback);
   ros::Rate rate(50);
 
-  TeleopInterface teleop(TeleopInterface::duty, 0.95f);
-
+  iVescAccess *fr, *fl, *br, *bl;
+  fr = new VescAccess(front_right_param);
+  fl = new VescAccess(front_left_param);
+  br = new VescAccess(back_right_param);
+  bl = new VescAccess(back_left_param);
+  TeleopInterface teleop(TeleopInterface::Mode::velocity, 0.5, fl, fr, br, bl);
+  
   while (ros::ok())
   {
     ros::spinOnce();

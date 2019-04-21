@@ -1,5 +1,6 @@
 #include <drive_controller/drive_controller.h>
 
+using namespace drive_controller;
 
 DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *bl, iVescAccess *br)
 : front_right_wheel(fr), front_left_wheel (fl), back_left_wheel(bl), back_right_wheel(br),
@@ -28,7 +29,7 @@ DriveController::DriveController(iVescAccess *fr, iVescAccess *fl, iVescAccess *
   ws.right_wheel_command = 0;
 }
 
-void DriveController::addPath(DriveController_ns::bezier_path path, bool forward_point)
+void DriveController::addPath(drive_controller::bezier_path path, bool forward_point)
 {
  if (p_paths ==0) //no current paths
  {
@@ -42,7 +43,7 @@ void DriveController::addPath(DriveController_ns::bezier_path path, bool forward
  return;
 }
 
-bool DriveController::cleanPath(DriveController_ns::bezier_path *path, double x, double y, double theta, bool fwd)
+bool DriveController::cleanPath(drive_controller::bezier_path *path, double x, double y, double theta, bool fwd)
 {
     double the_sign = fwd ? -1: 1;
     double margin = .1; //10 cm behind
@@ -289,7 +290,7 @@ std::pair<double, double> DriveController::speedSteeringControl(double speed,   
   return UlUr;
 }
 
-bool DriveController::getAngleAndLengthInfo(DriveController_ns::bezier_path path, 
+bool DriveController::getAngleAndLengthInfo(drive_controller::bezier_path path,
                            std::vector<double>  &theta, std::vector<double>  &omega, 
                            std::vector<double>  &alpha, std::vector<double>  &lengths, 
                            std::vector<double>  &x, std::vector<double>  &y, double &length, 
@@ -373,19 +374,19 @@ std::pair<double, double> DriveController::findCPP2019(double rx, double ry,
   return par_and_err;
 }
 
-DriveController_ns::error_state DriveController::getErrorStates()
+drive_controller::error_state DriveController::getErrorStates()
 {
     return es;
 }
 
-DriveController_ns::wheel_state DriveController::getWheelStates()
+drive_controller::wheel_state DriveController::getWheelStates()
 {
     return ws;
 }
 
-DriveController_ns::path_info DriveController::getPathInfo()
+drive_controller::path_info DriveController::getPathInfo()
 {
-    DriveController_ns::path_info path_i;
+    drive_controller::path_info path_i;
     int index = p_closest_t*Gchopsize;
     if (index >= Gchopsize)
     {

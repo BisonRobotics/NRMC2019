@@ -67,7 +67,9 @@ int map_base_link_seq= 0;
 #define STATE_VECTOR_ID 0
 #define DELTA_VECTOR_ID 1
 
-DriveController_ns::bezier_path curr_path;
+using namespace drive_controller;
+
+drive_controller::bezier_path curr_path;
 
 SimpleActionServer<FollowPathAction> *server;
 
@@ -178,7 +180,7 @@ drive_controller::StateVector localizer_sv_to_msg(LocalizerInterface::stateVecto
     return sv_msg;
 }
 
-drive_controller::ErrorStates error_states_to_msg(DriveController_ns::error_state es)
+drive_controller::ErrorStates error_states_to_msg(drive_controller::error_state es)
 {
     drive_controller::ErrorStates es_msg;
     es_msg.header.stamp = ros::Time::now();
@@ -188,7 +190,7 @@ drive_controller::ErrorStates error_states_to_msg(DriveController_ns::error_stat
     return es_msg;
 }
 
-drive_controller::WheelStates wheel_states_to_msg(DriveController_ns::wheel_state ws)
+drive_controller::WheelStates wheel_states_to_msg(drive_controller::wheel_state ws)
 {
     drive_controller::WheelStates ws_msg;
     ws_msg.header.stamp = ros::Time::now();
@@ -202,7 +204,7 @@ drive_controller::WheelStates wheel_states_to_msg(DriveController_ns::wheel_stat
     return ws_msg;
 }
 
-drive_controller::PathInfo path_info_to_msg(DriveController_ns::path_info path_i)
+drive_controller::PathInfo path_info_to_msg(drive_controller::path_info path_i)
 {
     drive_controller::PathInfo pi_msg;
     pi_msg.header.stamp = ros::Time::now();
@@ -502,7 +504,7 @@ int main(int argc, char **argv)
     if (newWaypointHere)
     {
       //Enforce that path beginning is near the robot.  
-      DriveController_ns::bezier_path clean_path = curr_path;
+      drive_controller::bezier_path clean_path = curr_path;
       if (!dc.cleanPath(&clean_path, stateVector.x_pos, stateVector.y_pos, stateVector.theta, forwardPoint))
       {
           ROS_WARN("HAD TO MOVE PATH MORE THAN MARGIN.");

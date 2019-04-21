@@ -4,6 +4,7 @@
 #include <dig_control/dig_controller_interface.h>
 #include <vesc_access/ivesc_access.h>
 #include <vesc_access/vesc_access.h>
+#include <string>
 
 namespace dig_control
 {
