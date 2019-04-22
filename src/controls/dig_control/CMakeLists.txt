@@ -76,9 +76,9 @@ add_library(dig_control_client src/dig_control_client.cpp)
 target_link_libraries(dig_control_client ${catkin_LIBRARIES})
 add_dependencies(dig_control_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(dig_control_client_example src/dig_control_client_example.cpp)
-target_link_libraries(dig_control_client_example dig_control_client dig_controller ${catkin_LIBRARIES})
-add_dependencies(dig_control_client_example ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_executable(dig_control_client_node src/dig_control_client_node.cpp)
+target_link_libraries(dig_control_client_node dig_control_client dig_controller ${catkin_LIBRARIES})
+add_dependencies(dig_control_client_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(record_dig_cycle src/record_dig_cycle.cpp)
 target_link_libraries(record_dig_cycle ${catkin_LIBRARIES})

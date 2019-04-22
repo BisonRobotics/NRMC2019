@@ -49,7 +49,7 @@ void DriveControlServer::goalCallback()
   auto goal = server.acceptNewGoal();
   ControlState request = toControlState(*goal);
 
-  ROS_INFO("[DigControlServer::goalCallback] Request for %s to %s",
+  ROS_INFO("[DriveControlServer::goalCallback] Request for %s to %s",
            to_string(state).c_str(), to_string(request).c_str());
   switch (request)
   {

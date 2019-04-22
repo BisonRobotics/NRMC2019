@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 {
   dig_safety = false;
 
-  ros::init(argc, argv, "dig_teleop");
+  ros::init(argc, argv, "dig_control_client");
   ros::NodeHandle nh;
   ros::Subscriber joy_sub = nh.subscribe("joy", 2, callback);
   client = new DigControlClient;

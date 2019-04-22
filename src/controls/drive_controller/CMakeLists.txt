@@ -58,19 +58,28 @@ add_library(drive_controller src/drive_controller/drive_controller.cpp)
 add_dependencies(drive_controller ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
 target_link_libraries(drive_controller ${catkin_LIBRARIES})
 
+add_library(teleop_interface src/teleop_interface/teleop_interface.cpp)
+target_link_libraries(teleop_interface ${catkin_LIBRARIES})
+
+add_library(drive_control_client src/drive_controller/drive_control_client.cpp)
+add_dependencies(drive_control_client ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
+target_link_libraries(drive_control_client ${catkin_LIBRARIES})
+
 add_executable(drive_controller_master src/drive_controller/drive_controller_master.cpp)
 add_dependencies(drive_controller_master ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries (drive_controller_master drive_controller ${OpenCV_LIBS} ${catkin_LIBRARIES})
+target_link_libraries(drive_controller_master drive_controller ${OpenCV_LIBS} ${catkin_LIBRARIES})
+
+add_executable(teleop src/teleop_interface/teleop.cpp)
+target_link_libraries(teleop teleop_interface ${catkin_LIBRARIES})
 
 add_executable(drive_control_server src/drive_controller/drive_control_server.cpp)
 add_dependencies(drive_control_server ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries (drive_control_server drive_controller teleop_interface ${catkin_LIBRARIES})
+target_link_libraries(drive_control_server drive_controller teleop_interface ${catkin_LIBRARIES})
 
-add_library(teleop_interface src/teleop_interface/teleop_interface.cpp)
-target_link_libraries (teleop_interface ${catkin_LIBRARIES})
+add_executable(drive_control_client_node src/drive_controller/drive_control_client_node.cpp)
+add_dependencies(drive_control_client_node ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
+target_link_libraries(drive_control_client_node drive_control_client ${catkin_LIBRARIES})
 
-add_executable(teleop src/teleop_interface/teleop.cpp)
-target_link_libraries (teleop teleop_interface ${catkin_LIBRARIES})
 
 if(DEFINED ENV{ON_ROBOT})
   message(AUTHOR_WARNING " ON_ROBOT set, not building visuals or simulation")
