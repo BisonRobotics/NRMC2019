@@ -14,7 +14,7 @@
 
 #include <vrep_msgs/IMU.h>
 #include <sensor_msgs/Imu.h>
-#include <drive_controller/StateVector.h>
+#include <localization/StateVector.h>
 #include <drive_controller/ErrorStates.h>
 #include <drive_controller/WheelStates.h>
 #include <drive_controller/PathInfo.h>
@@ -112,7 +112,7 @@ void accelerationCallback(const sensor_msgs::Imu::ConstPtr &msg)
     dcvma.add_point(msg->angular_velocity.y, t, 4);
 }
 
-void stateVectorCallback(const drive_controller::StateVector::ConstPtr &msg)
+void stateVectorCallback(const localization::StateVector::ConstPtr &msg)
 {
     ros::Duration plot_time = msg->header.stamp - start_time;
     double t = plot_time.toSec();
@@ -129,7 +129,7 @@ void stateVectorCallback(const drive_controller::StateVector::ConstPtr &msg)
     //dcvma.add_point(msg->alpha,   t, 2); //There is no useful alpha estimate or measurement
 }
 
-void deltaVectorCallback(const drive_controller::StateVector::ConstPtr &msg)
+void deltaVectorCallback(const localization::StateVector::ConstPtr &msg)
 {
     ros::Duration plot_time = msg->header.stamp - start_time;
     double t = plot_time.toSec();

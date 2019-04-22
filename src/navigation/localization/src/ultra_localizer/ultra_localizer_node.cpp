@@ -6,6 +6,7 @@
 #include <geometry_msgs/Pose2D.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Empty.h>
+#include <localization/StateVector.h>
 
 #include <measurement_manager/measurement_manager.h>
 #include <ultra_localizer/ultra_localizer.h>
@@ -59,6 +60,24 @@ geometry_msgs::TransformStamped createSimTf(double x, double y, double theta)
   return tfStamp;
 }
 
+localization::StateVector toMsg(LocalizerInterface::StateVector sv, uint seq)
+{
+  localization::StateVector sv_msg;
+  sv_msg.header.stamp = ros::Time::now();
+  sv_msg.header.seq = seq;
+  sv_msg.id = 0;
+  sv_msg.x_pos = sv.x_pos;
+  sv_msg.y_pos = sv.y_pos;
+  sv_msg.theta = sv.theta;
+  sv_msg.x_vel = sv.x_vel;
+  sv_msg.y_vel = sv.y_vel;
+  sv_msg.omega = sv.omega;
+  sv_msg.x_accel = sv.x_accel;
+  sv_msg.y_accel = sv.y_accel;
+  sv_msg.alpha   = sv.alpha;
+  return sv_msg;
+}
+
 int main(int argc, char **argv)
 {
   // Initialize ROS and load params
@@ -68,6 +87,7 @@ int main(int argc, char **argv)
   tf2_ros::Buffer tfBuffer;
   tf2_ros::TransformBroadcaster tf_broadcaster;
   geometry_msgs::TransformStamped transform;
+  ros::Publisher state_publisher = nh.advertise<localization::StateVector>("/state_vector", 1);
 
   uint seq = 0;
   bool simulating; nh.param<bool>("simulating", simulating, false);
@@ -94,7 +114,7 @@ int main(int argc, char **argv)
   ROS_INFO("Initialized sensors");
 
   UltraLocalizer localizer(UltraLocalizer_default_gains, UltraLocalizer_initial_estimate);
-  LocalizerInterface::stateVector stateVector;
+  LocalizerInterface::StateVector state_vector;
 
   // Wait for filter to settle
   ros::Time start_time = ros::Time::now();
@@ -114,13 +134,15 @@ int main(int argc, char **argv)
   double dt = rate.expectedCycleTime().toSec();
   while (ros::ok())
   {
+    seq++;
     if (simulating)
     {
       tf_broadcaster.sendTransform(createSimTf(pos->getX(), pos->getY(), pos->getTheta()));
     }
     localizer.updateEstimate(UltraLocalizer_zero_vector, mm.getMeasured(dt));
-    stateVector = localizer.getStateVector();
-    tf_broadcaster.sendTransform(createTf(stateVector.x_pos, stateVector.y_pos, stateVector.theta, seq++));
+    state_vector = localizer.getStateVector();
+    tf_broadcaster.sendTransform(createTf(state_vector.x_pos, state_vector.y_pos, state_vector.theta, seq));
+    state_publisher.publish(toMsg(state_vector, seq));
     ros::spinOnce();
     rate.sleep();
   }

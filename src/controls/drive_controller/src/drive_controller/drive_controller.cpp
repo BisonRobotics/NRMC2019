@@ -66,7 +66,7 @@ void DriveController::haltAndAbort()
 }
 
 
-bool DriveController::update(LocalizerInterface::stateVector sv, double dt)
+bool DriveController::update(LocalizerInterface::StateVector sv, double dt)
 {
   if (p_paths > 0)
   {
@@ -253,7 +253,7 @@ void DriveController::firstOrderModel(std::pair<double, double> UlUr, double wor
      xyth[2] = m_dth;
 }
 
-LocalizerInterface::stateVector DriveController::getDeltaStateVector()
+LocalizerInterface::StateVector DriveController::getDeltaStateVector()
 {
   return delta;
 }

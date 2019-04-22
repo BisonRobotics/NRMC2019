@@ -1,7 +1,7 @@
 #include <ultra_localizer/ultra_localizer.h>
 
-UltraLocalizer::UltraLocalizer(LocalizerInterface::stateVector gains,
-               LocalizerInterface::stateVector initial_est)
+UltraLocalizer::UltraLocalizer(LocalizerInterface::StateVector gains,
+               LocalizerInterface::StateVector initial_est)
 :gain(gains), estimate(initial_est)
 {
 }
@@ -9,13 +9,13 @@ UltraLocalizer::UltraLocalizer(LocalizerInterface::stateVector gains,
 
 
 
-LocalizerInterface::stateVector UltraLocalizer::getStateVector()
+LocalizerInterface::StateVector UltraLocalizer::getStateVector()
 {
   return estimate;
 }
 
 
-LocalizerInterface::stateVector UltraLocalizer::getResidual()
+LocalizerInterface::StateVector UltraLocalizer::getResidual()
 {
   return residual;
 }
@@ -32,18 +32,18 @@ UltraLocalizer::UpdateStatus  UltraLocalizer::updateStateVector(double dt)
   return UltraLocalizer::UpdateStatus::UPDATE_FAILED_SENSOR_ERROR;
 }
 
-UltraLocalizer::UpdateStatus  UltraLocalizer::updateEstimate(LocalizerInterface::stateVector expected_change,
-                                             LocalizerInterface::stateVector measurements) 
+UltraLocalizer::UpdateStatus  UltraLocalizer::updateEstimate(LocalizerInterface::StateVector expected_change,
+                                             LocalizerInterface::StateVector measurements)
 {
   residual = diff(measurements, sum(estimate, expected_change));
   estimate = sum(estimate, sum(expected_change, product(gain, residual)));
   return UltraLocalizer::UpdateStatus::UPDATE_SUCCESS;
 }
 
-LocalizerInterface::stateVector UltraLocalizer::diff(LocalizerInterface::stateVector lhs,
-                                                     LocalizerInterface::stateVector rhs)
+LocalizerInterface::StateVector UltraLocalizer::diff(LocalizerInterface::StateVector lhs,
+                                                     LocalizerInterface::StateVector rhs)
 {
-  LocalizerInterface::stateVector ret;
+  LocalizerInterface::StateVector ret;
   ret.alpha = lhs.alpha - rhs.alpha;
   ret.omega = lhs.omega - rhs.omega;
   ret.theta = lhs.theta - rhs.theta;
@@ -58,10 +58,10 @@ LocalizerInterface::stateVector UltraLocalizer::diff(LocalizerInterface::stateVe
   return ret;
 }
 
-LocalizerInterface::stateVector UltraLocalizer::product(LocalizerInterface::stateVector lhs,
-                                                        LocalizerInterface::stateVector rhs)
+LocalizerInterface::StateVector UltraLocalizer::product(LocalizerInterface::StateVector lhs,
+                                                        LocalizerInterface::StateVector rhs)
 {
-  LocalizerInterface::stateVector ret;
+  LocalizerInterface::StateVector ret;
   ret.alpha = lhs.alpha * rhs.alpha;
   ret.omega = lhs.omega * rhs.omega;
   ret.theta = lhs.theta * rhs.theta;
@@ -75,10 +75,10 @@ LocalizerInterface::stateVector UltraLocalizer::product(LocalizerInterface::stat
   return ret;
 }
 
-LocalizerInterface::stateVector UltraLocalizer::sum(LocalizerInterface::stateVector lhs,
-                                                    LocalizerInterface::stateVector rhs)
+LocalizerInterface::StateVector UltraLocalizer::sum(LocalizerInterface::StateVector lhs,
+                                                    LocalizerInterface::StateVector rhs)
 {
-  LocalizerInterface::stateVector ret;
+  LocalizerInterface::StateVector ret;
   ret.alpha = lhs.alpha + rhs.alpha;
   ret.omega = lhs.omega + rhs.omega;
   ret.theta = lhs.theta + rhs.theta;

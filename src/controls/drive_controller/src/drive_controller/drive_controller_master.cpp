@@ -13,7 +13,7 @@
 #include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Empty.h>
 
-#include <drive_controller/StateVector.h>
+#include <localization/StateVector.h>
 #include <drive_controller/ErrorStates.h>
 #include <drive_controller/WheelStates.h>
 #include <drive_controller/PathInfo.h>
@@ -162,9 +162,9 @@ geometry_msgs::TransformStamped create_sim_tf(double x, double y, double theta)
   return tfStamp;
 }
 
-drive_controller::StateVector localizer_sv_to_msg(LocalizerInterface::stateVector sv, int which)
+localization::StateVector localizer_sv_to_msg(LocalizerInterface::StateVector sv, int which)
 {
-    drive_controller::StateVector sv_msg;
+    localization::StateVector sv_msg;
     sv_msg.header.stamp = ros::Time::now();
     sv_msg.header.seq = (which == DELTA_VECTOR_ID) ? delta_vec_seq++ : state_vec_seq++;
     sv_msg.id = which;
@@ -375,7 +375,7 @@ int main(int argc, char **argv)
 
   UltraLocalizer ultraLocalizer(UltraLocalizer_default_gains, UltraLocalizer_initial_estimate);
   
-  LocalizerInterface::stateVector stateVector;
+  LocalizerInterface::StateVector stateVector;
   ros::Subscriber haltsub = node.subscribe("halt", 100, haltCallback);
 
   double wheel_positions[4] = { 0 };
@@ -386,8 +386,8 @@ int main(int argc, char **argv)
   geometry_msgs::Point vis_point;
   // hang here until someone knows where we are
   ROS_INFO("Going into wait loop for localizer and initial theta...");
-  ros::Publisher state_vector_publisher = node.advertise<drive_controller::StateVector>("state_vector", 100);
-  ros::Publisher delta_vector_publisher = node.advertise<drive_controller::StateVector>("delta_vector", 100);
+  ros::Publisher state_vector_publisher = node.advertise<localization::StateVector>("state_vector", 100);
+  ros::Publisher delta_vector_publisher = node.advertise<localization::StateVector>("delta_vector", 100);
   ros::Publisher error_states_publisher = node.advertise<drive_controller::ErrorStates>("error_states", 100);
   ros::Publisher wheel_states_publisher = node.advertise<drive_controller::WheelStates>("wheel_states", 100);
   ros::Publisher path_info_publisher    = node.advertise<drive_controller::PathInfo>("path_info", 100);

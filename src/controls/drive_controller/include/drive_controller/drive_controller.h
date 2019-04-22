@@ -50,9 +50,9 @@ namespace drive_controller
 
     void haltAndAbort();
 
-    bool update(LocalizerInterface::stateVector sv, double dt);
+    bool update(LocalizerInterface::StateVector sv, double dt);
 
-    LocalizerInterface::stateVector getDeltaStateVector();
+    LocalizerInterface::StateVector getDeltaStateVector();
 
     double getPClosestT();
 
@@ -110,7 +110,7 @@ namespace drive_controller
     double p_speed_cmd;
     double p_steering_cmd;
 
-    LocalizerInterface::stateVector delta;
+    LocalizerInterface::StateVector delta;
     std::pair<double, double> p_prev_UlUr;
     double p_prev_theta;
     double p_prev_omega;

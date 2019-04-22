@@ -6,7 +6,7 @@ using namespace drive_controller;
 
 
 DriveControlServer::DriveControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl) :
-  nh(nh), fl(fl), fr(fr), bl(bl), br(br), debug(true), server(*nh, "action", false),
+  nh(nh), fl(fl), fr(fr), bl(bl), br(br), debug(true), server(*nh, "action", false), direction(true),
   controller(fr, fl, bl, br), teleop(TeleopInterface::Mode::velocity, 0.4, fl, fr, br, bl),
   state(ControlState::manual), safety(false), teleop_left(0.0f), teleop_right(0.0f), seq(0)
 {
@@ -25,6 +25,7 @@ DriveControlServer::DriveControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVe
   teleop.setMax(max_velocity);
 
   joy_subscriber = nh->subscribe("/joy", 1, &DriveControlServer::joyCallback, this);
+  state_subscriber = nh->subscribe("/state_vector", 1, &DriveControlServer::stateVectorCallback, this);
   joint_publisher = nh->advertise<sensor_msgs::JointState>("/joint_states", 1);
   server.registerGoalCallback(boost::bind(&DriveControlServer::goalCallback, this));
   server.registerPreemptCallback(boost::bind(&DriveControlServer::preemptCallback, this));
@@ -54,7 +55,12 @@ void DriveControlServer::goalCallback()
   {
     case ControlState::new_goal:
     {
-      // TODO actually do something
+      // Only accepts one segment
+      direction = goal->path[0].direction_of_travel == 1;
+      path = toBezierPath(goal->path[0]);
+      modified_path = path;
+      controller.cleanPath(&modified_path, x, y, theta, false);
+      controller.addPath(modified_path, direction);
       state = ControlState::in_progress;
       server.setSucceeded(toResult(state));
       break;
@@ -133,11 +139,11 @@ void DriveControlServer::update(double dt)
     {
       if (safety)
       {
-
+        controller.update(state_vector, dt);
       }
       else
       {
-
+        stop();
       }
       break;
     }
@@ -176,6 +182,19 @@ void DriveControlServer::stop()
   controller.haltAndAbort();
 }
 
+void DriveControlServer::stateVectorCallback(const localization::StateVector::ConstPtr &state_vector_msg)
+{
+  state_vector.x_pos = state_vector_msg->x_pos;
+  state_vector.y_pos = state_vector_msg->y_pos;
+  state_vector.theta = state_vector_msg->theta;
+  state_vector.x_vel = state_vector_msg->x_vel;
+  state_vector.y_vel = state_vector_msg->y_vel;
+  state_vector.omega = state_vector_msg->omega;
+  state_vector.x_accel = state_vector_msg->x_accel;
+  state_vector.y_accel = state_vector_msg->y_accel;
+  state_vector.alpha   = state_vector_msg->alpha;
+}
+
 std::string drive_controller::to_string(ControlState state)
 {
   switch (state)
@@ -193,6 +212,20 @@ std::string drive_controller::to_string(ControlState state)
     case ControlState::manual:
       return "manual";
   }
+}
+
+bezier_path drive_controller::toBezierPath(const navigation_msgs::BezierSegment &segment)
+{
+  bezier_path path;
+  path.x1 = segment.p0.x;
+  path.y1 = segment.p0.y;
+  path.x2 = segment.p1.x;
+  path.y2 = segment.p1.y;
+  path.x3 = segment.p2.x;
+  path.y3 = segment.p2.y;
+  path.x4 = segment.p3.x;
+  path.y4 = segment.p3.y;
+  return path;
 }
 
 int main(int argc, char* argv[])

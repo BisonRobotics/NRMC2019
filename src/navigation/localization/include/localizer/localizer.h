@@ -10,7 +10,7 @@
 class Localizer : public LocalizerInterface::LocalizerInterface_c
 {
 public:
-  LocalizerInterface::stateVector getStateVector();
+  LocalizerInterface::StateVector getStateVector();
   UpdateStatus updateStateVector(double dt);
   UpdateStatus updateStateVector(double dt, double theta_est);
 
@@ -27,7 +27,7 @@ protected:
   iVescAccess *back_right_vesc;
   iVescAccess *back_left_vesc;
   // int timediffms(struct timeval curr, struct timeval prev);
-  LocalizerInterface::stateVector state_vector;
+  LocalizerInterface::StateVector state_vector;
   double axle_len;
 };
 

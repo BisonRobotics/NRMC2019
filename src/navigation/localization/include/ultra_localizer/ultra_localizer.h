@@ -20,32 +20,32 @@
 class UltraLocalizer : public LocalizerInterface::LocalizerInterface_c
 {
 public: 
-  UltraLocalizer(LocalizerInterface::stateVector gains,
-                 LocalizerInterface::stateVector initial_est);
+  UltraLocalizer(LocalizerInterface::StateVector gains,
+                 LocalizerInterface::StateVector initial_est);
 
-  LocalizerInterface::stateVector getStateVector();
-  LocalizerInterface::stateVector getResidual();
+  LocalizerInterface::StateVector getStateVector();
+  LocalizerInterface::StateVector getResidual();
   UpdateStatus updateStateVector(double dt); //TODO this needs changed, maybe in interface
-  UpdateStatus updateEstimate(LocalizerInterface::stateVector expected_change,
-                              LocalizerInterface::stateVector measurements);
+  UpdateStatus updateEstimate(LocalizerInterface::StateVector expected_change,
+                              LocalizerInterface::StateVector measurements);
 
 //psuedoprotected:
-  LocalizerInterface::stateVector diff(LocalizerInterface::stateVector lhs,
-                                       LocalizerInterface::stateVector rhs);
-  LocalizerInterface::stateVector product(LocalizerInterface::stateVector lhs, 
-                                           LocalizerInterface::stateVector rhs);
-  LocalizerInterface::stateVector sum(LocalizerInterface::stateVector lhs,
-                                      LocalizerInterface::stateVector rhs);
+  LocalizerInterface::StateVector diff(LocalizerInterface::StateVector lhs,
+                                       LocalizerInterface::StateVector rhs);
+  LocalizerInterface::StateVector product(LocalizerInterface::StateVector lhs,
+                                           LocalizerInterface::StateVector rhs);
+  LocalizerInterface::StateVector sum(LocalizerInterface::StateVector lhs,
+                                      LocalizerInterface::StateVector rhs);
 
 private:
-  LocalizerInterface::stateVector estimate;
-  LocalizerInterface::stateVector residual;
-  LocalizerInterface::stateVector gain;
+  LocalizerInterface::StateVector estimate;
+  LocalizerInterface::StateVector residual;
+  LocalizerInterface::StateVector gain;
 
 };
 
 //Theres a better way. maybe these need a namespace?
-static constexpr LocalizerInterface::stateVector UltraLocalizer_default_gains = {.x_pos = XRESGAIN,
+static constexpr LocalizerInterface::StateVector UltraLocalizer_default_gains = {.x_pos = XRESGAIN,
                                                                                  .y_pos = YRESGAIN,
                                                                                  .theta = THETARESGAIN,
                                                                                  .x_vel = DXRESGAIN,
@@ -55,7 +55,7 @@ static constexpr LocalizerInterface::stateVector UltraLocalizer_default_gains = 
                                                                                  .y_accel = DY2RESGAIN,
                                                                                  .alpha = ALPHARESGAIN };
 
-static constexpr LocalizerInterface::stateVector UltraLocalizer_initial_estimate = {.x_pos = 1.2,
+static constexpr LocalizerInterface::StateVector UltraLocalizer_initial_estimate = {.x_pos = 1.2,
                                                                                  .y_pos = 0,
                                                                                  .theta = 0,
                                                                                  .x_vel = 0,
@@ -65,7 +65,7 @@ static constexpr LocalizerInterface::stateVector UltraLocalizer_initial_estimate
                                                                                  .y_accel = 0,
                                                                                  .alpha = 0 };
 
-static constexpr LocalizerInterface::stateVector UltraLocalizer_zero_vector = {.x_pos = 0,
+static constexpr LocalizerInterface::StateVector UltraLocalizer_zero_vector = {.x_pos = 0,
                                                                                  .y_pos = 0,
                                                                                  .theta = 0,
                                                                                  .x_vel = 0,

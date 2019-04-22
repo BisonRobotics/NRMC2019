@@ -37,7 +37,6 @@ add_action_files(
 )
 
 add_message_files(FILES
-  StateVector.msg
   WheelStates.msg
   ErrorStates.msg
   PathInfo.msg)
