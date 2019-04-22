@@ -93,11 +93,13 @@ Thread::Thread(std::string name) :
   set_brightness_server.start();
   set_exposure_server.start();
 
+  ROS_INFO("Starting thread for %s", name.c_str());
   thread_handle = new boost::thread(boost::bind(&Thread::thread, this));
 }
 
 void Thread::thread()
 {
+  ROS_INFO("Starting %s", camera->getName().c_str());
   camera->start();
   ros::Time stamp;
 
@@ -111,6 +113,7 @@ void Thread::thread()
     total.start();
     while (true)
     {
+      if (!ros::ok()) return;
       try
       {
         camera->getFrame(detector->getBuffer());
@@ -131,7 +134,17 @@ void Thread::thread()
     detector->detect(stamp);
 
     // Add stepper transform
-    State state = stepper->pollState();
+    State state;
+    try
+    {
+      state = stepper->pollState();
+    }
+    catch (std::runtime_error &e)
+    {
+      ROS_ERROR("%s", e.what());
+      continue;
+    }
+
     double position = state.position;
     position = position * 2 * M_PI;
     //printf("Position %f\n", position);
@@ -233,7 +246,6 @@ void Thread::thread()
 
 
     // Publish the image
-
     pub.publish(image_msg);
 
     // Respond to callbacks

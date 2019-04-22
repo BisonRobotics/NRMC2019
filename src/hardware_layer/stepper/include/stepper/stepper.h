@@ -22,9 +22,10 @@ namespace stepper
  */
   struct State
   {
+    State();
     State(double position, double velocity);
-    const double position;
-    const double velocity;
+    double position;
+    double velocity;
   };
 
   class Stepper
