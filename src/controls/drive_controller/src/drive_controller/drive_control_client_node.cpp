@@ -155,6 +155,7 @@ MarkerArray createPathVisual(const BezierSegment &s, size_t path_size)
   vertices_marker.header.frame_id = "map";
   vertices_marker.header.stamp = ros::Time::now();
   vertices_marker.header.seq++;
+  vertices_marker.lifetime = ros::Duration(1.0);
   vertices_marker.ns = "path_vertices";
   vertices_marker.action = Marker::ADD;
   vertices_marker.pose.orientation.w = 1.0;
@@ -171,6 +172,7 @@ MarkerArray createPathVisual(const BezierSegment &s, size_t path_size)
   path_marker.header.frame_id = "map";
   path_marker.header.stamp = ros::Time::now();
   path_marker.header.seq++;
+  path_marker.lifetime = ros::Duration(1.0);
   path_marker.ns = "path";
   path_marker.action = Marker::ADD;
   path_marker.pose.orientation.w = 1.0;
