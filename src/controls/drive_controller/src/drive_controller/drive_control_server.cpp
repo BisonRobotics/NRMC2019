@@ -5,10 +5,25 @@
 using namespace drive_controller;
 
 
-DriveControlServer::DriveControlServer(ros::NodeHandle *nh, DriveController *controller, TeleopInterface *teleop) :
-  nh(nh), controller(controller), teleop(teleop), debug(true), server(*nh, "action", false),
+DriveControlServer::DriveControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl) :
+  nh(nh), fl(fl), fr(fr), bl(bl), br(br), debug(true), server(*nh, "action", false),
+  controller(fr, fl, bl, br), teleop(TeleopInterface::Mode::velocity, 0.4, fl, fr, br, bl),
   state(ControlState::manual), safety(false), teleop_left(0.0f), teleop_right(0.0f), seq(0)
 {
+  joint_angles.header.stamp = ros::Time::now();
+  joint_angles.header.seq = seq;
+  joint_angles.name.emplace_back("front_left_wheel");
+  joint_angles.name.emplace_back("front_right_wheel");
+  joint_angles.name.emplace_back("back_right_wheel");
+  joint_angles.name.emplace_back("back_left_wheel");
+  joint_angles.position.emplace_back(0.0);
+  joint_angles.position.emplace_back(0.0);
+  joint_angles.position.emplace_back(0.0);
+  joint_angles.position.emplace_back(0.0);
+
+  nh->param<float>("max_velocity", max_velocity, 0.4);
+  teleop.setMax(max_velocity);
+
   joy_subscriber = nh->subscribe("/joy", 1, &DriveControlServer::joyCallback, this);
   joint_publisher = nh->advertise<sensor_msgs::JointState>("/joint_states", 1);
   server.registerGoalCallback(boost::bind(&DriveControlServer::goalCallback, this));
@@ -85,8 +100,8 @@ void DriveControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
 
   if (safety)
   {
-    teleop_left  = MAX_WHEEL_VELOCITY * ls;
-    teleop_right = MAX_WHEEL_VELOCITY * rs;
+    teleop_left  = max_velocity * ls;
+    teleop_right = max_velocity * rs;
   }
   else
   {
@@ -95,8 +110,11 @@ void DriveControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
   }
 }
 
-void DriveControlServer::update()
+void DriveControlServer::update(double dt)
 {
+  seq++;
+
+  // Handle state
   switch (state)
   {
     case ControlState::error:
@@ -127,11 +145,11 @@ void DriveControlServer::update()
     {
       if (safety)
       {
-        teleop->update(teleop_left, teleop_right);
+        teleop.update(teleop_left, teleop_right);
       }
       else
       {
-        teleop->update(0.0f, 0.0f);
+        teleop.update(0.0f, 0.0f);
       }
       break;
     }
@@ -141,13 +159,21 @@ void DriveControlServer::update()
       ROS_ERROR("[DriveControlServer::update] Shouldn't be in control state from %s", to_string(state).c_str());
       stop();
     }
-
   }
+
+  // Visuals
+  joint_angles.header.stamp = ros::Time::now();
+  joint_angles.header.seq = seq;
+  joint_angles.position[0] += fl->getRadialVelocity() * dt;
+  joint_angles.position[1] += fr->getRadialVelocity() * dt;
+  joint_angles.position[2] += br->getRadialVelocity() * dt;
+  joint_angles.position[3] += bl->getRadialVelocity() * dt;
+  joint_publisher.publish(joint_angles);
 }
 
 void DriveControlServer::stop()
 {
-  controller->haltAndAbort();
+  controller.haltAndAbort();
 }
 
 std::string drive_controller::to_string(ControlState state)
@@ -173,20 +199,18 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "drive_control_server");
   ros::NodeHandle nh("~");
-  double max_velocity; nh.param<double>("max_velocity", max_velocity, 0.4);
 
-  iVescAccess *fr, *fl, *br, *bl;
-  fr = new VescAccess(front_right_param);
+  iVescAccess *fl, *fr, *br, *bl;
   fl = new VescAccess(front_left_param);
+  fr = new VescAccess(front_right_param);
   br = new VescAccess(back_right_param);
   bl = new VescAccess(back_left_param);
-  DriveController controller(fr, fl, bl, br);
-  TeleopInterface teleop(TeleopInterface::Mode::velocity, max_velocity, fl, fr, br, bl);
-  DriveControlServer server(&nh, &controller, &teleop);
+  DriveControlServer server(&nh, fl, fr, br, bl);
   ros::Rate rate(50);
+  double dt = rate.expectedCycleTime().toSec();
   while (ros::ok())
   {
-    server.update();
+    server.update(dt);
     ros::spinOnce();
     rate.sleep();
   }

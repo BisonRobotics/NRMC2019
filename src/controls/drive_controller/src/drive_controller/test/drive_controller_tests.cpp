@@ -9,6 +9,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+using namespace drive_controller;
 using ::testing::NiceMock;
 
 TEST(DriveControllerTests, angleDiffWorks_1)

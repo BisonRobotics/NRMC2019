@@ -246,6 +246,7 @@ class DriverVescCrossover : public iVescAccess
     float getVin() {return -1;};
     bool encoderIndexFound() {return true;};
     bool isAlive() {return true;};
+    float getRadialVelocity() {return -1.0f;}
 };
 
 int main(int argc, char **argv)

@@ -10,6 +10,7 @@ public:
   MOCK_METHOD1(setLinearVelocity, void(float meters_per_second));
   MOCK_METHOD1(setTorque, void(float newton_meters));
   MOCK_METHOD0(getLinearVelocity, float(void));
+  MOCK_METHOD0(getRadialVelocity, float(void));
   MOCK_METHOD0(getTorque, float(void));
   MOCK_METHOD0(getLimitSwitchState, nsVescAccess::limitSwitchState(void));
   MOCK_METHOD0(getPotPosition, float(void));

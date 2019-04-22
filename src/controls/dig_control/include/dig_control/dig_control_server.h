@@ -45,6 +45,7 @@ namespace dig_control
     ros::Publisher debug_publisher;
     ros::Publisher joint_publisher;
     actionlib::SimpleActionServer<dig_control::DigControlAction> server;
+    sensor_msgs::JointState joint_angles;
 
     DigControllerInterface *controller;
   };

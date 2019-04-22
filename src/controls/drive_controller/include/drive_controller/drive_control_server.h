@@ -28,29 +28,30 @@ namespace drive_controller
   class DriveControlServer
   {
   public:
-    DriveControlServer(ros::NodeHandle *nh, DriveController *controller, TeleopInterface *telop);
+    DriveControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl);
 
     void goalCallback();
     void preemptCallback();
     void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
-    void update();
+    void update(double dt);
     void stop();
 
   private:
-    bool safety;
-    float teleop_left, teleop_right;
+    bool debug, safety;
     uint32_t seq;
-    bool debug;
+    float teleop_left, teleop_right, max_velocity;
 
     ControlState state;
-    TeleopInterface *teleop;
-    DriveController *controller;
+    iVescAccess *fl, *fr, *br, *bl;
+    TeleopInterface teleop;
+    DriveController controller;
 
     ros::NodeHandle *nh;
     ros::Subscriber joy_subscriber;
     ros::Publisher debug_publisher;
     ros::Publisher joint_publisher;
     actionlib::SimpleActionServer<DriveControlAction> server;
+    sensor_msgs::JointState joint_angles;
 
   };
 }

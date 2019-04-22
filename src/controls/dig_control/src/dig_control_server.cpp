@@ -14,6 +14,21 @@ DigControlServer::DigControlServer(ros::NodeHandle *nh, DigControllerInterface *
   nh(nh), controller(controller), debug(true), seq(0),
   server(*nh, "action", false)
 {
+  joint_angles.header.stamp = ros::Time::now();
+  joint_angles.header.seq = seq;
+  joint_angles.name.emplace_back("frame_to_central_drive");
+  joint_angles.name.emplace_back("frame_to_monoboom");
+  joint_angles.name.emplace_back("frame_to_gravel_bucket");
+  joint_angles.name.emplace_back("monoboom_to_bucket");
+  joint_angles.name.emplace_back("left_flap_joint");
+  joint_angles.name.emplace_back("right_flap_joint");
+  joint_angles.position.emplace_back(0.0);
+  joint_angles.position.emplace_back(0.0);
+  joint_angles.position.emplace_back(0.0);
+  joint_angles.position.emplace_back(0.0);
+  joint_angles.position.emplace_back(0.0);
+  joint_angles.position.emplace_back(0.0);
+
   joy_subscriber = nh->subscribe("/joy", 1, &DigControlServer::joyCallback, this);
   joint_publisher = nh->advertise<sensor_msgs::JointState>("/joint_states", 1);
   debug_publisher = nh->advertise<dig_control::Debug>("debug", 10);
@@ -284,21 +299,14 @@ void DigControlServer::update()
   }
 
   // Visuals
-  sensor_msgs::JointState joint_angles;
   joint_angles.header.stamp = ros::Time::now();
   joint_angles.header.seq = seq;
-  joint_angles.name.emplace_back("frame_to_central_drive");
-  joint_angles.name.emplace_back("frame_to_monoboom");
-  joint_angles.name.emplace_back("frame_to_gravel_bucket");
-  joint_angles.name.emplace_back("monoboom_to_bucket");
-  joint_angles.name.emplace_back("left_flap_joint");
-  joint_angles.name.emplace_back("right_flap_joint");
-  joint_angles.position.push_back(getCentralDriveAngle());
-  joint_angles.position.push_back(getMonoBoomAngle());
-  joint_angles.position.push_back(getBucketAngle());
-  joint_angles.position.push_back(getBackhoeAngle());
-  joint_angles.position.push_back(getFlapsAngle());
-  joint_angles.position.push_back(getFlapsAngle());
+  joint_angles.position[0] = getCentralDriveAngle();
+  joint_angles.position[1] = getMonoBoomAngle();
+  joint_angles.position[2] = getBucketAngle();
+  joint_angles.position[3] = getBackhoeAngle();
+  joint_angles.position[4] = getFlapsAngle();
+  joint_angles.position[5] = getFlapsAngle();
   joint_publisher.publish(joint_angles);
 }
 
