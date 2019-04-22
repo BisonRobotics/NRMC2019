@@ -3,7 +3,7 @@
     <node name="tracker" pkg="tracker" type="tracker_node" />
     <node name="localizer" pkg="localization" type="ultra_localizer_node" />
     <node name="drive_control_server" pkg="drive_controller" type="drive_control_server" />
-    <node name="drive_control_client" pkg="drive_controller" type="drive_control_client_node" />
+    <!--<node name="drive_control_client" pkg="drive_controller" type="drive_control_client_node" />-->
     <node name="dig_control_server" pkg="dig_control" type="dig_control_server" />
     <node name="dig_control_client" pkg="dig_control" type="dig_control_client_node" />
 </launch>

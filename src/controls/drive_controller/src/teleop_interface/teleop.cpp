@@ -6,7 +6,7 @@
 float left_wheels, right_wheels;
 bool drive_safety;
 
-void callback(const sensor_msgs::Joy::ConstPtr &joy)
+void joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
 {
   bool x  = joy->buttons[0] == 1; // Bucket down
   bool a  = joy->buttons[1] == 1; // Linear actuator in
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
   ros::init(argc, argv, "teleop");
   ros::NodeHandle n;
-  ros::Subscriber joy_sub = n.subscribe("joy", 2, callback);
+  ros::Subscriber joy_sub = n.subscribe("joy", 2, joyCallback);
   ros::Rate rate(50);
 
   iVescAccess *fr, *fl, *br, *bl;

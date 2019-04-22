@@ -23,6 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
   navigation_msgs
   cv_bridge
   joy
+  visualization_msgs
+  interactive_markers
 )
 
 link_directories(/usr/src/gmock/build)
