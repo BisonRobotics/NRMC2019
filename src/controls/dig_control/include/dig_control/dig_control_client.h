@@ -28,8 +28,7 @@ namespace dig_control
 
   private:
     actionlib::SimpleActionClient<dig_control::DigControlAction> client;
-    boost::function<void (const actionlib::SimpleClientGoalState&,
-                          const DigControlResultConstPtr&)> boostDoneCallback;
+    boost::function<void (const actionlib::SimpleClientGoalState&, const DigControlResultConstPtr&)> boostDoneCallback;
     boost::function<void ()> boostActiveCallback;
     boost::function<void (const DigControlFeedbackConstPtr&)> boostFeedbackCallback;
 

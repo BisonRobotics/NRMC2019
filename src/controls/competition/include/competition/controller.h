@@ -2,15 +2,15 @@
 #define COMPETITION_CONTROLLER_H
 
 #include <ros/ros.h>
-#include <controller/joy.h>
-#include <controller/visuals.h>
+#include <competition/joy.h>
+#include <competition/visuals.h>
 
 namespace competition
 {
   class Controller
   {
   public:
-    Controller;
+
 
   private:
 

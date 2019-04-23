@@ -5,16 +5,16 @@
 
 namespace competition
 {
-  class Joy
+  class Joy : public sensor_msgs::Joy
   {
   public:
-    enum class Button // Twelve actual buttons + 4 axis buttons
+    enum Button // Twelve actual buttons + 4 axis buttons
     {
       x =   0, // x button
       a =   1, // a button
       b =   2, // b button
       y =   3, // y button
-      lb =  4  // Left bumper
+      lb =  4, // Left bumper
       rb =  5, // Right bumper
       lt =  6, // Left trigger
       rt =  7, // Right trigger
@@ -28,7 +28,7 @@ namespace competition
       pd = 15  // Pad down press
     };
 
-    enum class Axis // Six axis
+    enum Axis // Six axis
     {
       ly = 0, // Left stick y-axis
       lx = 1, // Left stick x-axis
@@ -38,13 +38,8 @@ namespace competition
       py = 5  // Pad y-axis
     };
 
-    Joy(const sensor_msgs::JoyConstPtr &msg);
-
     bool get(Button button);
     double get(Axis axis);
-
-  private:
-    sensor_msgs::Joy msg;
   };
 }
 

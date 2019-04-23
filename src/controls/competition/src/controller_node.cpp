@@ -7,7 +7,7 @@
 #include <occupancy_grid/bezier.h>
 #include <sstream>
 #include <tf2_ros/transform_listener.h>
-#include <competition_control/competition_controller.h>
+#include <competition/controller.h>
 
 int main(int argc, char **argv)
 {
@@ -16,10 +16,10 @@ int main(int argc, char **argv)
   ros::Rate rate(10);
   tf2_ros::Buffer tf_buffer;
   tf2_ros::TransformListener tf_listener(tf_buffer);
-  ros::Subscriber joy_sub = nh.subscribe("joy", 2, joyCallback);
-  ros::Publisher path_pub = nh.advertise<visualization_msgs::MarkerArray>("path_visual", 1);
-  control_point_server = new InteractiveMarkerServer("path_control_points");
-
+  //ros::Subscriber joy_sub = nh.subscribe("joy", 2, joyCallback);
+  //ros::Publisher path_pub = nh.advertise<visualization_msgs::MarkerArray>("path_visual", 1);
+  //control_point_server = new InteractiveMarkerServer("path_control_points");
+/*
   safety = false;
   client = new DriveControlClient;
 
@@ -50,5 +50,5 @@ int main(int argc, char **argv)
     updatePathVisual(&path_visual, path, path_size);
     path_pub.publish(path_visual);
     rate.sleep();
-  }
+  }*/
 }

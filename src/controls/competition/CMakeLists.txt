@@ -8,14 +8,19 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  tf2
+  tf2_ros
   actionlib
   roscpp
   std_msgs
   sensor_msgs
   navigation_msgs
+  visualization_msgs
+  interactive_markers
   drive_controller
   dig_control
   path_planner
+  occupancy_grid
 )
 
 ## System dependencies are found with CMake's conventions
@@ -51,6 +56,10 @@ include_directories(
 add_library(joy src/joy.cpp)
 add_dependencies(joy ${sensor_msgs_EXPORTED_TARGETS})
 target_link_libraries(joy ${catkin_LIBRARIES})
+
+add_library(visuals src/visuals.cpp)
+add_dependencies(visuals ${visualization_msgs_EXPORTED_TARGETS})
+target_link_libraries(visuals ${catkin_LIBRARIES})
 
 add_library(controller src/controller.cpp)
 add_dependencies(controller ${competition_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
