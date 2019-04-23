@@ -51,7 +51,7 @@ namespace drive_controller
     void stop();
 
   private:
-    bool debug, safety, direction; // forward = true
+    bool debug, manual_safety, autonomy_safety, direction; // forward = true
     uint32_t seq;
     float teleop_left, teleop_right, max_velocity;
     double x, y, theta;

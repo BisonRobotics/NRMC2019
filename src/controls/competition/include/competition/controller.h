@@ -2,13 +2,17 @@
 #define COMPETITION_CONTROLLER_H
 
 #include <ros/ros.h>
-#include <competition/joy.h>
+#include <utilities/joy.h>
 #include <competition/visuals.h>
 #include <drive_controller/drive_control_client.h>
 #include <dig_control/dig_control_client.h>
 
 namespace competition
 {
+  using DriveControlState = drive_controller::ControlState;
+  using DigControlState = dig_control::ControlState;
+  using utilities::Joy;
+
   class Controller
   {
   public:
@@ -21,6 +25,7 @@ namespace competition
     drive_controller::DriveControlClient drive_client;
     dig_control::DigControlClient dig_client;
     Joy joy;
+    Visuals visuals;
 
     double dt;
     ros::NodeHandle *nh;

@@ -25,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   joy
   visualization_msgs
   interactive_markers
+  utilities
 )
 
 link_directories(/usr/src/gmock/build)

@@ -16,4 +16,5 @@
   <depend>joy</depend>
   <depend>visualization_msgs</depend>
   <depend>interactive_markers</depend>
+  <depend>utilities</depend>
 </package>

@@ -32,6 +32,7 @@ void joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
   bool lb = joy->buttons[4] == 1; // Safety
 
   safety = lb;
+  //ROS_INFO("Safety: %i", lb);
 
   if (!safety)
   {
@@ -221,7 +222,7 @@ int main(int argc, char **argv)
   ros::Rate rate(10);
   tf2_ros::Buffer tf_buffer;
   tf2_ros::TransformListener tf_listener(tf_buffer);
-  ros::Subscriber joy_sub = nh.subscribe("joy", 2, joyCallback);
+  ros::Subscriber joy_sub = nh.subscribe("/joy", 2, joyCallback);
   ros::Publisher path_pub = nh.advertise<visualization_msgs::MarkerArray>("path_visual", 1);
   control_point_server = new InteractiveMarkerServer("path_control_points");
 

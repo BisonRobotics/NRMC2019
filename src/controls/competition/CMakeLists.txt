@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   dig_control
   path_planner
   occupancy_grid
+  utilities
 )
 
 ## System dependencies are found with CMake's conventions
@@ -37,7 +38,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES competition
+  LIBRARIES joy
   CATKIN_DEPENDS actionlib roscpp std_msgs
 #  DEPENDS system_lib
 )
@@ -52,10 +53,6 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
-
-add_library(joy src/joy.cpp)
-add_dependencies(joy ${sensor_msgs_EXPORTED_TARGETS})
-target_link_libraries(joy ${catkin_LIBRARIES})
 
 add_library(visuals src/visuals.cpp)
 add_dependencies(visuals ${visualization_msgs_EXPORTED_TARGETS})

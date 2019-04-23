@@ -3,7 +3,7 @@
 
 #include <sensor_msgs/Joy.h>
 
-namespace competition
+namespace utilities
 {
   class Joy : public sensor_msgs::Joy
   {
@@ -13,6 +13,7 @@ namespace competition
 
     enum Button // Twelve actual buttons + 4 axis buttons
     {
+      // Physical mappings
       X =   0, // x button
       A =   1, // a button
       B =   2, // b button
@@ -28,23 +29,38 @@ namespace competition
       PL = 12, // Pad left press
       PR = 13, // Pad right press
       PU = 14, // Pad up press
-      PD = 15  // Pad down press
+      PD = 15,  // Pad down press
+      // Manual state mappings
+      MANUAL_SAFETY = LB,
+      BUCKET_DOWN = X,
+      BUCKET_UP = Y,
+      LINEAR_IN = A,
+      LINEAR_OUT = B,
+      VIBRATOR_ON = RT,
+      VIBRATOR_OFF = LT,
+      CENTRAL_DRIVE_UP = PU,
+      CENTRAL_DRIVE_DOWN = PD,
+      // Autonomy state mappings
+      AUTONOMY_SAFETY = RB,
+      START_DIG = B,
+      END_DIG = A,
+      START_DUMP = Y,
+      END_DUMP = X
     };
 
     enum Axis // Six axis
     {
+      // Physical mappings
       LY = 0, // Left stick y-axis
       LX = 1, // Left stick x-axis
       RY = 2, // Right stick y-axis
       RX = 3, // Right stick x-axis
-      PX = 4, // Pad x-axis
-      PY = 5  // Pad y-axis
-    };
-
-    enum CompetitionMappings
-    {
-      MANUAL = LB,
-      AUTONOMY = RB
+      PY = 4, // Pad x-axis
+      PX = 5,  // Pad y-axis
+      // Manual state mappings
+      TELEOP_LEFT = LX,
+      TELEOP_RIGHT = RX
+      // Autonomy state mappings
     };
 
     bool get(Button button);

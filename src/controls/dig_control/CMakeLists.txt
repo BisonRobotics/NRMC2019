@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   actionlib_msgs
   actionlib
+  utilities
 )
 
 find_package(Boost REQUIRED COMPONENTS system)

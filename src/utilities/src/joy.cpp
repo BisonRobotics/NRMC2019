@@ -1,6 +1,6 @@
-#include <competition/joy.h>
+#include <utilities/joy.h>
 
-using namespace competition;
+using namespace utilities;
 
 Joy::Joy()
 {}
@@ -17,9 +17,9 @@ bool Joy::get(Button button)
   switch(button)
   {
     case PL:
-      return get(PY) < 0.0;
-    case PR:
       return get(PY) > 0.0;
+    case PR:
+      return get(PY) < 0.0;
     case PU:
       return get(PX) > 0.0;
     case PD:

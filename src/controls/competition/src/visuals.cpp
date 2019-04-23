@@ -23,6 +23,7 @@ Visuals::Visuals(ros::NodeHandle *nh) :
 void Visuals::update()
 {
   updatePathVisual(&path_visual, path, size);
+  marker_pub.publish(path_visual);
 }
 
 void Visuals::update(tf2::Transform transform)

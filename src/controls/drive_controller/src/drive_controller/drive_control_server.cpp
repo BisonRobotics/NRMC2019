@@ -1,5 +1,6 @@
 #include <drive_controller/drive_control_server.h>
 #include <wheel_params/wheel_params.h>
+#include <utilities/joy.h>
 
 
 using namespace drive_controller;
@@ -8,14 +9,14 @@ using namespace drive_controller;
 DriveControlServer::DriveControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl) :
   nh(nh), fl(fl), fr(fr), bl(bl), br(br), debug(true), server(*nh, "action", false), direction(true),
   controller(fr, fl, bl, br), teleop(TeleopInterface::Mode::velocity, 0.4, fl, fr, br, bl),
-  state(ControlState::manual), safety(false), teleop_left(0.0f), teleop_right(0.0f), seq(0)
+  state(ControlState::manual), manual_safety(false), autonomy_safety(false), teleop_left(0.0f), teleop_right(0.0f), seq(0)
 {
   joint_angles.header.stamp = ros::Time::now();
   joint_angles.header.seq = seq;
-  joint_angles.name.emplace_back("front_left_wheel");
-  joint_angles.name.emplace_back("front_right_wheel");
-  joint_angles.name.emplace_back("back_right_wheel");
-  joint_angles.name.emplace_back("back_left_wheel");
+  joint_angles.name.emplace_back("front_left_wheel_joint");
+  joint_angles.name.emplace_back("front_right_wheel_joint");
+  joint_angles.name.emplace_back("back_right_wheel_joint");
+  joint_angles.name.emplace_back("back_left_wheel_joint");
   joint_angles.position.emplace_back(0.0);
   joint_angles.position.emplace_back(0.0);
   joint_angles.position.emplace_back(0.0);
@@ -96,18 +97,17 @@ void DriveControlServer::preemptCallback()
   ROS_INFO("[DigControlServer::preemptCallback] Preempting from %s", to_string(state).c_str());
 }
 
-void DriveControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
+void DriveControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
 {
-  bool lb = joy->buttons[4] == 1; // Safety
-  float ls = joy->axes[1];        // Left wheels
-  float rs = joy->axes[3];        // Right wheels
+  using utilities::Joy;
+  Joy joy(joy_msg);
 
-  safety = lb;
-
-  if (safety)
+  manual_safety = joy.get(Joy::MANUAL_SAFETY);
+  autonomy_safety = joy.get(Joy::AUTONOMY_SAFETY);
+  if (manual_safety)
   {
-    teleop_left  = max_velocity * ls;
-    teleop_right = max_velocity * rs;
+    teleop_left  = max_velocity * (float)joy.get(Joy::TELEOP_LEFT);
+    teleop_right = max_velocity * (float)joy.get(Joy::TELEOP_RIGHT);
   }
   else
   {
@@ -137,7 +137,7 @@ void DriveControlServer::update(double dt)
     }
     case ControlState::in_progress:
     {
-      if (safety)
+      if (autonomy_safety)
       {
         controller.update(state_vector, dt);
       }
@@ -149,7 +149,7 @@ void DriveControlServer::update(double dt)
     }
     case ControlState::manual:
     {
-      if (safety)
+      if (manual_safety)
       {
         teleop.update(teleop_left, teleop_right);
       }
