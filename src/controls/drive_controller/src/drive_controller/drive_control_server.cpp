@@ -33,18 +33,6 @@ DriveControlServer::DriveControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVe
   server.start();
 }
 
-DriveControlResult drive_controller::toResult(ControlState state)
-{
-  DriveControlResult result;
-  result.control_state = (DriveControlResult::_control_state_type)state;
-  return result;
-}
-
-ControlState drive_controller::toControlState(DriveControlGoal goal)
-{
-  return (ControlState)goal.control_state;
-}
-
 void DriveControlServer::goalCallback()
 {
   auto goal = server.acceptNewGoal();
@@ -57,31 +45,34 @@ void DriveControlServer::goalCallback()
     case ControlState::new_goal:
     {
       // Only accepts one segment
+      stop();
       direction = goal->path[0].direction_of_travel == 1;
       path = toBezierPath(goal->path[0]);
       modified_path = path;
-      controller.cleanPath(&modified_path, x, y, theta, false);
+      controller.cleanPath(&modified_path, x, y, theta, direction);
       controller.addPath(modified_path, direction);
+      //controller.addPath(modified_path, direction);
       state = ControlState::in_progress;
       server.setSucceeded(toResult(state));
       break;
     }
     case ControlState::cancel:
     {
+      stop();
       state = ControlState::ready;
       server.setSucceeded(toResult(state));
-      stop();
     }
     case ControlState::manual:
     {
+      stop();
       state = ControlState::manual;
       server.setSucceeded(toResult(state));
       break;
     }
     default:
     {
-      state = ControlState::error;
       stop();
+      state = ControlState::error;
       server.setAborted(toResult(state));
       ROS_ERROR("[DriveControlServer::goalCallback] Unable to set control state from %s to %s",
                 to_string(state).c_str(), to_string(request).c_str());
@@ -193,25 +184,6 @@ void DriveControlServer::stateVectorCallback(const localization::StateVector::Co
   state_vector.x_accel = state_vector_msg->x_accel;
   state_vector.y_accel = state_vector_msg->y_accel;
   state_vector.alpha   = state_vector_msg->alpha;
-}
-
-std::string drive_controller::to_string(ControlState state)
-{
-  switch (state)
-  {
-    case ControlState::error:
-      return "error";
-    case ControlState::ready:
-      return "ready";
-    case ControlState::new_goal:
-      return "new_goal";
-    case ControlState::in_progress:
-      return "in_progress";
-    case ControlState::cancel:
-      return "cancel";
-    case ControlState::manual:
-      return "manual";
-  }
 }
 
 bezier_path drive_controller::toBezierPath(const navigation_msgs::BezierSegment &segment)

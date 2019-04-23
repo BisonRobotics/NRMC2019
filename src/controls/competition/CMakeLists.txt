@@ -10,12 +10,14 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
+  tf2_geometry_msgs
   actionlib
   roscpp
   std_msgs
   sensor_msgs
   navigation_msgs
   visualization_msgs
+  geometry_msgs
   interactive_markers
   drive_controller
   dig_control

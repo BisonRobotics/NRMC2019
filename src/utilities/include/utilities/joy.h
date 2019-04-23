@@ -45,7 +45,12 @@ namespace utilities
       START_DIG = B,
       END_DIG = A,
       START_DUMP = Y,
-      END_DUMP = X
+      END_DUMP = X,
+      START_PATH = ST,
+      FOLLOW_ROBOT = PL,
+      UNFOLLOW_ROBOT = PR,
+      FORWARD = PU,
+      REVERSE = PD
     };
 
     enum Axis // Six axis

@@ -23,29 +23,30 @@ namespace competition
   class Visuals
   {
   public:
-    Visuals(ros::NodeHandle *nh);
+    Visuals(ros::NodeHandle *nh, BezierSegment *path);
 
-    void update();
-    void update(tf2::Transform transform);
+    void update(tf2::Transform P0);
+    void followRobot(bool follow);
 
     std::string markerString(const std::string &name, double x, double y);
     void controlMarkerFeedback(const InteractiveMarkerFeedback::ConstPtr &feedback);
     visualization_msgs::InteractiveMarker createControlMarker(std::string name, double x, double y);
     void createControlMarkers(InteractiveMarkerServer *server);
-    MarkerArray createPathVisual(const BezierSegment &s, size_t path_size);
-    void updatePathVisual(MarkerArray *path_visual, const BezierSegment &s, size_t path_size);
+    MarkerArray createVisuals(size_t path_size);
+    void updateVisuals(MarkerArray *path_visual, BezierSegment *s, size_t path_size);
 
   private:
     boost::function<void (const InteractiveMarkerFeedback::ConstPtr &feedback)> boostControlMarkerFeedback;
     size_t size;
     uint precision;
     double height, width, text_size;
-    MarkerArray path_visual;
-    BezierSegment path;
+    MarkerArray visuals;
+    BezierSegment *path;
+    bool following_robot;
 
     ros::NodeHandle *nh;
     InteractiveMarkerServer marker_server;
-    ros::Publisher marker_pub;
+    ros::Publisher visuals_pub;
 
   };
 }

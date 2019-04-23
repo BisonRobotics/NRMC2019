@@ -2,33 +2,67 @@
 
 using namespace competition;
 
-Visuals::Visuals(ros::NodeHandle *nh) :
-  nh(nh), marker_server("path_control_points"),
+Visuals::Visuals(ros::NodeHandle *nh, BezierSegment *path) :
+  nh(nh), marker_server("path_control_points"), following_robot(false), path(path),
   height(0.2), width(0.1), text_size(0.1), precision(2), size(20),
   boostControlMarkerFeedback(boost::bind(&Visuals::controlMarkerFeedback, this, _1))
 {
-  // Dump default
-  path.direction_of_travel = 1;
-  path.p0.x = 1.0; path.p0.y = 1.0; path.p0.z = height / 2;
-  path.p1.x = 2.0; path.p1.y = 2.0; path.p1.z = height / 2;
-  path.p2.x = 3.0; path.p2.y = 3.0; path.p2.z = height / 2;
-  path.p3.x = 4.0; path.p3.y = 4.0; path.p3.z = height / 2;
-
-  marker_pub = nh->advertise<visualization_msgs::MarkerArray>("path_visual", 1);
-  path_visual = createPathVisual(path, size);
+  path->p0.z = height / 2;
+  path->p1.z = height / 2;
+  path->p2.z = height / 2;
+  path->p3.z = height / 2;
+  visuals_pub = nh->advertise<visualization_msgs::MarkerArray>("competition_visuals", 1);
+  visuals = createVisuals(size);
   createControlMarkers(&marker_server);
-
 }
 
-void Visuals::update()
+void Visuals::update(tf2::Transform P0)
 {
-  updatePathVisual(&path_visual, path, size);
-  marker_pub.publish(path_visual);
-}
+  if (following_robot)
+  {
+    double x0, y0, x1, y1;
+    InteractiveMarker control_point;
+    tf2::Transform P1;
 
-void Visuals::update(tf2::Transform transform)
-{
-  ROS_WARN("Not implemented");
+    // P0
+    P0.setOrigin(P0.getOrigin());
+    x0 = P0.getOrigin().x();
+    y0 = P0.getOrigin().y();
+    marker_server.get("p0", control_point);
+    control_point.pose.position.x = x0;
+    control_point.pose.position.y = y0;
+    control_point.controls[1].markers[0].text = markerString("p0", x0, y0);
+    control_point.controls[0].interaction_mode = InteractiveMarkerControl::NONE;
+    marker_server.insert(control_point);
+
+    // P1
+    if (path->direction_of_travel == 1)
+    {
+      P1.setOrigin(tf2::Vector3(1.0, 0.0, 0.0));
+    }
+    else
+    {
+      P1.setOrigin(tf2::Vector3(-1.0, 0.0, 0.0));
+    }
+    P1.setRotation(tf2::Quaternion(0.0, 0.0, 0.0, 1.0));
+    P1 = P0 * P1;
+    x1 = P1.getOrigin().x();
+    y1 = P1.getOrigin().y();
+    marker_server.get("p1", control_point);
+    control_point.pose.position.x = x1;
+    control_point.pose.position.y = y1;
+    control_point.controls[1].markers[0].text = markerString("p1", x1, y1);
+    control_point.controls[0].interaction_mode = InteractiveMarkerControl::NONE;
+    marker_server.insert(control_point);
+
+    marker_server.applyChanges();
+    path->p0.x = x0;
+    path->p0.y = y0;
+    path->p1.x = x1;
+    path->p1.y = y1;
+  }
+  updateVisuals(&visuals, path, size);
+  visuals_pub.publish(visuals);
 }
 
 void Visuals::controlMarkerFeedback(const InteractiveMarkerFeedback::ConstPtr &feedback)
@@ -39,23 +73,23 @@ void Visuals::controlMarkerFeedback(const InteractiveMarkerFeedback::ConstPtr &f
 
   if (name == "p0")
   {
-    path.p0.x = x;
-    path.p0.y = y;
+    path->p0.x = x;
+    path->p0.y = y;
   }
   else if (name == "p1")
   {
-    path.p1.x = x;
-    path.p1.y = y;
+    path->p1.x = x;
+    path->p1.y = y;
   }
   else if (name == "p2")
   {
-    path.p2.x = x;
-    path.p2.y = y;
+    path->p2.x = x;
+    path->p2.y = y;
   }
   else if (name == "p3")
   {
-    path.p3.x = x;
-    path.p3.y = y;
+    path->p3.x = x;
+    path->p3.y = y;
   }
 
   InteractiveMarker control_point;
@@ -88,10 +122,12 @@ visualization_msgs::InteractiveMarker Visuals::createControlMarker(std::string n
   marker.pose.position.z = height / 2.0;
   InteractiveMarkerControl control;
   control.name = name + "_visual";
-  control.orientation.w = 1;
-  control.orientation.x = 0;
-  control.orientation.y = 1;
-  control.orientation.z = 0;
+  tf2::Quaternion q(1, 0, 1, 0);
+  q = q.normalize();
+  control.orientation.w = q.w();
+  control.orientation.x = q.x();
+  control.orientation.y = q.y();
+  control.orientation.z = q.z();
   control.always_visible = 1;
   control.interaction_mode = InteractiveMarkerControl::MOVE_PLANE;
   control.markers.emplace_back(marker);
@@ -120,10 +156,10 @@ visualization_msgs::InteractiveMarker Visuals::createControlMarker(std::string n
 
 void Visuals::createControlMarkers(InteractiveMarkerServer *server)
 {
-  InteractiveMarker p0_marker = createControlMarker("p0", path.p0.x, path.p0.y);
-  InteractiveMarker p1_marker = createControlMarker("p1", path.p1.x, path.p1.y);
-  InteractiveMarker p2_marker = createControlMarker("p2", path.p2.x, path.p2.y);
-  InteractiveMarker p3_marker = createControlMarker("p3", path.p3.x, path.p3.y);
+  InteractiveMarker p0_marker = createControlMarker("p0", path->p0.x, path->p0.y);
+  InteractiveMarker p1_marker = createControlMarker("p1", path->p1.x, path->p1.y);
+  InteractiveMarker p2_marker = createControlMarker("p2", path->p2.x, path->p2.y);
+  InteractiveMarker p3_marker = createControlMarker("p3", path->p3.x, path->p3.y);
 
   server->insert(p0_marker, boostControlMarkerFeedback);
   server->insert(p1_marker, boostControlMarkerFeedback);
@@ -133,7 +169,7 @@ void Visuals::createControlMarkers(InteractiveMarkerServer *server)
   server->applyChanges();
 }
 
-MarkerArray Visuals::createPathVisual(const BezierSegment &s, size_t path_size)
+MarkerArray Visuals::createVisuals(size_t path_size)
 {
   Marker vertices_marker;
   vertices_marker.id = 0;
@@ -173,20 +209,20 @@ MarkerArray Visuals::createPathVisual(const BezierSegment &s, size_t path_size)
   return path_visual;
 }
 
-void Visuals::updatePathVisual(MarkerArray *path_visual, const BezierSegment &s, size_t path_size)
+void Visuals::updateVisuals(MarkerArray *path_visual, BezierSegment *s, size_t path_size)
 {
   // Update vertices
-  path_visual->markers[0].points[0] = path.p0;
-  path_visual->markers[0].points[1] = path.p1;
-  path_visual->markers[0].points[2] = path.p2;
-  path_visual->markers[0].points[3] = path.p3;
+  path_visual->markers[0].points[0] = path->p0;
+  path_visual->markers[0].points[1] = path->p1;
+  path_visual->markers[0].points[2] = path->p2;
+  path_visual->markers[0].points[3] = path->p3;
 
   // Update path
-  Bezier path(s.p0.x, s.p0.y, s.p1.x, s.p1.y, s.p2.x, s.p2.y, s.p3.x, s.p3.y);
+  Bezier path(s->p0.x, s->p0.y, s->p1.x, s->p1.y, s->p2.x, s->p2.y, s->p3.x, s->p3.y);
   double size_d = path_size;
   occupancy_grid::Point point_2d;
   Point point_3d;
-  path_visual->markers[1].points[0] = s.p0;
+  path_visual->markers[1].points[0] = s->p0;
   for (size_t i = 1; i <= path_size; i++)
   {
     point_2d = path(0, i / size_d);
@@ -203,4 +239,40 @@ std::string Visuals::markerString(const std::string &name, double x, double y)
   ss.precision(precision);
   ss << std::fixed << name << "("  << x << ", " << y << ")";
   return ss.str();
+}
+
+void Visuals::followRobot(bool follow)
+{
+  if (following_robot == follow) return;
+
+  following_robot = follow;
+  if (following_robot)
+  {
+    InteractiveMarker control_point;
+
+    marker_server.get("p0", control_point);
+    control_point.controls[0].interaction_mode = InteractiveMarkerControl::NONE;
+    marker_server.insert(control_point);
+
+    marker_server.get("p1", control_point);
+    control_point.controls[0].interaction_mode = InteractiveMarkerControl::NONE;
+    marker_server.insert(control_point);
+
+    marker_server.applyChanges();
+  }
+  else
+  {
+    InteractiveMarker control_point;
+
+    marker_server.get("p0", control_point);
+    control_point.controls[0].interaction_mode = InteractiveMarkerControl::MOVE_PLANE;
+    marker_server.insert(control_point);
+
+    marker_server.get("p1", control_point);
+    control_point.controls[0].interaction_mode = InteractiveMarkerControl::MOVE_PLANE;
+    marker_server.insert(control_point);
+
+    marker_server.applyChanges();
+  }
+
 }

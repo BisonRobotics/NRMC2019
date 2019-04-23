@@ -10,6 +10,7 @@
   <depend>roscpp</depend>
   <depend>std_msgs</depend>
   <depend>navigation_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>drive_controller</depend>
   <depend>dig_control</depend>
   <depend>path_planner</depend>

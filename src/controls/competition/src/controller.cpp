@@ -1,19 +1,31 @@
 #include <competition/controller.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 using namespace competition;
 
-Controller::Controller(ros::NodeHandle *nh, ros::Rate *rate) :
-  nh(nh), rate(rate), dt(rate->expectedCycleTime().toSec()),
-  visuals(nh)
+Controller::Controller(ros::NodeHandle *nh, ros::Rate *rate, BezierSegment *path) :
+  nh(nh), rate(rate), tf_listener(tf_buffer), path(path),
+  dt(rate->expectedCycleTime().toSec()), visuals(nh, path)
 {
   joy_subscriber = nh->subscribe("joy", 1, &Controller::joyCallback, this);
   drive_client.setControlState(DriveControlState::manual);
   dig_client.setControlState(DigControlState::manual);
+  visuals.followRobot(true);
 }
 
 void Controller::update()
 {
-  visuals.update();
+  try
+  {
+    tf2::fromMsg(tf_buffer.lookupTransform("map", "base_link", ros::Time(0)), transform);
+  }
+  catch (tf2::TransformException &ex)
+  {
+    ROS_WARN("%s",ex.what());
+    ros::Duration(1.0).sleep();
+    return;
+  }
+  visuals.update(transform);
 }
 
 void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
@@ -22,7 +34,7 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
   
   if (joy.get(Joy::AUTONOMY_SAFETY))
   {
-    if (joy.get(Joy::START_DIG)) 
+    if (joy.get(Joy::START_DIG))
     {
       ROS_INFO("[Controller::joyCallback]: %s to %s",
           to_string(dig_client.getControlState()).c_str(),
@@ -50,12 +62,44 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
                to_string(DigControlState::finish_dump).c_str());
       dig_client.setControlState(DigControlState::finish_dump);
     }
+    else if (joy.get(Joy::START_PATH))
+    {
+      ROS_INFO("[Controller::joyCallback]: %s to %s",
+               to_string(dig_client.getControlState()).c_str(),
+               to_string(DriveControlState::new_goal).c_str());
+      drive_client.setControlState(DriveControlState::new_goal, *path); // TODO something a little cleaner
+      visuals.followRobot(false);
+    }
+    else if (joy.get(Joy::FOLLOW_ROBOT))
+    {
+      ROS_INFO("[Controller::joyCallback]: Enabling follow_robot visual");
+      visuals.followRobot(true);
+    }
+    else if (joy.get(Joy::UNFOLLOW_ROBOT))
+    {
+      ROS_INFO("[Controller::joyCallback]: Disabling follow_robot visual");
+      visuals.followRobot(false);
+    }
+    else if (joy.get(Joy::FORWARD))
+    {
+      ROS_INFO("[Controller::joyCallback]: Setting direction of travel to forward");
+      path->direction_of_travel = 1;
+    }
+    else if (joy.get(Joy::REVERSE))
+    {
+      ROS_INFO("[Controller::joyCallback]: Setting direction of travel to reverse");
+      path->direction_of_travel = 0;
+    }
   }
   else
   {
     if (dig_client.getControlState() != DigControlState::manual)
     {
       dig_client.setControlState(DigControlState::manual);
+    }
+    if (drive_client.getControlState() != DriveControlState::manual)
+    {
+      drive_client.setControlState(DriveControlState::manual);
     }
   }
 }
