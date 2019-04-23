@@ -9,71 +9,22 @@
 #define FRONT_RIGHT_WHEEL_ID 2
 #define BACK_RIGHT_WHEEL_ID 3
 #define BACK_LEFT_WHEEL_ID 4
-#define CENTRAL_DRIVE_ID 5
-#define LINEAR_MOTOR_ID 6
-#define VIBRATOR_MOTOR_ID 7
 
 #define FRONT_LEFT_WHEEL_DIRECTION -1.0f
 #define FRONT_RIGHT_WHEEL_DIRECTION 1.0f
 #define BACK_RIGHT_WHEEL_DIRECTION -1.0f
 #define BACK_LEFT_WHEEL_DIRECTION 1.0f
-#define LINEAR_MOTOR_DIRECTION 1.0f
-#define CENTRAL_DRIVE_DIRECTION 1.0f
 
 #define MAX_WHEEL_VELOCITY .5f
 #define MAX_WHEEL_TORQUE 176.0f
 #define MAX_WHEEL_DUTY .4f
-#define WHEEL_GEAR_RATIO 256.667f
-#define WHEEL_OUTPUT_RATIO (.03048f)
+#define WHEEL_GEAR_RATIO 179.83f
+#define WHEEL_OUTPUT_RATIO 15.95929e-3f // (6 in)*(0.0254 m/in)*(2*pi rad/rot)/(60 s/min)
 #define WHEEL_POLE_PAIRS 10
 #define WHEEL_TORQUE_CONSTANT .02120f
 
-#define MAX_CENTRAL_DRIVE_VELOCITY 0.9425f  // in rad/s
-#define MAX_CENTRAL_DRIVE_TORQUE 10.0f     // in Nm -> the real number is 675 but we should never approach that
-#define MAX_CENTRAL_DRIVE_DUTY .4f
-#define CENTRAL_DRIVE_GEAR_RATIO -1.0f
-#define CENTRAL_DRIVE_OUTPUT_RATIO 1.0f  //  purely rotational
-#define CENTRAL_DRIVE_POLE_PAIRS 5
-#define CENTRAL_DRIVE_TORQUE_CONSTANT 1.0f  // Nm/A
-
-#define MAX_LINEAR_ACTUATOR_VELOCITY .05f  // this should be change
-#define MAX_LINEAR_ACTUATOR_TORQUE 4.0f
-#define MAX_LINEAR_DUTY .4
-#define LINEAR_ACTUATOR_GEAR_RATIO 1
-#define LINEAR_ACTUATOR_OUTPUT_RATIO ((float)(1.0/(5.206E6)))  // this should be the pitch of the screw in m/s
-#define LINEAR_ACTUATOR_POLE_PAIRS 1
-#define LINEAR_ACTUATOR_TORQUE_CONSTANT 1.0f
-
-#define MAX_VIBRATOR_VELOCITY 6000.0f   // in erpm
-#define MAX_VIBRATOR_TORQUE 11.0f    // in Amps
-#define MAX_VIBRATOR_DUTY .5f
-#define VIBRATOR_GEAR_RATIO 1.0f
-#define VIBRATOR_OUTPUT_RATIO 1.0f
-#define VIBRATOR_POLE_PAIRS 1
-#define VIBRATOR_TORQUE_CONSTANT 1.0f
-
-#define NUMBER_OF_MOTORS 11
 #define ROBOT_AXLE_LENGTH 0.64f
 #define ROBOT_MAX_SPEED 0.5f
-
-//GROUND IS TOWARDS MINIMUM CENTRAL ANGLE
-#define LINEAR_ACTUATOR_LENGTH 2.1  //radians
-#define MINIMUM_CENTRAL_ANGLE -0.92 //extend for more ground (but not too far!)
-#define MAXIMUM_CENTRAL_ANGLE 1.98  //extend for more dump? (maybe already maxed)
-#define SAFE_CENTRAL_ANGLE 4.55     //LEGACY'D
-#define SAFE_LINEAR_DISTANCE .04985 //LEGACY'D
-
-#define LINEAR_RETRACTED_POINT 2.0          //radians
-#define LINEAR_EXTENDED_POINT .1            //radians
-#define CENTRAL_MEASUREMENT_START_ANGLE .6 //these need to be starting away and
-#define CENTRAL_MEASUREMENT_STOP_ANGLE .5   //moving towards the ground without hitting anything
-#define CENTRAL_HOLD_TORQUE -1              //increase the magnitude MUST AGREE WITH SIGN OF MIN - MAX
-#define CENTRAL_TRANSPORT_ANGLE 1.4               // move this up
-#define CENTRAL_MOVE_ROCKS_INTO_HOPPER_ANGLE  1.6 // move this up
-#define CENTRAL_DUMP_ANGLE 1.3         // must be below safety point, where backhoe dumps into bucket
-#define CENTRAL_DEPOSITION_ANGLE 1.95  // must be below max position, where bucket transfers to hopper
-#define TIME_TO_EMPTY_INTO_HOPPER 20.0 //was set to 90 for competition
-#define TIME_TO_MOVE_ROCKS_INTO_BUCKET 1.0
 
 nsVescAccess::vesc_param_struct_t front_left_param =
 {
@@ -133,143 +84,6 @@ nsVescAccess::vesc_param_struct_t back_left_param =
   WHEEL_CAN_NETWORK,
   .can_id = BACK_LEFT_WHEEL_ID,
   .name = "back_left_wheel"
-};
-
-nsVescAccess::vesc_param_struct_t linear_param =
-{
-  .direction = LINEAR_MOTOR_DIRECTION,
-  .max_velocity = MAX_LINEAR_ACTUATOR_VELOCITY,
-  .max_torque = MAX_LINEAR_ACTUATOR_TORQUE,
-  .max_duty = MAX_LINEAR_DUTY,
-  .gear_ratio = LINEAR_ACTUATOR_GEAR_RATIO,
-  .output_ratio = LINEAR_MOTOR_DIRECTION * LINEAR_ACTUATOR_OUTPUT_RATIO,
-  .pole_pairs = LINEAR_ACTUATOR_POLE_PAIRS,
-  .torque_constant = LINEAR_ACTUATOR_TORQUE_CONSTANT,
-  WHEEL_CAN_NETWORK,
-  .can_id = LINEAR_MOTOR_ID,
-  .name = "linear_actuator"
-};
-
-nsVescAccess::vesc_param_struct_t shoulder_param =
-{
-  .direction = CENTRAL_DRIVE_DIRECTION,
-  .max_velocity = MAX_CENTRAL_DRIVE_VELOCITY,
-  .max_torque = MAX_CENTRAL_DRIVE_TORQUE,
-  .max_duty = MAX_CENTRAL_DRIVE_DUTY,
-  .gear_ratio = CENTRAL_DRIVE_GEAR_RATIO,
-  .output_ratio = CENTRAL_DRIVE_DIRECTION * CENTRAL_DRIVE_OUTPUT_RATIO,
-  .pole_pairs = CENTRAL_DRIVE_POLE_PAIRS,
-  .torque_constant = CENTRAL_DRIVE_TORQUE_CONSTANT,
-  WHEEL_CAN_NETWORK,
-  .can_id = CENTRAL_DRIVE_ID,
-  .name = "central_drive"
-};
-
-/*
- * Legacy Params
- */
-#define SMALL_CONVEYOR_ID 8
-#define LARGE_CONVEYOR_ID 9
-#define LEFT_OUTRIGGER_ID 10
-#define RIGHT_OUTRIGGER_ID 11
-
-#define MAX_SMALL_CONVEYOR_VELOCITY 4900.0f
-#define MAX_SMALL_CONVEYOR_TORQUE 10.0f
-#define MAX_SMALL_CONVEYOR_DUTY .9f
-#define SMALL_CONVEYOR_GEAR_RATIO 1.0f
-#define SMALL_CONVEYOR_OUTPUT_RATIO 1.0f
-#define SMALL_CONVEYOR_POLE_PAIRS 1
-#define SMALL_CONVEYOR_TORQUE_CONSTANT 1.0f
-
-#define MAX_LARGE_CONVEYOR_VELOCITY 140000.0f // in erpm
-#define MAX_LARGE_CONVEYOR_TORQUE 15.0f
-#define MAX_LARGE_CONVEYOR_DUTY .7f
-#define LARGE_CONVEYOR_GEAR_RATIO 1.0f
-#define LARGE_CONVEYOR_OUTPUT_RATIO 1.0f
-#define LARGE_CONVEYOR_POLE_PAIRS 1
-#define LARGE_CONVEYOR_TORQUE_CONSTANT 1.0f
-
-#define MAX_OUTRIGGER_VELOCITY 10.0f
-#define MAX_OUTRIGGER_TORQUE 10.0f
-#define MAX_OUTRIGGER_DUTY .4f
-#define OUTRIGGER_GEAR_RATIO 1.0f
-#define OUTRIGGER_OUTPUT_RATIO 1.0f
-#define OUTRIGGER_POLE_PAIRS 1
-#define OUTRIGGER_TORQUE_CONSTANT 1.0f
-
-nsVescAccess::vesc_param_struct_t sifter_param =
-{
-  .direction = 1.0f,
-  .max_velocity = MAX_VIBRATOR_VELOCITY,
-  .max_torque = MAX_VIBRATOR_TORQUE,
-  .max_duty = MAX_VIBRATOR_DUTY,
-  .gear_ratio = VIBRATOR_GEAR_RATIO,
-  .output_ratio = VIBRATOR_OUTPUT_RATIO,
-  .pole_pairs = VIBRATOR_POLE_PAIRS,
-  .torque_constant = VIBRATOR_TORQUE_CONSTANT,
-  WHEEL_CAN_NETWORK,
-  .can_id = VIBRATOR_MOTOR_ID,
-  .name = "sifter"
-};
-
-nsVescAccess::vesc_param_struct_t small_conveyor_param =
-{
-  .direction = 1.0f,
-  .max_velocity = MAX_SMALL_CONVEYOR_VELOCITY,
-  .max_torque = MAX_SMALL_CONVEYOR_TORQUE,
-  .max_duty = MAX_SMALL_CONVEYOR_DUTY,
-  .gear_ratio = SMALL_CONVEYOR_GEAR_RATIO,
-  .output_ratio = SMALL_CONVEYOR_OUTPUT_RATIO,
-  .pole_pairs = SMALL_CONVEYOR_POLE_PAIRS,
-  .torque_constant = SMALL_CONVEYOR_TORQUE_CONSTANT,
-  WHEEL_CAN_NETWORK,
-  .can_id = SMALL_CONVEYOR_ID,
-  .name = "small_conveyor"
-};
-
-nsVescAccess::vesc_param_struct_t large_conveyor_param =
-{
-  .direction = 1.0f,
-  .max_velocity = MAX_LARGE_CONVEYOR_VELOCITY,
-  .max_torque = MAX_LARGE_CONVEYOR_TORQUE,
-  .max_duty = MAX_LARGE_CONVEYOR_DUTY,
-  .gear_ratio = LARGE_CONVEYOR_GEAR_RATIO,
-  .output_ratio = LARGE_CONVEYOR_OUTPUT_RATIO,
-  .pole_pairs = LARGE_CONVEYOR_POLE_PAIRS,
-  .torque_constant = LARGE_CONVEYOR_TORQUE_CONSTANT,
-  WHEEL_CAN_NETWORK,
-  .can_id = LARGE_CONVEYOR_ID,
-  .name = "large_conveyor"
-};
-
-nsVescAccess::vesc_param_struct_t left_outrigger_param =
-{
-  .direction = 1.0f,
-  .max_velocity = MAX_OUTRIGGER_VELOCITY,
-  .max_torque = MAX_OUTRIGGER_TORQUE,
-  .max_duty = MAX_OUTRIGGER_DUTY,
-  .gear_ratio = OUTRIGGER_GEAR_RATIO,
-  .output_ratio = OUTRIGGER_OUTPUT_RATIO,
-  .pole_pairs = OUTRIGGER_POLE_PAIRS,
-  .torque_constant = OUTRIGGER_TORQUE_CONSTANT,
-  WHEEL_CAN_NETWORK,
-  .can_id = LEFT_OUTRIGGER_ID,
-  .name = "left_outrigger"
-};
-
-nsVescAccess::vesc_param_struct_t right_outrigger_param =
-{
-  .direction = 1.0f,
-  .max_velocity = MAX_OUTRIGGER_VELOCITY,
-  .max_torque = MAX_OUTRIGGER_TORQUE,
-  .max_duty = MAX_OUTRIGGER_DUTY,
-  .gear_ratio = OUTRIGGER_GEAR_RATIO,
-  .output_ratio = OUTRIGGER_OUTPUT_RATIO,
-  .pole_pairs = OUTRIGGER_POLE_PAIRS,
-  .torque_constant = OUTRIGGER_TORQUE_CONSTANT,
-  WHEEL_CAN_NETWORK,
-  .can_id = RIGHT_OUTRIGGER_ID,
-  .name = "right_outrigger"
 };
 
 #endif

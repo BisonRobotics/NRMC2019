@@ -23,7 +23,7 @@ bool MeasurementManager::givePos(PosSensorInterface *posSensor_in)
   pSensor = posSensor_in;
 }
 
-LocalizerInterface::stateVector MeasurementManager::getMeasured(double dt)
+LocalizerInterface::StateVector MeasurementManager::getMeasured(double dt)
 {
   // read and integrate IMU
   //TODO transform using offset
@@ -32,7 +32,7 @@ LocalizerInterface::stateVector MeasurementManager::getMeasured(double dt)
   y_vel += IMU->getY() * dt;
   //read POS
 
-  LocalizerInterface::stateVector ret;
+  LocalizerInterface::StateVector ret;
   ret.alpha = 0;
   ret.x_accel = 0;
   ret.y_accel = 0;

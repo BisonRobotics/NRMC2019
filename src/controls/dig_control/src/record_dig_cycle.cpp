@@ -15,8 +15,8 @@ void callback(const dig_control::Debug::ConstPtr &message)
   *file << std::to_string(message->duty.bucket)           << "," << std::to_string(message->duty.backhoe)     << ","
         << std::to_string(message->duty.central)          << "," << std::to_string(message->duty.vibrator)    << ","
         << std::to_string(message->state_i.bucket)        << "," << std::to_string(message->state_i.backhoe)  << ","
-        << std::to_string(message->state_i.central_drive) << "," << std::to_string(message->state_i.dig)      << ","
-        << std::to_string(message->state_i.control)       << "," << std::to_string(message->central_position) << "\n";
+        << std::to_string(message->state_i.central)       << "," << std::to_string(message->state_i.dig)      << ","
+        << std::to_string(message->state_i.control)       << "," << std::to_string(message->position.central) << "\n";
 }
 
 

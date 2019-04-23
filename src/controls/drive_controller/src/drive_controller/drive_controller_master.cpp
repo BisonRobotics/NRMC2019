@@ -13,7 +13,7 @@
 #include <geometry_msgs/TransformStamped.h>
 #include <std_msgs/Empty.h>
 
-#include <drive_controller/StateVector.h>
+#include <localization/StateVector.h>
 #include <drive_controller/ErrorStates.h>
 #include <drive_controller/WheelStates.h>
 #include <drive_controller/PathInfo.h>
@@ -67,7 +67,9 @@ int map_base_link_seq= 0;
 #define STATE_VECTOR_ID 0
 #define DELTA_VECTOR_ID 1
 
-DriveController_ns::bezier_path curr_path;
+using namespace drive_controller;
+
+drive_controller::bezier_path curr_path;
 
 SimpleActionServer<FollowPathAction> *server;
 
@@ -160,9 +162,9 @@ geometry_msgs::TransformStamped create_sim_tf(double x, double y, double theta)
   return tfStamp;
 }
 
-drive_controller::StateVector localizer_sv_to_msg(LocalizerInterface::stateVector sv, int which)
+localization::StateVector localizer_sv_to_msg(LocalizerInterface::StateVector sv, int which)
 {
-    drive_controller::StateVector sv_msg;
+    localization::StateVector sv_msg;
     sv_msg.header.stamp = ros::Time::now();
     sv_msg.header.seq = (which == DELTA_VECTOR_ID) ? delta_vec_seq++ : state_vec_seq++;
     sv_msg.id = which;
@@ -178,7 +180,7 @@ drive_controller::StateVector localizer_sv_to_msg(LocalizerInterface::stateVecto
     return sv_msg;
 }
 
-drive_controller::ErrorStates error_states_to_msg(DriveController_ns::error_state es)
+drive_controller::ErrorStates error_states_to_msg(drive_controller::error_state es)
 {
     drive_controller::ErrorStates es_msg;
     es_msg.header.stamp = ros::Time::now();
@@ -188,7 +190,7 @@ drive_controller::ErrorStates error_states_to_msg(DriveController_ns::error_stat
     return es_msg;
 }
 
-drive_controller::WheelStates wheel_states_to_msg(DriveController_ns::wheel_state ws)
+drive_controller::WheelStates wheel_states_to_msg(drive_controller::wheel_state ws)
 {
     drive_controller::WheelStates ws_msg;
     ws_msg.header.stamp = ros::Time::now();
@@ -202,7 +204,7 @@ drive_controller::WheelStates wheel_states_to_msg(DriveController_ns::wheel_stat
     return ws_msg;
 }
 
-drive_controller::PathInfo path_info_to_msg(DriveController_ns::path_info path_i)
+drive_controller::PathInfo path_info_to_msg(drive_controller::path_info path_i)
 {
     drive_controller::PathInfo pi_msg;
     pi_msg.header.stamp = ros::Time::now();
@@ -236,9 +238,15 @@ class DriverVescCrossover : public iVescAccess
     float getPotPosition(void) 
       {return face->getPosition();}
     void setDuty(float d) {}
-  void setCustom(float v) {}
-  void setCustom(float v, uint index) {}
+    void setCustom(float v) {}
+    void setCustom(float v, uint index) {}
     int getADC() {return -1;}
+    float getCurrent() {return -1.0;};
+    int getTachometer() {return -1;};
+    float getVin() {return -1;};
+    bool encoderIndexFound() {return true;};
+    bool isAlive() {return true;};
+    float getRadialVelocity() {return -1.0f;}
 };
 
 int main(int argc, char **argv)
@@ -367,7 +375,7 @@ int main(int argc, char **argv)
 
   UltraLocalizer ultraLocalizer(UltraLocalizer_default_gains, UltraLocalizer_initial_estimate);
   
-  LocalizerInterface::stateVector stateVector;
+  LocalizerInterface::StateVector stateVector;
   ros::Subscriber haltsub = node.subscribe("halt", 100, haltCallback);
 
   double wheel_positions[4] = { 0 };
@@ -378,8 +386,8 @@ int main(int argc, char **argv)
   geometry_msgs::Point vis_point;
   // hang here until someone knows where we are
   ROS_INFO("Going into wait loop for localizer and initial theta...");
-  ros::Publisher state_vector_publisher = node.advertise<drive_controller::StateVector>("state_vector", 100);
-  ros::Publisher delta_vector_publisher = node.advertise<drive_controller::StateVector>("delta_vector", 100);
+  ros::Publisher state_vector_publisher = node.advertise<localization::StateVector>("state_vector", 100);
+  ros::Publisher delta_vector_publisher = node.advertise<localization::StateVector>("delta_vector", 100);
   ros::Publisher error_states_publisher = node.advertise<drive_controller::ErrorStates>("error_states", 100);
   ros::Publisher wheel_states_publisher = node.advertise<drive_controller::WheelStates>("wheel_states", 100);
   ros::Publisher path_info_publisher    = node.advertise<drive_controller::PathInfo>("path_info", 100);
@@ -497,7 +505,7 @@ int main(int argc, char **argv)
     if (newWaypointHere)
     {
       //Enforce that path beginning is near the robot.  
-      DriveController_ns::bezier_path clean_path = curr_path;
+      drive_controller::bezier_path clean_path = curr_path;
       if (!dc.cleanPath(&clean_path, stateVector.x_pos, stateVector.y_pos, stateVector.theta, forwardPoint))
       {
           ROS_WARN("HAD TO MOVE PATH MORE THAN MARGIN.");

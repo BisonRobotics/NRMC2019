@@ -10,4 +10,30 @@
 
         </visual>
     </link>
+
+    <!-- Define apriltag locations -->
+    <link name="hopper" />
+    <link name="tag1_pose" />
+    <link name="tag1" />
+
+    <!--<link name="tag1" />
+    <link name="tag4" />-->
+
+    <joint name="map_to_hopper" type="fixed">
+        <origin xyz="0.48 1.075 0" rpy="0 0 0" />
+        <parent link="map" />
+        <child link = "hopper" />
+    </joint>
+
+    <joint name="hopper_to_tag1_position" type="fixed">
+        <origin xyz="0.2159 -0.7234 0.2563" rpy="0 0 1.1310" />
+        <parent link="hopper" />
+        <child link = "tag1_pose" />
+    </joint>
+
+    <joint name="tag1_pose_to_tag1" type="fixed">
+        <origin xyz="0 0 0" rpy="${pi/2} 0 ${pi/2}" />
+        <parent link="tag1_pose" />
+        <child link = "tag1" />
+    </joint>
 </robot>

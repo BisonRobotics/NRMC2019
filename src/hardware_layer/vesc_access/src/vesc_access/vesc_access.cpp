@@ -2,6 +2,9 @@
 #include <math.h>
 #include "ros/ros.h"
 #include "sensor_msgs/JointState.h"
+#include <boost/math/constants/constants.hpp>
+
+using namespace boost::math::float_constants;
 
 // Current
 VescAccess::VescAccess(nsVescAccess::vesc_param_struct_t param) : VescAccess(param, false){}
@@ -23,15 +26,6 @@ VescAccess::VescAccess(uint8_t VESC_ID, float direction, float transmission_rati
                     torque_limit, torque_constant, pole_pairs, has_limits, max_duty);
 }
 
-VescAccess::VescAccess(uint8_t VESC_ID, float transmission_ratio, float output_ratio, float velocity_limit,
-                       float torque_limit, float torque_constant, char *can_network, unsigned int pole_pairs,
-                       bool has_limits, std::string name, float max_duty)
-{
-  this->vesc = new Vesc(can_network, VESC_ID, name);
-  initializeMembers(1.0f, transmission_ratio, output_ratio, velocity_limit,
-                    torque_limit, torque_constant, pole_pairs, has_limits, max_duty);
-}
-
 
 // Other
 VescAccess::VescAccess(float transmission_ratio, float output_ratio, float velocity_limit, float torque_limit,
@@ -40,49 +34,6 @@ VescAccess::VescAccess(float transmission_ratio, float output_ratio, float veloc
   this->vesc = vesc;
   initializeMembers(1.0f, transmission_ratio, output_ratio, velocity_limit,
       torque_limit, torque_constant, pole_pairs, false);
-}
-
-VescAccess::VescAccess(uint8_t VESC_ID, float transmission_ratio, float output_ratio, float velocity_limit,
-                       float torque_limit, float torque_constant, char *can_network, unsigned int pole_pairs)
-{
-  this->vesc = new Vesc(can_network, VESC_ID, "no_name");
-  initializeMembers(1.0f, transmission_ratio, output_ratio, velocity_limit,
-      torque_limit, torque_constant, pole_pairs, false);
-}
-
-VescAccess::VescAccess(uint8_t VESC_ID, float transmission_ratio, float output_ratio, float velocity_limit,
-                       float torque_limit, float torque_constant, char *can_network, unsigned int pole_pairs,
-                       std::string name)
-{
-  this->vesc = new Vesc(can_network, VESC_ID, name);
-  initializeMembers(1.0f, transmission_ratio, output_ratio, velocity_limit,
-      torque_limit, torque_constant, pole_pairs, false);
-}
-
-VescAccess::VescAccess(float transmission_ratio, float output_ratio, float velocity_limit, float torque_limit,
-                       float torque_constant, iVesc *vesc, unsigned int pole_pairs, bool has_limits)
-{
-  this->vesc = vesc;
-  initializeMembers(1.0f, transmission_ratio, output_ratio, velocity_limit,
-      torque_limit, torque_constant, pole_pairs, has_limits);
-}
-
-VescAccess::VescAccess(uint8_t VESC_ID, float transmission_ratio, float output_ratio, float velocity_limit,
-                       float torque_limit, float torque_constant, char *can_network, unsigned int pole_pairs,
-                       bool has_limits)
-{
-  this->vesc = new Vesc(can_network, VESC_ID, "no_name");
-  initializeMembers(1.0f, transmission_ratio, output_ratio, velocity_limit,
-      torque_limit, torque_constant, pole_pairs, has_limits);
-}
-
-VescAccess::VescAccess(uint8_t VESC_ID, float transmission_ratio, float output_ratio, float velocity_limit,
-                       float torque_limit, float torque_constant, char *can_network, unsigned int pole_pairs,
-                       bool has_limits, std::string name)
-{
-  this->vesc = new Vesc(can_network, VESC_ID, name);
-  initializeMembers(1.0f, transmission_ratio, output_ratio, velocity_limit,
-      torque_limit, torque_constant, pole_pairs, has_limits);
 }
 
 void VescAccess::initializeMembers(float direction, float transmission_ratio, float output_ratio, float velocity_limit,
@@ -342,4 +293,34 @@ void VescAccess::setCustom(float setpoint, uint index)
 int VescAccess::getADC()
 {
   return vesc->getADC();
+}
+
+float VescAccess::getCurrent()
+{
+  return vesc->getCurrent();
+}
+
+int VescAccess::getTachometer()
+{
+  return vesc->getTachometer();
+}
+
+float VescAccess::getVin()
+{
+  return vesc->getVin();
+}
+
+bool VescAccess::encoderIndexFound()
+{
+  return vesc->encoderIndexFound();
+}
+
+bool VescAccess::isAlive()
+{
+  return vesc->isAlive();
+}
+
+float VescAccess::getRadialVelocity()
+{
+  return direction * 2.0f * pi / (60.0f * transmission_ratio) * convertErpmToRpm(vesc->getRpm());
 }

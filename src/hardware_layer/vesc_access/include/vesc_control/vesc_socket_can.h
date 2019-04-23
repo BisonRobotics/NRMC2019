@@ -42,14 +42,14 @@ public:
   } mc_fault_code;
 
 private:
-  ros::Publisher float32_pub;
-  ros::Publisher js_pub;
-  ros::Publisher js_command_pub;
-  sensor_msgs::JointState js_message;
-  std_msgs::Float32 f32_message;
-  ros::Time last_time;
-  static constexpr double publish_period = .5;
-  bool first_time;
+  //ros::Publisher float32_pub;
+  //ros::Publisher js_pub;
+  //ros::Publisher js_command_pub;
+  //sensor_msgs::JointState js_message;
+  //std_msgs::Float32 f32_message;
+  //ros::Time last_time;
+  //static constexpr double publish_period = 0.1;
+  //bool first_time;
   struct ifreq ifr;
   struct sockaddr_can addr;
   int s;
@@ -204,10 +204,10 @@ public:
   float getCurrent() override;
   float getDutyCycle();
   float getPosition();
-  int getTachometer();
+  int getTachometer() override;
   float getWattHours();
-  float getInCurrent();
-  float getVin();
+  float getInCurrent() override;
+  float getVin() override;
   float getTempMotor();
   float getTempPCB();
   mc_fault_code getFaultCode();
@@ -218,6 +218,6 @@ public:
   int getADC() override;
   std::string name;
   void resetWattHours();
-  bool encoderIndexFound();
-  bool isAlive();
+  bool encoderIndexFound() override;
+  bool isAlive() override;
 };

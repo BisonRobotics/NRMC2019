@@ -97,7 +97,7 @@ Localizer::UpdateStatus Localizer::updateStateVector(double dt)
   return Localizer::UpdateStatus::UPDATE_SUCCESS;
 }
 
-LocalizerInterface::stateVector Localizer::getStateVector()
+LocalizerInterface::StateVector Localizer::getStateVector()
 {
   return state_vector;
 }

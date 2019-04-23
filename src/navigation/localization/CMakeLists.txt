@@ -21,6 +21,10 @@ find_package (Eigen3 REQUIRED)
 link_directories(/usr/src/gmock/build)
 set(GTEST_LIBRARIES gmock_main)
 
+add_message_files(FILES StateVector.msg)
+
+generate_messages(DEPENDENCIES std_msgs)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -84,6 +88,11 @@ target_link_libraries(PoseEstimateFilter ${OpenCV_LIBS})
 add_executable(pose_estimate_filter src/pose_estimate_filter/pose_estimate_filter_node.cpp)
 target_link_libraries(pose_estimate_filter ${catkin_LIBRARIES})
 target_link_libraries(pose_estimate_filter PoseEstimateFilter)
+
+add_executable(ultra_localizer_node src/ultra_localizer/ultra_localizer_node.cpp)
+target_link_libraries(ultra_localizer_node ultra_localizer_lib measurement_manager_lib ${catkin_LIBRARIES})
+add_dependencies(ultra_localizer_lib ${localization_EXPORTED_TARGETS})
+
 
 #add_executable(test_imu_orientation tests/imu_test.cpp)
 #target_link_libraries(test_imu_orientation ${catkin_LIBRARIES} lpresearch_imu)
