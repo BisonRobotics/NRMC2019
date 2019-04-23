@@ -77,7 +77,7 @@ target_link_libraries(drive_controller_master drive_controller ${OpenCV_LIBS} ${
 
 add_executable(drive_control_server src/drive_controller/drive_control_server.cpp)
 add_dependencies(drive_control_server ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(drive_control_server drive_control_states drive_controller teleop_interface ${catkin_LIBRARIES})
+target_link_libraries(drive_control_server drive_control_states drive_controller ${catkin_LIBRARIES})
 
 add_executable(drive_control_client_node src/drive_controller/drive_control_client_node.cpp)
 add_dependencies(drive_control_client_node ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})

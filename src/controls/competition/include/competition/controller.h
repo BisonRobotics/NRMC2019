@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <utilities/joy.h>
 #include <competition/visuals.h>
-#include <drive_controller/drive_control_client.h>
+#include <waypoint_control/waypoint_control_client.h>
 #include <dig_control/dig_control_client.h>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -17,7 +17,7 @@
 
 namespace competition
 {
-  using DriveControlState = drive_controller::ControlState;
+  using WaypointControlState = waypoint_control::ControlState;
   using DigControlState = dig_control::ControlState;
   using utilities::Joy;
 
@@ -30,7 +30,7 @@ namespace competition
     void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
 
   private:
-    drive_controller::DriveControlClient drive_client;
+    waypoint_control::WaypointControlClient waypoint_client;
     dig_control::DigControlClient dig_client;
     Joy joy;
     Visuals visuals;

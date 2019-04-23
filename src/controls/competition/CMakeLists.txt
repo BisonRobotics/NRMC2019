@@ -19,8 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   geometry_msgs
   interactive_markers
-  drive_controller
   dig_control
+  waypoint_control
   path_planner
   occupancy_grid
   utilities

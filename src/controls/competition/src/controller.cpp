@@ -8,7 +8,7 @@ Controller::Controller(ros::NodeHandle *nh, ros::Rate *rate, BezierSegment *path
   dt(rate->expectedCycleTime().toSec()), visuals(nh, path)
 {
   joy_subscriber = nh->subscribe("joy", 1, &Controller::joyCallback, this);
-  drive_client.setControlState(DriveControlState::manual);
+  waypoint_client.setControlState(WaypointControlState::manual);
   dig_client.setControlState(DigControlState::manual);
   visuals.followRobot(true);
 }
@@ -66,8 +66,8 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     {
       ROS_INFO("[Controller::joyCallback]: %s to %s",
                to_string(dig_client.getControlState()).c_str(),
-               to_string(DriveControlState::new_goal).c_str());
-      drive_client.setControlState(DriveControlState::new_goal, *path); // TODO something a little cleaner
+               to_string(WaypointControlState::new_goal).c_str());
+      waypoint_client.setControlState(WaypointControlState::new_goal, *path); // TODO something a little cleaner
       visuals.followRobot(false);
     }
     else if (joy.get(Joy::FOLLOW_ROBOT))
@@ -97,9 +97,9 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     {
       dig_client.setControlState(DigControlState::manual);
     }
-    if (drive_client.getControlState() != DriveControlState::manual)
+    if (waypoint_client.getControlState() != WaypointControlState::manual)
     {
-      drive_client.setControlState(DriveControlState::manual);
+      waypoint_client.setControlState(WaypointControlState::manual);
     }
   }
 }

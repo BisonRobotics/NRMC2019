@@ -45,8 +45,8 @@ generate_messages(DEPENDENCIES std_msgs actionlib_msgs geometry_msgs navigation_
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES waypoint_control_client waypoint_control_states
-  CATKIN_DEPENDS roscpp std_msgs navigation_msgs
+  LIBRARIES waypoint_control_client waypoint_control_states teleop_interface
+  CATKIN_DEPENDS roscpp std_msgs navigation_msgs vesc_access
 )
 
 ###########
