@@ -2,18 +2,28 @@
 
 using namespace competition;
 
+Joy::Joy()
+{}
+
+Joy::Joy(const sensor_msgs::JoyConstPtr &joy)
+{
+  this->header = joy->header;
+  this->buttons = joy->buttons;
+  this->axes = joy->axes;
+}
+
 bool Joy::get(Button button)
 {
   switch(button)
   {
-    case pl:
-      return get(py) < 0.0;
-    case pr:
-      return get(py) > 0.0;
-    case pu:
-      return get(px) > 0.0;
-    case pd:
-      return get(px) < 0.0;
+    case PL:
+      return get(PY) < 0.0;
+    case PR:
+      return get(PY) > 0.0;
+    case PU:
+      return get(PX) > 0.0;
+    case PD:
+      return get(PX) < 0.0;
     default:
       return this->buttons[button] == 1;
   }

@@ -12,15 +12,19 @@ namespace competition
   class Controller
   {
   public:
-    Controller(ros::NodeHandle *nh);
+    Controller(ros::NodeHandle *nh, ros::Rate *rate);
 
+    void update();
+    void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
 
   private:
     drive_controller::DriveControlClient drive_client;
     dig_control::DigControlClient dig_client;
     Joy joy;
 
+    double dt;
     ros::NodeHandle *nh;
+    ros::Rate *rate;
     ros::Subscriber joy_subscriber;
   };
 }

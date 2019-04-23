@@ -14,8 +14,10 @@ Visuals::Visuals(ros::NodeHandle *nh) :
   path.p2.x = 3.0; path.p2.y = 3.0; path.p2.z = height / 2;
   path.p3.x = 4.0; path.p3.y = 4.0; path.p3.z = height / 2;
 
+  marker_pub = nh->advertise<visualization_msgs::MarkerArray>("path_visual", 1);
   path_visual = createPathVisual(path, size);
   createControlMarkers(&marker_server);
+
 }
 
 void Visuals::update()

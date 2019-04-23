@@ -47,6 +47,7 @@ generate_messages(DEPENDENCIES std_msgs actionlib_msgs geometry_msgs navigation_
 
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES drive_controller drive_control_client
   CATKIN_DEPENDS driver_access roscpp std_msgs navigation_msgs localization cv_bridge
 )
 

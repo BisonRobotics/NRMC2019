@@ -8,34 +8,43 @@ namespace competition
   class Joy : public sensor_msgs::Joy
   {
   public:
+    Joy(); // Implicitly calls default constructor of parent class
+    Joy(const sensor_msgs::JoyConstPtr &joy);
+
     enum Button // Twelve actual buttons + 4 axis buttons
     {
-      x =   0, // x button
-      a =   1, // a button
-      b =   2, // b button
-      y =   3, // y button
-      lb =  4, // Left bumper
-      rb =  5, // Right bumper
-      lt =  6, // Left trigger
-      rt =  7, // Right trigger
-      bk =  8, // Back button
-      st =  9, // Start button
-      ls = 10, // Left stick press
-      lr = 11, // Right stick press
-      pl = 12, // Pad left press
-      pr = 13, // Pad right press
-      pu = 14, // Pad up press
-      pd = 15  // Pad down press
+      X =   0, // x button
+      A =   1, // a button
+      B =   2, // b button
+      Y =   3, // y button
+      LB =  4, // Left bumper
+      RB =  5, // Right bumper
+      LT =  6, // Left trigger
+      RT =  7, // Right trigger
+      BK =  8, // Back button
+      ST =  9, // Start button
+      LS = 10, // Left stick press
+      LR = 11, // Right stick press
+      PL = 12, // Pad left press
+      PR = 13, // Pad right press
+      PU = 14, // Pad up press
+      PD = 15  // Pad down press
     };
 
     enum Axis // Six axis
     {
-      ly = 0, // Left stick y-axis
-      lx = 1, // Left stick x-axis
-      ry = 2, // Right stick y-axis
-      rx = 3, // Right stick x-axis
-      px = 4, // Pad x-axis
-      py = 5  // Pad y-axis
+      LY = 0, // Left stick y-axis
+      LX = 1, // Left stick x-axis
+      RY = 2, // Right stick y-axis
+      RX = 3, // Right stick x-axis
+      PX = 4, // Pad x-axis
+      PY = 5  // Pad y-axis
+    };
+
+    enum CompetitionMappings
+    {
+      MANUAL = LB,
+      AUTONOMY = RB
     };
 
     bool get(Button button);
