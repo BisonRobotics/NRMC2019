@@ -1,4 +1,5 @@
 #include <ultra_localizer/ultra_localizer.h>
+#include <cmath>
 
 UltraLocalizer::UltraLocalizer(LocalizerInterface::StateVector gains,
                LocalizerInterface::StateVector initial_est)
@@ -6,7 +7,11 @@ UltraLocalizer::UltraLocalizer(LocalizerInterface::StateVector gains,
 {
 }
 
-
+double angleDiff(double angle1, double angle2)
+{
+  double diff = std::atan2(std::sin(angle1 - angle2), std::cos(angle1 - angle2));
+  return diff;
+}
 
 
 LocalizerInterface::StateVector UltraLocalizer::getStateVector()
@@ -46,7 +51,7 @@ LocalizerInterface::StateVector UltraLocalizer::diff(LocalizerInterface::StateVe
   LocalizerInterface::StateVector ret;
   ret.alpha = lhs.alpha - rhs.alpha;
   ret.omega = lhs.omega - rhs.omega;
-  ret.theta = lhs.theta - rhs.theta;
+  ret.theta = angleDiff(lhs.theta, rhs.theta);
 
   ret.x_accel = lhs.x_accel - rhs.x_accel;
   ret.y_accel = lhs.y_accel - rhs.y_accel;
@@ -82,6 +87,7 @@ LocalizerInterface::StateVector UltraLocalizer::sum(LocalizerInterface::StateVec
   ret.alpha = lhs.alpha + rhs.alpha;
   ret.omega = lhs.omega + rhs.omega;
   ret.theta = lhs.theta + rhs.theta;
+  ret.theta = angleDiff(ret.theta, 0);
 
   ret.x_accel = lhs.x_accel + rhs.x_accel;
   ret.y_accel = lhs.y_accel + rhs.y_accel;
