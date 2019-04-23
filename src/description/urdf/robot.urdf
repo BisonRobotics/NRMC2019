@@ -87,7 +87,7 @@
     </joint>
 
     <xacro:macro name="wheel" params="x_name y_name rot r_z y_dir xdist color ">
-        <link name="${x_name}_${y_name}_wheel_link">
+        <link name="${x_name}_${y_name}_wheel">
             <visual>
                 <geometry>
                     <mesh filename="package://description/meshes/wheel.stl" />
@@ -97,9 +97,9 @@
             </visual>
         </link>
 
-        <joint name="${x_name}_${y_name}_wheel" type="${drivetrain_joint_type}">
+        <joint name="${x_name}_${y_name}_wheel_joint" type="${drivetrain_joint_type}">
             <parent link="frame"/>
-            <child link="${x_name}_${y_name}_wheel_link"/>
+            <child link="${x_name}_${y_name}_wheel"/>
             <origin xyz="${xdist} ${y_dir*0.257109468} -0.5055752" />
             <axis xyz="0 1 0"/>
             <limit effort="1000.0" lower="-1e9" upper="1e9" velocity="1000.0"/>
