@@ -19,21 +19,21 @@ class SuperLocalizer : public LocalizerInterface::LocalizerInterface_c
 public:
   SuperLocalizer(double axleLen, double xi, double yi, double thi, iVescAccess *frontLeftVesc,
                  iVescAccess *frontRightVesc, iVescAccess *backRightVesc, iVescAccess *backLeftVesc,
-                 ImuSensorInterface *centerIMU, PosSensorInterface *posSensor, LocalizerInterface::stateVector gains);
+                 ImuSensorInterface *centerIMU, PosSensorInterface *posSensor, LocalizerInterface::StateVector gains);
   SuperLocalizer(double axleLen, double xi, double yi, double thi, iVescAccess *frontLeftVesc,
                  iVescAccess *frontRightVesc, iVescAccess *backRightVesc, iVescAccess *backLeftVesc,
-                 PosSensorInterface *posSensor, LocalizerInterface::stateVector gains);
+                 PosSensorInterface *posSensor, LocalizerInterface::StateVector gains);
   UpdateStatus updateStateVector(double dt);
   ~SuperLocalizer();
 
   // static constexpr Localizer::stateVector_s default_gains;
-  LocalizerInterface::stateVector getStateVector();
+  LocalizerInterface::StateVector getStateVector();
   uint8_t getNumSensors();
   bool getHaveImu();
   bool getHavePosition();
-  LocalizerInterface::stateVector getResidual();
-  LocalizerInterface::stateVector getMeasured();
-  LocalizerInterface::stateVector getGainVector();
+  LocalizerInterface::StateVector getResidual();
+  LocalizerInterface::StateVector getMeasured();
+  LocalizerInterface::StateVector getGainVector();
   bool getIsDataGood(void);
 
 private:
@@ -49,20 +49,20 @@ private:
   bool have_imu;
   bool have_pos;
   // LocalizerInterface::stateVector initState ();
-  LocalizerInterface::stateVector residual;
-  LocalizerInterface::stateVector measured;
-  LocalizerInterface::stateVector gainVector;
+  LocalizerInterface::StateVector residual;
+  LocalizerInterface::StateVector measured;
+  LocalizerInterface::StateVector gainVector;
   static constexpr unsigned int position_sensor_index = 0;
   static constexpr unsigned int imu_sensor_index =1;
-  LocalizerInterface::stateVector state_vector;
+  LocalizerInterface::StateVector state_vector;
 
-  LocalizerInterface::stateVector initState(double xi, double yi, double theta);
+  LocalizerInterface::StateVector initState(double xi, double yi, double theta);
 };
 
 // I couldn't figure out how to make this a static class member. I tried quite a few things...
 // apparently, the declaration is supposed to go in this header and an actual definition in the
 //.cpp file, but I couldn't find the right way to do that... so here it is instead.
-static constexpr LocalizerInterface::stateVector SuperLocalizer_default_gains = {.x_pos = XRESGAIN,
+static constexpr LocalizerInterface::StateVector SuperLocalizer_default_gains = {.x_pos = XRESGAIN,
                                                                                  .y_pos = YRESGAIN,
                                                                                  .theta = THETARESGAIN,
                                                                                  .x_vel = DXRESGAIN,

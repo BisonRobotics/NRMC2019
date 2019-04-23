@@ -100,7 +100,7 @@ void Stepper::requestState()
 State Stepper::pollState()
 {
   requestState();
-  while(true)
+  for(int tries = 0; tries < 10; tries++) // Try for one second and then quite
   {
     if (messagesAvailable())
     {
@@ -120,6 +120,7 @@ State Stepper::pollState()
     }
     usleep(1000);
   }
+  throw std::runtime_error("Unable to poll stepper state");
 }
 
 void Stepper::findZero()
@@ -177,4 +178,6 @@ uint Stepper::getSeq()
   return seq;
 }
 
-State::State(double position, double velocity) : position(position), velocity(velocity){};
+State::State(double position, double velocity) : position(position), velocity(velocity){}
+
+State::State() : position(0.0), velocity(0.0) {};

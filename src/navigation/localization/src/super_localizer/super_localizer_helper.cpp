@@ -1,9 +1,9 @@
 #include <super_localizer/super_localizer_helper.h>
 namespace LocalizerInterface
 {
-LocalizerInterface::stateVector diff(LocalizerInterface::stateVector lhs, LocalizerInterface::stateVector rhs)
+LocalizerInterface::StateVector diff(LocalizerInterface::StateVector lhs, LocalizerInterface::StateVector rhs)
 {
-  LocalizerInterface::stateVector ret;
+  LocalizerInterface::StateVector ret;
   ret.alpha = lhs.alpha - rhs.alpha;
   ret.omega = lhs.omega - rhs.omega;
   ret.theta = lhs.theta - rhs.theta;
@@ -18,9 +18,9 @@ LocalizerInterface::stateVector diff(LocalizerInterface::stateVector lhs, Locali
   return ret;
 }
 
-LocalizerInterface::stateVector multiply(LocalizerInterface::stateVector lhs, LocalizerInterface::stateVector rhs)
+LocalizerInterface::StateVector multiply(LocalizerInterface::StateVector lhs, LocalizerInterface::StateVector rhs)
 {
-  LocalizerInterface::stateVector ret;
+  LocalizerInterface::StateVector ret;
   ret.alpha = lhs.alpha * rhs.alpha;
   ret.omega = lhs.omega * rhs.omega;
   ret.theta = lhs.theta * rhs.theta;
@@ -34,11 +34,11 @@ LocalizerInterface::stateVector multiply(LocalizerInterface::stateVector lhs, Lo
   return ret;
 }
 
-LocalizerInterface::stateVector addFromModel(LocalizerInterface::stateVector lhs, LocalizerInterface::stateVector rhs,
+LocalizerInterface::StateVector addFromModel(LocalizerInterface::StateVector lhs, LocalizerInterface::StateVector rhs,
                                              double dt, bool imu)
 {
   // add together current estimate (lhs) and information from dead reck (rhs)
-  LocalizerInterface::stateVector ret;
+  LocalizerInterface::StateVector ret;
   ret.x_pos = lhs.x_pos + rhs.x_vel * dt;  // integrate velocities from dead reck and add to current estimate
   ret.y_pos = lhs.y_pos + rhs.y_vel * dt;
   ret.theta = lhs.theta + rhs.omega * dt;
@@ -51,9 +51,9 @@ LocalizerInterface::stateVector addFromModel(LocalizerInterface::stateVector lhs
   return ret;
 }
 
-LocalizerInterface::stateVector initState(double xi, double yi, double theta)
+LocalizerInterface::StateVector initState(double xi, double yi, double theta)
 {
-  LocalizerInterface::stateVector ret;
+  LocalizerInterface::StateVector ret;
   ret.x_pos = xi;
   ret.y_pos = yi;
   ret.theta = theta;

@@ -1,6 +1,7 @@
 Header header
-int32 central_position
 StateString state
-Duty duty
+DriveValues duty
+DriveValues current
+DrivePositions position
 State state_i
 

@@ -4,16 +4,18 @@
 
 using namespace dig_control;
 
-bool dig_safety, change_dig_state;
+bool dig_safety, change_dig_state, change_dump_state;
 DigControlClient *client;
 
 void callback(const sensor_msgs::Joy::ConstPtr &joy)
 {
   bool rb = joy->buttons[5] == 1; // Dig safety
+  bool bt = joy->buttons[8] == 1; // Start automatic dump
   bool st = joy->buttons[9] == 1; // Start automatic dig
 
   dig_safety = rb;
   change_dig_state = st; // Maintain automatic digging until safety is released
+  change_dump_state = bt;
 
   if (dig_safety)
   {
@@ -24,7 +26,6 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
       {
         case ControlState::dig:
         {
-
           client->setControlState(ControlState::finish_dig);
           break;
         }
@@ -35,10 +36,18 @@ void callback(const sensor_msgs::Joy::ConstPtr &joy)
         }
       }
     }
+    else if (change_dump_state)
+    {
+      ROS_INFO("[callback] %s", to_string(client->getControlState()).c_str());
+      client->setControlState(ControlState::dump);
+    }
   }
   else
   {
-    client->setControlState(ControlState::manual);
+    if (client->getControlState() != ControlState::manual)
+    {
+      client->setControlState(ControlState::manual);
+    }
   }
 
   //ROS_INFO("[teleop] Dv = %i,L = %4.2f, R = %4.2f",
@@ -52,7 +61,7 @@ int main(int argc, char **argv)
 {
   dig_safety = false;
 
-  ros::init(argc, argv, "dig_teleop");
+  ros::init(argc, argv, "dig_control_client");
   ros::NodeHandle nh;
   ros::Subscriber joy_sub = nh.subscribe("joy", 2, callback);
   client = new DigControlClient;

@@ -1,5 +1,4 @@
 #include <teleop_interface/teleop_interface.h>
-#include <wheel_params/wheel_params.h>
 #include <boost/algorithm/clamp.hpp>
 
 
@@ -15,19 +14,6 @@ TeleopInterface::TeleopInterface(Mode mode, float max_value, iVescAccess *fl, iV
   stopMotors();
   setMode(mode);
   setMax(max_value);
-  this->internally_alloc = false;
-}
-
-TeleopInterface::TeleopInterface(Mode mode, float velocity)
-{
-  this->fl = new VescAccess(front_left_param);
-  this->fr = new VescAccess(front_right_param);
-  this->br = new VescAccess(back_right_param);
-  this->bl = new VescAccess(back_left_param);
-  stopMotors();
-  setMode(mode);
-  setMax(velocity);
-  this->internally_alloc = true;
 }
 
 void TeleopInterface::setMax(float max_value)
@@ -127,15 +113,4 @@ void TeleopInterface::update(float left, float right)
   bl->getTorque();
   br->getTorque();
   fr->getTorque();
-}
-
-TeleopInterface::~TeleopInterface()
-{
-  if (internally_alloc)
-  {
-    delete (VescAccess*)fl;
-    delete (VescAccess*)fr;
-    delete (VescAccess*)bl;
-    delete (VescAccess*)br;
-  }
 }

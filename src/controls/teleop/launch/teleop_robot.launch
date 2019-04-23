@@ -1,4 +1,0 @@
-<launch>
-    <node pkg="teleop" type="teleop" name="teleop"/>
-    <!--<include file="$(find dig_control)/launch/dig_teleop.launch"/>-->
-</launch>

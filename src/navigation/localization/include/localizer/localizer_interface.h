@@ -18,12 +18,12 @@ typedef struct stateVector_s
   double y_accel;
   double alpha;
 
-} stateVector;
+} StateVector;
 
 class LocalizerInterface_c
 {
 public:
-  virtual stateVector getStateVector() = 0;
+  virtual StateVector getStateVector() = 0;
   enum class UpdateStatus
   {
     UPDATE_FAILED_SENSOR_ERROR,

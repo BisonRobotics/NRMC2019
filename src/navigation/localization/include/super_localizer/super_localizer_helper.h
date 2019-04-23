@@ -1,9 +1,9 @@
 #include <localizer/localizer.h>
 namespace LocalizerInterface
 {
-LocalizerInterface::stateVector diff(LocalizerInterface::stateVector lhs, LocalizerInterface::stateVector rhs);
-LocalizerInterface::stateVector multiply(LocalizerInterface::stateVector lhs, LocalizerInterface::stateVector rhs);
-LocalizerInterface::stateVector addFromModel(LocalizerInterface::stateVector lhs, LocalizerInterface::stateVector rhs,
+LocalizerInterface::StateVector diff(LocalizerInterface::StateVector lhs, LocalizerInterface::StateVector rhs);
+LocalizerInterface::StateVector multiply(LocalizerInterface::StateVector lhs, LocalizerInterface::StateVector rhs);
+LocalizerInterface::StateVector addFromModel(LocalizerInterface::StateVector lhs, LocalizerInterface::StateVector rhs,
                                              double dt, bool imu);
-LocalizerInterface::stateVector initState(double xi, double yi, double theta);
+LocalizerInterface::StateVector initState(double xi, double yi, double theta);
 }

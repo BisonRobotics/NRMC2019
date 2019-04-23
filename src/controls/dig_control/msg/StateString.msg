@@ -1,5 +1,5 @@
 string control
 string dig
-string central_drive
+string central
 string backhoe
 string bucket

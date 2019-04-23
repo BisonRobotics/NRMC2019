@@ -10,14 +10,22 @@ using namespace dig_control;
 // TODO add initialize mode
 
 DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_actuator,
-                             iVescAccess *bucket_actuator, iVescAccess *vibrator)
+                             iVescAccess *bucket_actuator, iVescAccess *vibrator, bool floor_test)
 {
   this->central_drive = central_drive;
   this->backhoe = backhoe_actuator;
   this->bucket = bucket_actuator;
   this->vibrator = vibrator;
 
+  central_current = 0.0f;
+  backhoe_current = 0.0f;
+  bucket_current = 0.0f;
+  vibrator_current = 0.0f;
+  bucket_position = 10.0f;
+  last_bucket_state_change = ros::Time::now();
+
   internally_allocated = false;
+  this->floor_test = floor_test;
 
   backhoe_stuck_count = 0;
   bucket_state = BucketState::down;
@@ -30,9 +38,9 @@ DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_
   }
 }
 
-DigController::DigController() :
+DigController::DigController(bool floor_test) :
     DigController(new VescAccess(central_drive_param),   new VescAccess(backhoe_actuator_param),
-                  new VescAccess(bucket_actuator_param), new VescAccess(vibrator_param))
+                  new VescAccess(bucket_actuator_param), new VescAccess(vibrator_param), floor_test)
 {
   internally_allocated = true;
 }
@@ -73,12 +81,18 @@ void DigController::updateCentralDriveState()
   bool top_limit = (limit_switch_state == nsVescAccess::limitSwitchState::topOfMotion);
   bool bottom_limit = (limit_switch_state == nsVescAccess::limitSwitchState::bottomOfMotion);
   central_drive_position = central_drive->getADC();
+  float current = central_drive->getCurrent();
+  if (std::abs(current) < 100.0f)
+  {
+    lowPassFilter<float>(central_current, current, FILTER_CONSTANT);
+  }
 
   if (top_limit || central_drive_position >= CentralDriveAngles::top_limit)
   {
     central_drive_state = CentralDriveState::at_top_limit;
   }
-  else if (bottom_limit || central_drive_position <= CentralDriveAngles::bottom_limit)
+  else if (bottom_limit || central_drive_position <= CentralDriveAngles::bottom_limit ||
+          (floor_test   && central_drive_position <= CentralDriveAngles::floor_limit))
   {
     central_drive_state = CentralDriveState::at_bottom_limit;
   }
@@ -121,6 +135,11 @@ void DigController::updateBackhoeState()
   bool top_limit = (limit_switch_state == nsVescAccess::limitSwitchState::topOfMotion);
   bool bottom_limit = (limit_switch_state == nsVescAccess::limitSwitchState::bottomOfMotion);
   double velocity = backhoe->getLinearVelocity();
+  double current = backhoe->getCurrent();
+  if (std::abs(current) < 100.0f)
+  {
+    lowPassFilter<float>(backhoe_current, current, FILTER_CONSTANT);
+  }
 
   if (top_limit)
   {
@@ -149,20 +168,42 @@ void DigController::updateBackhoeState()
 
 void DigController::updateBucketState()
 {
-  float torque = std::abs(bucket->getTorque());
+  float current = bucket->getCurrent();
+  if (std::abs(current) < 100.0f)
+  {
+    lowPassFilter<float>(bucket_current, current, 0.03);
+  }
+  bool debounce = ros::Time::now() - last_bucket_state_change >= ros::Duration(1.0f);
   if (abs(bucket_duty) > 0.001f)
   {
-    if (bucket_duty > 0.0f && torque < 0.001f)
+    if (std::abs(bucket_current) >= 0.4)
     {
-      bucket_state = BucketState::up;
+      if (bucket_state != BucketState::traveling && debounce)
+      {
+        last_bucket_state_change = ros::Time::now();
+        bucket_state = BucketState::traveling;
+      }
+      // 14 seconds to travel from 10 inches to 16 inches
+      float progress = (float)((ros::Time::now() - last_bucket_state_change).toSec() / 14.0 * 6.0);
+      bucket_position = (bucket_duty >= 0.0f) ? progress + 10.0f : 16.0f - progress;
     }
-    else if (bucket_duty < 0.0f && torque < 0.001f)
+    else if (bucket_duty > 0.0f && bucket_state != BucketState::down)
     {
-      bucket_state = BucketState::down;
+      if (bucket_state != BucketState::up && debounce)
+      {
+        last_bucket_state_change = ros::Time::now();
+        bucket_state = BucketState::up;
+      }
+      bucket_position = 16.0f;
     }
-    else
+    else if (bucket_duty < 0.0f && bucket_state != BucketState::up)
     {
-      bucket_state = BucketState::traveling;
+      if (bucket_state != BucketState::down && debounce)
+      {
+        last_bucket_state_change = ros::Time::now();
+        bucket_state = BucketState::down;
+      }
+      bucket_position = 10.0f;
     }
   }
   // If duty is zero, assume that the bucket remains in same position
@@ -175,6 +216,13 @@ void DigController::update()
   updateCentralDriveState();
   updateBackhoeState();
   updateBucketState();
+  {
+    float current = vibrator->getCurrent();
+    if (std::abs(current) < 100.0f)
+    {
+      lowPassFilter<float>(vibrator_current, current, FILTER_CONSTANT);
+    }
+  }
 
   // Handle state and goal
   switch (goal_state)
@@ -194,6 +242,36 @@ void DigController::update()
     case ControlState::manual:
     {
       ROS_DEBUG("[manual] Manually running dig controller");
+      switch (central_drive_state)
+      {
+        case CentralDriveState::at_bottom_limit:
+        {
+          if (central_drive_duty < 0.0f)
+          {
+            setCentralDriveDuty(0.0f);
+          }
+          break;
+        }
+        case CentralDriveState::at_top_limit:
+        {
+          if (central_drive_duty > 0.0f)
+          {
+            setCentralDriveDuty(0.0);
+          }
+          break;
+        }
+        case CentralDriveState::digging:
+        case CentralDriveState::near_digging:
+        case CentralDriveState::flap_transition_down:
+        case CentralDriveState::near_dump_point:
+        case CentralDriveState::at_dump_point:
+        case CentralDriveState::flap_transition_up:
+        {
+          // Do nothing
+          break;
+        }
+
+      }
       // Keep doing whatever is currently set,
       break;
     }
@@ -230,9 +308,17 @@ void DigController::update()
             {
               if (central_drive_position <= CentralDriveAngles::stow_position)
               {
-                goal_state = ControlState::ready;
-                dig_state = DigState::dig_transition;
-                stop();
+                setCentralDriveDuty(0.0f);
+                if (getBackhoePosition() > 100)
+                {
+                  goal_state = ControlState::ready;
+                  dig_state = DigState::dig_transition;
+
+                }
+                else
+                {
+                  setBackhoeDuty(BackhoeDuty::slow);
+                }
               }
               else
               {
@@ -261,13 +347,6 @@ void DigController::update()
           switch (central_drive_state)
           {
             case CentralDriveState::at_bottom_limit:
-            {
-              ROS_ERROR("[dig][dig_transition] At bottom limit switch during dig transition");
-              // Shouldn't ever be near the bottom limit switches during this transition
-              goal_state = ControlState::error;
-              stop();
-              break;
-            }
             case CentralDriveState::digging:
             {
               ROS_DEBUG("[dig][dig_transition] Start digging");
@@ -625,13 +704,13 @@ void DigController::update()
         case BucketState::traveling:
         {
           ROS_DEBUG("[dump][traveling] Moving bucket up");
-          setBucketDuty(BucketDuty::normal);
+          setBucketDuty(BucketDuty::fast);
           break;
         }
         case BucketState::stuck:
         {
           ROS_ERROR("[dump][stuck] Bucket is stuck, keep trying");
-          setBucketDuty(BucketDuty::normal);
+          setBucketDuty(BucketDuty::fast);
           break;
         }
       }
@@ -648,7 +727,7 @@ void DigController::update()
         case BucketState::traveling:
         {
           ROS_DEBUG("[dump][traveling] Finishing dump");
-          setBucketDuty(-BucketDuty::normal);
+          setBucketDuty(-BucketDuty::fast);
           break;
         }
         case BucketState::down:
@@ -661,7 +740,7 @@ void DigController::update()
         case BucketState::stuck:
         {
           ROS_ERROR("[dump][stuck] Bucket is stuck, keep trying");
-          setBucketDuty(-BucketDuty::normal);
+          setBucketDuty(-BucketDuty::fast);
           break;
         }
       }
@@ -705,7 +784,19 @@ DigState DigController::getDigState() const
 
 void DigController::setCentralDriveDuty(float value)
 {
-  central_drive_duty = clamp(value, -MAX_CENTRAL_DRIVE_DUTY, MAX_CENTRAL_DRIVE_DUTY);
+  // Enforce limits
+  if (central_drive_state == CentralDriveState::at_bottom_limit)
+  {
+    central_drive_duty = clamp(value, 0.0f, MAX_CENTRAL_DRIVE_DUTY);
+  }
+  else if (central_drive_state == CentralDriveState::at_top_limit)
+  {
+    central_drive_duty = clamp(value, -MAX_CENTRAL_DRIVE_DUTY, 0.0f);
+  }
+  else
+  {
+    central_drive_duty = clamp(value, -MAX_CENTRAL_DRIVE_DUTY, MAX_CENTRAL_DRIVE_DUTY);
+  }
   central_drive->setCustom(central_drive_duty);
 }
 
@@ -747,12 +838,40 @@ float DigController::getVibratorDuty() const
   return vibrator_duty;
 }
 
+float DigController::getCentralDriveCurrent() const
+{
+  return central_current;
+}
+
+float DigController::getBackhoeCurrent() const
+{
+  return backhoe_current;
+}
+
+float DigController::getBucketCurrent() const
+{
+  return bucket_current;
+}
+
+float DigController::getVibratorCurrent() const
+{
+  return vibrator_current;
+}
+
 int DigController::getCentralDrivePosition() const
 {
   return central_drive_position;
 }
 
+int DigController::getBackhoePosition() const
+{
+  return backhoe->getTachometer();
+}
 
+float DigController::getBucketPosition() const
+{
+  return bucket_position;
+}
 
 std::string DigController::getCentralDriveStateString() const // Max 20 characters
 {
@@ -778,6 +897,8 @@ std::string DigController::getBucketStateString() const
 {
   return to_string(bucket_state);
 }
+
+
 
 std::string dig_control::to_string(ControlState state)
 {

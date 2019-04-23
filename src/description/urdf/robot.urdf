@@ -41,21 +41,7 @@
         <xacro:property name="drivetrain_joint_type" value="fixed" />
     </xacro:if>
 
-
-
-    <!-- Define apriltag locations -->
-    <!--<link name="tag0" />
-    <link name="tag1" />
-    <link name="tag4" />
-
-
-    <joint name="map_to_tag0" type="fixed">
-        <origin xyz="0 -0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
-        <parent link="map" />
-        <child link = "tag0" />
-    </joint>
-
-    <joint name="map_to_tag1" type="fixed">
+    <!--<joint name="map_to_tag1" type="fixed">
         <origin xyz="0 0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
         <parent link="map" />
         <child link = "tag1" />
@@ -101,7 +87,7 @@
     </joint>
 
     <xacro:macro name="wheel" params="x_name y_name rot r_z y_dir xdist color ">
-        <link name="${x_name}_${y_name}_wheel">
+        <link name="${x_name}_${y_name}_wheel_link">
             <visual>
                 <geometry>
                     <mesh filename="package://description/meshes/wheel.stl" />
@@ -111,9 +97,9 @@
             </visual>
         </link>
 
-        <joint name="${x_name}_${y_name}_wheel_joint" type="${drivetrain_joint_type}">
+        <joint name="${x_name}_${y_name}_wheel" type="${drivetrain_joint_type}">
             <parent link="frame"/>
-            <child link="${x_name}_${y_name}_wheel"/>
+            <child link="${x_name}_${y_name}_wheel_link"/>
             <origin xyz="${xdist} ${y_dir*0.257109468} -0.5055752" />
             <axis xyz="0 1 0"/>
             <limit effort="1000.0" lower="-1e9" upper="1e9" velocity="1000.0"/>
@@ -125,21 +111,23 @@
     <xacro:wheel x_name="back"  y_name="right" rot="${pi/2}"  r_z="1.575" y_dir="-1.15" xdist="0.1655676" color="gold"  />
 
 
-    <!--<link name="central_drive">
-        <visual>
+    <link name="central_drive" />
+    <!--<visual>
             <geometry>
                 <mesh filename="package://description/meshes/central_drive.stl" />
             </geometry>
             <origin xyz="0.125 0.03 -0.375" rpy="0 0 1.57" />
             <material name="black" />
         </visual>
-    </link>
+    </link>-->
 
-    <joint name="frame_to_central_drive" type="fixed">
+    <joint name="frame_to_central_drive" type="${central_drive_joint_type}">
         <parent link="frame"/>
         <child link="central_drive"/>
         <origin xyz="0 0 0" rpy="0 0 0" />
-    </joint>-->
+        <axis xyz="0 1 0"/>
+        <limit effort="1000.0" lower="-1e9" upper="1e9" velocity="1000.0"/>
+    </joint>
 
     <link name="computer_box">
         <visual>
@@ -202,7 +190,7 @@
     </link>
 
     <joint name="monoboom_to_bucket" type="${central_drive_joint_type}">
-        <origin xyz="0.55 0 0" rpy="0 0 3.14" />
+        <origin xyz="0.55 0 0" rpy="0 0 ${20*pi/180}" />
         <axis xyz="0 0 1" />
         <parent link="backhoe_monoboom" />
         <child link="bucket_backhoe" />
@@ -290,7 +278,7 @@
             <geometry>
                 <mesh filename="package://description/meshes/tracker_camera.stl" />
             </geometry>
-            <origin xyz="0 0 0.01" rpy="0 0 0" />
+            <origin xyz="0 0 0.01" rpy="0 0 ${pi/2}" />
             <material name="black" />
         </visual>
     </link>
@@ -348,7 +336,6 @@
     <!-- Add a few static transforms for testing -->
     <xacro:arg name="test_urdf" default="false"/>
     <xacro:if value="$(arg test_urdf)">
-        <link name="map" />
         <joint name="map_to_base_link" type="fixed">
             <parent link="map"/>
             <child link="base_link"/>

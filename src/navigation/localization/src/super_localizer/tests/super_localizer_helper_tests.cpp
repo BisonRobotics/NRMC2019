@@ -20,10 +20,10 @@ using ::testing::NiceMock;
 
 TEST(LocalizerHelperTests, CanSub)
 {
-  LocalizerInterface::stateVector v1 = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
-  LocalizerInterface::stateVector v2 = { 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 };
+  LocalizerInterface::StateVector v1 = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
+  LocalizerInterface::StateVector v2 = { 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 };
 
-  LocalizerInterface::stateVector v3 = LocalizerInterface::diff(v2, v1);
+  LocalizerInterface::StateVector v3 = LocalizerInterface::diff(v2, v1);
 
   EXPECT_NEAR(v3.x_pos, 1.0, .01);
   EXPECT_NEAR(v3.y_pos, 1.0, .01);
@@ -72,9 +72,9 @@ TEST(LocalizerHelperTests, CanAddFromModelWithIMU)
 */
 TEST(LocalizerHelperTests, CanMultiply)
 {
-  LocalizerInterface::stateVector v1 = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
-  LocalizerInterface::stateVector v2 = { 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 };
-  LocalizerInterface::stateVector v3 = LocalizerInterface::multiply(v2, v1);
+  LocalizerInterface::StateVector v1 = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
+  LocalizerInterface::StateVector v2 = { 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 };
+  LocalizerInterface::StateVector v3 = LocalizerInterface::multiply(v2, v1);
 
   EXPECT_NEAR(v3.x_pos, v2.x_pos * v1.x_pos, .01);
   EXPECT_NEAR(v3.y_pos, v2.y_pos * v1.y_pos, .01);

@@ -12,7 +12,7 @@ public:
   MeasurementManager();
   bool giveImu(ImuSensorInterface *IMU_in, double x_offset, double y_offset, double dead_zone);
   bool givePos(PosSensorInterface *posSensor_in);
-  LocalizerInterface::stateVector getMeasured(double dt);
+  LocalizerInterface::StateVector getMeasured(double dt);
 private:
   ImuSensorInterface *IMU;
   double x_off;
