@@ -70,41 +70,43 @@ bool DriveController::update(LocalizerInterface::StateVector sv, double dt)
 {
   if (p_paths > 0)
   {
-  double right_speed = .5*(front_right_wheel->getLinearVelocity() 
-                           + back_right_wheel->getLinearVelocity());
-  double left_speed  = .5*(front_left_wheel->getLinearVelocity()  
-                           + back_left_wheel->getLinearVelocity());
-  p_prev_UlUr.first = left_speed;
-  p_prev_UlUr.second = right_speed;
+    double right_speed = .5*(front_right_wheel->getLinearVelocity()
+                             + back_right_wheel->getLinearVelocity());
+    double left_speed  = .5*(front_left_wheel->getLinearVelocity()
+                             + back_left_wheel->getLinearVelocity());
+    p_prev_UlUr.first = left_speed;
+    p_prev_UlUr.second = right_speed;
 
-  double speed_gain =  .5;  /*DNFW*/
-  double set_speed  = 0.9*max_speed;  /*DNFW*/
-  double angle_gain = 2.5;  /*DNFW*/ 
-  double path_gain  = 5.3;  /*DNFW*/
-  
-  //find closest index and path error
+    double speed_gain =  .5;  /*DNFW*/
+    double set_speed  = 0.9*max_speed;  /*DNFW*/
+    double angle_gain = 2.5;  /*DNFW*/
+    double path_gain  = 5.3;  /*DNFW*/
+
+    //find closest index and path error
     p_last_closest_t = p_closest_t;
     std::pair<double, double> par_and_err = findCPP2019(sv.x_pos, sv.y_pos, p_x, p_y, p_theta, Gchopsize);
     p_closest_t = par_and_err.first;
     es.path_error = par_and_err.second;
     if (p_closest_t < p_last_closest_t)
-        {p_closest_t = p_last_closest_t;}
+    {
+      p_closest_t = p_last_closest_t;
+    }
 
     int index_for_t = p_closest_t*Gchopsize;
     if (index_for_t >= Gchopsize) //Done with path (got orthogonal position to end)
     {
-      index_for_t = Gchopsize -1;
+      index_for_t = Gchopsize - 1;
       p_paths -= 1;
       p_closest_t = 0;
       p_last_closest_t = 0;
     }
-    else 
+    else
     {
-      if (index_for_t < 0) 
+      if (index_for_t < 0)
       {
          index_for_t = 0;
       }
-    
+
       //interpolate point to take steering from slightly ahead
       double meters_to_jump = 0.0;//4.0*p_speed_cmd * dt;
       double jumped_meters =0;
@@ -115,26 +117,26 @@ bool DriveController::update(LocalizerInterface::StateVector sv, double dt)
       {
           jumped_meters = jumped_meters + p_lengths.at((int)(p_closest_t*Gchopsize) + t_jumps);
           t_jumps = t_jumps+1;
-      } 
+      }
       */
       double steering = p_omega.at((int)(index_for_t) + t_jumps);
       es.angle_error = angleDiff(sv.theta,p_theta.at((int)(index_for_t) + t_jumps));
       double spd_trac = std::min(std::max(max_speed - Axelsize/2.0 * std::abs(steering)* p_speed_cmd,0.05), set_speed);
       p_speed_cmd = p_speed_cmd - speed_gain*(p_speed_cmd - spd_trac)*dt;
- 
+
       p_steering_cmd = (p_forward_point ? 2.0 : 2.0)*angle_gain*es.angle_error;
       double path_err_comp = (p_forward_point ? 2.0 : -2.0)*path_gain*es.path_error;
       //Get wheel velocities
       std::pair<double, double> UlUr = speedSteeringControl(
-                                      p_speed_cmd, 
+                                      p_speed_cmd,
                                       steering - p_steering_cmd - path_err_comp,
                                       Axelsize, max_speed);
-                                       
+
       std::pair<double, double> UlUrIdeal = speedSteeringControl(
-                                      p_speed_cmd, 
+                                      p_speed_cmd,
                                       steering,
                                       Axelsize, max_speed);
-                                       
+
       ws.left_wheel_actual  = .5 * (front_left_wheel->getLinearVelocity() + back_left_wheel->getLinearVelocity());
       ws.right_wheel_actual = .5 * (front_right_wheel->getLinearVelocity() + back_right_wheel->getLinearVelocity());
 
@@ -161,14 +163,14 @@ bool DriveController::update(LocalizerInterface::StateVector sv, double dt)
         ws.right_wheel_command = -UlUr.first;
       }
       //Model calculations: what we predict will happen in the next frame.
-      //TODO: track disturbance on wheels, 
+      //TODO: track disturbance on wheels,
       //      add estimated disturbance to wheel velocities here.
       double m_dxyth[3];
       firstOrderModel(UlUr, sv.theta, sv.omega, dt, m_dxyth);
       double temp[3];
       firstOrderModel(p_prev_UlUr, p_prev_theta, p_prev_omega, dt, temp);
       double m_ddxyth[3];
-      for (int index=0;index<3;index++) 
+      for (int index=0;index<3;index++)
       {
          m_ddxyth[index] = (m_dxyth[index] - temp[index]);
       }
@@ -181,12 +183,12 @@ bool DriveController::update(LocalizerInterface::StateVector sv, double dt)
       delta.x_accel = 0;
       delta.y_accel = 0;
       delta.alpha = 0;
-      
+
       p_prev_theta = sv.theta;
       p_prev_omega = sv.omega;
     }
 
-  return true;
+    return true;
   }
   else 
   {
