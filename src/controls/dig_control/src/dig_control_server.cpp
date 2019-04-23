@@ -139,11 +139,11 @@ void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
       ROS_WARN("[teleop] Conflicting commands, x and y are both pressed, stopping motion");
       bucket_duty = 0.0;
     }
-    else if (joy.get(Joy::BUCKET_UP))
+    else if (joy.get(Joy::BUCKET_DOWN))
     {
       bucket_duty = -BucketDuty::fast;
     }
-    else if (joy.get(Joy::BUCKET_DOWN))
+    else if (joy.get(Joy::BUCKET_UP))
     {
       bucket_duty = BucketDuty::fast;
     }

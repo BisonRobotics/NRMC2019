@@ -40,7 +40,7 @@ namespace utilities
       VIBRATOR_OFF = LT,
       CENTRAL_DRIVE_UP = PU,
       CENTRAL_DRIVE_DOWN = PD,
-      // Autonomy state mappings
+      // Semi-autonomous state mappings
       AUTONOMY_SAFETY = RB,
       START_DIG = B,
       END_DIG = A,
