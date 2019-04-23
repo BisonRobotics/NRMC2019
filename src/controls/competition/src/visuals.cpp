@@ -21,11 +21,11 @@ Visuals::Visuals(ros::NodeHandle *nh) :
 void Visuals::update()
 {
   updatePathVisual(&path_visual, path, size);
-
 }
 
 void Visuals::update(tf2::Transform transform)
 {
+  ROS_WARN("Not implemented");
 }
 
 void Visuals::controlMarkerFeedback(const InteractiveMarkerFeedback::ConstPtr &feedback)
