@@ -32,9 +32,9 @@ int main (int argc, char **argv)
         
         ros::ServiceClient spawn_client = nh.serviceClient<vrep_msgs::SpawnRobot>("/vrep/spawn_robot");
         vrep_msgs::SpawnRobot spwn;
-        spwn.request.x     = 1;
-        spwn.request.y     = 0;
-        spwn.request.omega = 0;
+        spwn.request.x     = 3;// 1 for left box, 3 for right box
+        spwn.request.y     = 1;
+        spwn.request.omega = -1.6;
         
         bool spawnd = false;
         bool startd = false;
