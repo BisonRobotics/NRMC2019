@@ -241,7 +241,7 @@ void FrostyStateMachine::state5StartGoToHopper()
     segment_1.p1.x = 2;
     segment_1.p1.y = 4;
     segment_1.p2.x = 2;
-    segment_1.p2.y = 2; //Move this towards p3.y for a straighter entrance
+    segment_1.p2.y = 1; //Move this towards p3.y for a straighter entrance
     segment_1.p3.x = 1;
     segment_1.p3.y = 1;
     segment_1.path_cost = 0; //free
