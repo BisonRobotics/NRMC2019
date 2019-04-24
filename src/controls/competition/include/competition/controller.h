@@ -3,7 +3,7 @@
 
 #include <ros/ros.h>
 #include <utilities/joy.h>
-#include <competition/bezier_visuals.h>
+#include <competition/waypoint_visuals.h>
 #include <waypoint_control/waypoint_control_client.h>
 #include <dig_control/dig_control_client.h>
 
@@ -34,8 +34,9 @@ namespace competition
     waypoint_control::WaypointControlClient waypoint_client;
     dig_control::DigControlClient dig_client;
     Joy joy;
-    //Visuals visuals;
+    WaypointVisuals visuals;
     Waypoints waypoints;
+    bool reverse;
 
     double dt;
     ros::NodeHandle *nh;

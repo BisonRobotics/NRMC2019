@@ -1,11 +1,4 @@
 std_msgs/Header header
 geometry_msgs/Pose pose
-bool match_pose_orientation
-float64 direction
-float64 max_linear_velocity
-float64 min_linear_velocity
-float64 max_angular_velocity
-float64 min_angular_velocity
-float64 max_moving_angular_deviation
-float64 max_final_angular_deviation
-float64 max_final_linear_deviation
+bool match_orientation
+bool reverse

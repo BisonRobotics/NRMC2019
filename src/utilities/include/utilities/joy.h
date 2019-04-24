@@ -47,6 +47,7 @@ namespace utilities
       START_DUMP = Y,
       END_DUMP = X,
       START_PATH = ST,
+      CLEAR_WAYPOINTS = BK,
       FOLLOW_ROBOT = PL,
       UNFOLLOW_ROBOT = PR,
       FORWARD = PU,

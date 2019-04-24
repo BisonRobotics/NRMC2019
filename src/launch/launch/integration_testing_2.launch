@@ -1,4 +1,0 @@
-<launch>
-    <node name="waypoint_control_server" pkg="waypoint_control" type="waypoint_control_server" />
-    <node name="competition_controller" pkg="competition" type="controller_node" />
-</launch>
