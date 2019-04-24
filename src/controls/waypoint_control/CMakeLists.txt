@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 link_directories(/usr/src/gmock/build)
 set(GTEST_LIBRARIES gmock_main)
 
+find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 
 add_action_files(
@@ -51,6 +52,7 @@ catkin_package(
 ###########
 
 include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(${Eigen3_INCLUDE_DIRS})
 
 add_library(teleop_interface src/teleop_interface/teleop_interface.cpp)
 target_link_libraries(teleop_interface ${catkin_LIBRARIES})
@@ -61,7 +63,7 @@ target_link_libraries(waypoint_control_states ${catkin_LIBRARIES})
 
 add_library(waypoint_controller src/waypoint_control/waypoint_controller.cpp)
 add_dependencies(waypoint_controller ${waypoint_control_EXPORTED_TARGETS})
-target_link_libraries(waypoint_controller ${catkin_LIBRARIES})
+target_link_libraries(waypoint_controller waypoint_control_states ${catkin_LIBRARIES})
 
 add_library(waypoint_control_client src/waypoint_control/waypoint_control_client.cpp)
 add_dependencies(waypoint_control_client ${waypoint_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
@@ -91,4 +93,10 @@ endif()
 catkin_add_gtest(teleop_interface_tests src/teleop_interface/tests/teleop_interface_tests.cpp)
 if(TARGET teleop_interface_tests)
   target_link_libraries(teleop_interface_tests  teleop_interface ${catkin_LIBRARIES} gmock_main)
+endif()
+
+catkin_add_gtest(waypoint_control_tests src/waypoint_control/tests/waypoint_control_tests.cpp)
+if(TARGET waypoint_control_tests)
+  target_link_libraries(waypoint_control_tests waypoint_controller ${catkin_LIBRARIES} gmock_main)
+  add_dependencies(waypoint_control_tests ${waypoint_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
 endif()

@@ -7,10 +7,17 @@
 
 #include <utilities/filter.h>
 #include <waypoint_control/waypoint_control_states.h>
+#include <waypoint_control/waypoint_config.h>
 #include <tf2/LinearMath/Transform.h>
+#include <eigen3/Eigen/Geometry>
+
 
 namespace waypoint_control
 {
+  using Rotation2D = Eigen::Rotation2D<double>;
+
+  Rotation2D getAngularError(const tf2::Transform &transform, const Waypoint &waypoint);
+
   class WaypointController
   {
   public:
@@ -19,6 +26,7 @@ namespace waypoint_control
 
     void update(bool manual_safety, bool autonomy_safety,
                 tf2::Transform transform, double left, double right);
+    void updateControls(const tf2::Transform &transform);
     void setPoint(double left, double right);
     void setControlState(ControlState goal);
     void setControlState(ControlState goal, const Waypoints &waypoint);
@@ -26,11 +34,13 @@ namespace waypoint_control
     ControlState getControlState() const;
 
   private:
+    Config config;
     double max_velocity;
     iVescAccess *fl, *fr, *br, *bl;
     ControlState state;
     WaypointState waypoint_state;
     Waypoints waypoints;
+    Rotation2D angular_error;
     tf2::Transform last_transform;
   };
 
