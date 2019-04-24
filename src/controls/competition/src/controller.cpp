@@ -10,6 +10,7 @@ Controller::Controller(ros::NodeHandle *nh, ros::Rate *rate, const Waypoints &wa
   joy_subscriber = nh->subscribe("joy", 1, &Controller::joyCallback, this);
   waypoint_client.setControlState(WaypointControlState::manual);
   dig_client.setControlState(DigControlState::manual);
+  ROS_INFO("[Controller::Controller]: Online");
   //visuals.followRobot(true);
 }
 
@@ -93,10 +94,16 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
   {
     if (dig_client.getControlState() != DigControlState::manual)
     {
-      dig_client.setControlState(DigControlState::manual);
+      ROS_INFO("[Controller::joyCallback]: Dig client %s to %s",
+               to_string(dig_client.getControlState()).c_str(),
+               to_string(DigControlState::manual).c_str());
+       dig_client.setControlState(DigControlState::manual);
     }
     if (waypoint_client.getControlState() != WaypointControlState::manual)
     {
+      ROS_INFO("[Controller::joyCallback]: Waypoint client %s to %s",
+               to_string(waypoint_client.getControlState()).c_str(),
+               to_string(WaypointControlState::manual).c_str());
       waypoint_client.setControlState(WaypointControlState::manual);
     }
   }

@@ -114,10 +114,36 @@ void WaypointController::update(bool manual_safety, bool autonomy_safety,
 
 void WaypointController::setPoint(double left, double right)
 {
-  fl->setLinearVelocity((float)clamp(left,  -max_velocity, max_velocity));
-  bl->setLinearVelocity((float)clamp(left,  -max_velocity, max_velocity));
-  fr->setLinearVelocity((float)clamp(right, -max_velocity, max_velocity));
-  br->setLinearVelocity((float)clamp(right, -max_velocity, max_velocity));
+  if (state == ControlState::manual)
+  {
+    if (std::abs(left) > 0.001f)
+    {
+      fl->setLinearVelocity((float)clamp(left, -max_velocity, max_velocity));
+      bl->setLinearVelocity((float)clamp(left, -max_velocity, max_velocity));
+    }
+    else
+    {
+      fl->setTorque(0.0f);
+      bl->setTorque(0.0f);
+    }
+    if (std::abs(right) > 0.001f)
+    {
+      fr->setLinearVelocity((float)clamp(right, -max_velocity, max_velocity));
+      br->setLinearVelocity((float)clamp(right, -max_velocity, max_velocity));
+    }
+    else
+    {
+      fr->setTorque(0.0f);
+      br->setTorque(0.0f);
+    }
+  }
+  else
+  {
+    fl->setLinearVelocity((float)clamp(left, -max_velocity, max_velocity));
+    bl->setLinearVelocity((float)clamp(left, -max_velocity, max_velocity));
+    fr->setLinearVelocity((float)clamp(right, -max_velocity, max_velocity));
+    br->setLinearVelocity((float)clamp(right, -max_velocity, max_velocity));
+  }
 }
 
 void WaypointController::stop()

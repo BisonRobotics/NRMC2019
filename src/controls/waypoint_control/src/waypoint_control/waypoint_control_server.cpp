@@ -10,7 +10,7 @@ WaypointControlServer::WaypointControlServer(ros::NodeHandle *nh,
     iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl, double max_velocity, double dt) :
   nh(nh), tf_listener(tf_buffer), fl(fl), fr(fr), bl(bl), br(br), server(*nh, "action", false),
   controller(fl, fr, br, bl, max_velocity), debug(true), manual_safety(false), autonomy_safety(false),
-  dt(dt), teleop_left(0.0), teleop_right(0.0), seq(0)
+  dt(dt), teleop_left(0.0), teleop_right(0.0), seq(0), max_velocity(max_velocity)
 {
   joint_angles.header.stamp = ros::Time::now();
   joint_angles.header.seq = seq;
@@ -28,6 +28,7 @@ WaypointControlServer::WaypointControlServer(ros::NodeHandle *nh,
   server.registerGoalCallback(boost::bind(&WaypointControlServer::goalCallback, this));
   server.registerPreemptCallback(boost::bind(&WaypointControlServer::preemptCallback, this));
   server.start();
+  ROS_INFO("[WaypointControlServer::WaypointControlServer]: Online");
 }
 
 void WaypointControlServer::goalCallback()
@@ -87,7 +88,7 @@ void WaypointControlServer::update()
   }
   catch (tf2::TransformException &ex)
   {
-    ROS_WARN("%s",ex.what());
+    ROS_WARN("[WaypointControlServer::update]: %s",ex.what());
     ros::Duration(1.0).sleep();
     controller.stop();
   }
@@ -109,7 +110,7 @@ int main(int argc, char* argv[])
   ros::Rate rate(50);
 
   double max_velocity;
-  nh.param<double>("max_velocity", max_velocity, 0.4);
+  nh.param<double>("max_velocity", max_velocity, 0.1);
   double dt = rate.expectedCycleTime().toSec();
 
   iVescAccess *fl, *fr, *br, *bl;
