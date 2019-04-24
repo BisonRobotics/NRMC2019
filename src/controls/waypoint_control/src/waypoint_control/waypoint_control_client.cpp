@@ -21,11 +21,14 @@ void WaypointControlClient::setControlState(ControlState state)
   client.sendGoal(goal, boostDoneCallback, boostActiveCallback, boostFeedbackCallback);
 }
 
-void WaypointControlClient::setControlState(ControlState state, navigation_msgs::BezierSegment segment)
+void WaypointControlClient::setControlState(ControlState state, const Waypoints &waypoints)
 {
   waypoint_control::WaypointControlGoal goal;
   goal.control_state = (uint8_t)state;
-  goal.path.emplace_back(segment);
+  for (int i = 0; i < waypoints.size(); i++)
+  {
+    goal.waypoints.emplace_back(waypoints[i]);
+  }
   client.sendGoal(goal, boostDoneCallback, boostActiveCallback, boostFeedbackCallback);
 }
 
@@ -34,7 +37,8 @@ void WaypointControlClient::doneCallback(const actionlib::SimpleClientGoalState 
 {
   control_state = (ControlState)result->control_state;
   progress = result->progress;
-  deviation = result->deviation;
+  angular_deviation = result->angular_deviation;
+  linear_deviation = result->linear_deviation;
 }
 
 void WaypointControlClient::activeCallback()
@@ -46,7 +50,8 @@ void WaypointControlClient::feedbackCallback(const WaypointControlFeedbackConstP
 {
   control_state = (ControlState)feedback->control_state;
   progress = feedback->progress;
-  deviation = feedback->deviation;
+  angular_deviation = feedback->angular_deviation;
+  linear_deviation = feedback->linear_deviation;
 }
 
 ControlState WaypointControlClient::getControlState() const
@@ -59,7 +64,12 @@ double WaypointControlClient::getProgress() const
   return progress;
 }
 
-double WaypointControlClient::getDeviation() const
+double WaypointControlClient::getLinearDeviation() const
 {
-  return deviation;
+  return linear_deviation;
+}
+
+double WaypointControlClient::getAngularDeviation() const
+{
+  return angular_deviation;
 }

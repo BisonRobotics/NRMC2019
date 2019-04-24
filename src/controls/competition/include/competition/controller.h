@@ -3,7 +3,7 @@
 
 #include <ros/ros.h>
 #include <utilities/joy.h>
-#include <competition/visuals.h>
+#include <competition/bezier_visuals.h>
 #include <waypoint_control/waypoint_control_client.h>
 #include <dig_control/dig_control_client.h>
 
@@ -20,11 +20,12 @@ namespace competition
   using WaypointControlState = waypoint_control::ControlState;
   using DigControlState = dig_control::ControlState;
   using utilities::Joy;
+  using waypoint_control::Waypoints;
 
   class Controller
   {
   public:
-    Controller(ros::NodeHandle *nh, ros::Rate *rate, BezierSegment *path);
+    Controller(ros::NodeHandle *nh, ros::Rate *rate, const Waypoints &path);
 
     void update();
     void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
@@ -33,8 +34,8 @@ namespace competition
     waypoint_control::WaypointControlClient waypoint_client;
     dig_control::DigControlClient dig_client;
     Joy joy;
-    Visuals visuals;
-    BezierSegment *path;
+    //Visuals visuals;
+    Waypoints waypoints;
 
     double dt;
     ros::NodeHandle *nh;

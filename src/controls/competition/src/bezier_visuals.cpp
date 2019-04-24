@@ -1,4 +1,4 @@
-#include <competition/visuals.h>
+#include <competition/bezier_visuals.h>
 
 using namespace competition;
 

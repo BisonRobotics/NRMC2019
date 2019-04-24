@@ -56,13 +56,13 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(visuals src/visuals.cpp)
-add_dependencies(visuals ${visualization_msgs_EXPORTED_TARGETS})
-target_link_libraries(visuals ${catkin_LIBRARIES})
+add_library(bezier_visuals src/bezier_visuals.cpp)
+add_dependencies(bezier_visuals ${visualization_msgs_EXPORTED_TARGETS})
+target_link_libraries(bezier_visuals ${catkin_LIBRARIES})
 
 add_library(controller src/controller.cpp)
 add_dependencies(controller ${competition_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(controller joy visuals ${catkin_LIBRARIES})
+target_link_libraries(controller joy ${catkin_LIBRARIES})
 
 add_executable(controller_node src/controller_node.cpp)
 add_dependencies(controller_node ${competition_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})

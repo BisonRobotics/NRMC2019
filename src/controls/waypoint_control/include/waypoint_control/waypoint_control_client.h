@@ -3,9 +3,11 @@
 
 #include <waypoint_control/waypoint_control_server.h>
 #include <waypoint_control/WaypointControlAction.h>
+#include <waypoint_control/Waypoint.h>
 #include <navigation_msgs/BezierSegment.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/simple_goal_state.h>
+#include <vector>
 
 namespace waypoint_control
 {
@@ -15,7 +17,7 @@ namespace waypoint_control
     WaypointControlClient();
 
     void setControlState(ControlState state);
-    void setControlState(ControlState state, navigation_msgs::BezierSegment segment);
+    void setControlState(ControlState state, const Waypoints &waypoints);
 
     void doneCallback(const actionlib::SimpleClientGoalState &state, const WaypointControlResultConstPtr &result);
     void activeCallback();
@@ -23,7 +25,8 @@ namespace waypoint_control
 
     ControlState getControlState() const;
     double getProgress() const;
-    double getDeviation() const;
+    double getLinearDeviation() const;
+    double getAngularDeviation() const;
 
   private:
     actionlib::SimpleActionClient<waypoint_control::WaypointControlAction> client;
@@ -33,7 +36,7 @@ namespace waypoint_control
     boost::function<void (const WaypointControlFeedbackConstPtr&)> boostFeedbackCallback;
 
     ControlState control_state;
-    double progress, deviation;
+    double progress, linear_deviation, angular_deviation;
   };
 }
 

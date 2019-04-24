@@ -1,13 +1,15 @@
 # goal
 uint8 control_state
-navigation_msgs/BezierSegment[] path
+Waypoint[] waypoints
 ---
 # result
 uint8 control_state
 float64 progress  # [0-1]
-float64 deviation
+float64 angular_deviation
+float64 linear_deviation
 ---
 # feedback
 uint8 control_state
 float64 progress  # [0-1]
-float64 deviation
+float64 angular_deviation
+float64 linear_deviation

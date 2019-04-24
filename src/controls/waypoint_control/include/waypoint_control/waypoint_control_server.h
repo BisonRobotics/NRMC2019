@@ -27,28 +27,27 @@ namespace waypoint_control
   {
   public:
 
-    WaypointControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl);
+    WaypointControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl,
+        double max_velocity, double dt);
 
     void goalCallback();
     void preemptCallback();
     void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
-    void update(double dt);
-    void stop();
+    void update();
 
   private:
-    bool debug, manual_safety, autonomy_safety, direction; // forward = true
+    bool debug, manual_safety, autonomy_safety;
     uint32_t seq;
-    float teleop_left, teleop_right, max_velocity;
-    double x, y, theta;
+    double max_velocity, dt, teleop_left, teleop_right;
 
-    ControlState state;
     iVescAccess *fl, *fr, *br, *bl;
-    TeleopInterface teleop;
     WaypointController controller;
 
     ros::NodeHandle *nh;
     ros::Subscriber joy_subscriber;
     ros::Publisher joint_publisher;
+    tf2_ros::Buffer tf_buffer;
+    tf2_ros::TransformListener tf_listener;
     actionlib::SimpleActionServer<WaypointControlAction> server;
     sensor_msgs::JointState joint_angles;
 

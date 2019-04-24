@@ -6,6 +6,8 @@
 
 namespace waypoint_control
 {
+  typedef std::vector<Waypoint> Waypoints;
+
   enum class ControlState
   {
     error = 0,
@@ -14,6 +16,17 @@ namespace waypoint_control
     in_progress,
     cancel,
     manual
+  };
+
+  enum class WaypointState
+  {
+    error = 0,
+    ready,
+    starting_orientation,
+    initial_angle_correction,
+    driving,
+    angle_correction,
+    final_angle_correction,
   };
 
   WaypointControlResult toResult(ControlState state);

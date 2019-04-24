@@ -36,10 +36,7 @@ add_action_files(
   WaypointControl.action
 )
 
-#add_message_files(FILES
-#  WheelStates.msg
-#  ErrorStates.msg
-#  PathInfo.msg)
+add_message_files(FILES Waypoint.msg)
 
 generate_messages(DEPENDENCIES std_msgs actionlib_msgs geometry_msgs navigation_msgs)
 

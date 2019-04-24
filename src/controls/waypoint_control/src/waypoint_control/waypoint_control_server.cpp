@@ -6,10 +6,11 @@
 using namespace waypoint_control;
 
 
-WaypointControlServer::WaypointControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl) :
-  nh(nh), fl(fl), fr(fr), bl(bl), br(br), debug(true), server(*nh, "action", false), direction(true),
-  controller(fl, fr, br, bl), teleop(TeleopInterface::Mode::velocity, 0.4, fl, fr, br, bl),
-  state(ControlState::manual), manual_safety(false), autonomy_safety(false), teleop_left(0.0f), teleop_right(0.0f), seq(0)
+WaypointControlServer::WaypointControlServer(ros::NodeHandle *nh,
+    iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl, double max_velocity, double dt) :
+  nh(nh), tf_listener(tf_buffer), fl(fl), fr(fr), bl(bl), br(br), server(*nh, "action", false),
+  controller(fl, fr, br, bl, max_velocity), debug(true), manual_safety(false), autonomy_safety(false),
+  dt(dt), teleop_left(0.0), teleop_right(0.0), seq(0)
 {
   joint_angles.header.stamp = ros::Time::now();
   joint_angles.header.seq = seq;
@@ -21,9 +22,6 @@ WaypointControlServer::WaypointControlServer(ros::NodeHandle *nh, iVescAccess *f
   joint_angles.position.emplace_back(0.0);
   joint_angles.position.emplace_back(0.0);
   joint_angles.position.emplace_back(0.0);
-
-  nh->param<float>("max_velocity", max_velocity, 0.4);
-  teleop.setMax(max_velocity);
 
   joy_subscriber = nh->subscribe("/joy", 1, &WaypointControlServer::joyCallback, this);
   joint_publisher = nh->advertise<sensor_msgs::JointState>("/joint_states", 1);
@@ -38,49 +36,23 @@ void WaypointControlServer::goalCallback()
   ControlState request = toControlState(*goal);
 
   ROS_INFO("[WaypointControlServer::goalCallback] Request for %s to %s",
-           to_string(state).c_str(), to_string(request).c_str());
-  switch (request)
+           to_string(controller.getControlState()).c_str(),
+           to_string(request).c_str());
+  if (request == ControlState::new_goal)
   {
-    case ControlState::new_goal:
-    {
-      // Only accepts one segment
-      stop();
-      direction = goal->path[0].direction_of_travel == 1;
-      //controller.addPath(modified_path, direction);
-      state = ControlState::in_progress;
-      server.setSucceeded(toResult(state));
-      break;
-    }
-    case ControlState::cancel:
-    {
-      stop();
-      state = ControlState::ready;
-      server.setSucceeded(toResult(state));
-    }
-    case ControlState::manual:
-    {
-      stop();
-      state = ControlState::manual;
-      server.setSucceeded(toResult(state));
-      break;
-    }
-    default:
-    {
-      stop();
-      state = ControlState::error;
-      server.setAborted(toResult(state));
-      ROS_ERROR("[WaypointControlServer::goalCallback] Unable to set control state from %s to %s",
-                to_string(state).c_str(), to_string(request).c_str());
-      break;
-    }
-
+    controller.setControlState(request, goal->waypoints);
+  }
+  else
+  {
+    controller.setControlState(request);
   }
 }
 
 void WaypointControlServer::preemptCallback()
 {
-  server.setPreempted(toResult(state));
-  ROS_INFO("[DigControlServer::preemptCallback] Preempting from %s", to_string(state).c_str());
+  server.setPreempted(toResult(controller.getControlState()));
+  ROS_INFO("[DigControlServer::preemptCallback] Preempting from %s",
+      to_string(controller.getControlState()).c_str());
 }
 
 void WaypointControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
@@ -92,70 +64,37 @@ void WaypointControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_ms
   autonomy_safety = joy.get(Joy::AUTONOMY_SAFETY);
   if (manual_safety)
   {
-    teleop_left  = max_velocity * (float)joy.get(Joy::TELEOP_LEFT);
-    teleop_right = max_velocity * (float)joy.get(Joy::TELEOP_RIGHT);
+    teleop_left  = max_velocity * joy.get(Joy::TELEOP_LEFT);
+    teleop_right = max_velocity * joy.get(Joy::TELEOP_RIGHT);
   }
   else
   {
-    teleop_left = 0.0f;
-    teleop_left = 0.0f;
+    teleop_left = 0.0;
+    teleop_left = 0.0;
   }
 }
 
-void WaypointControlServer::update(double dt)
+void WaypointControlServer::update()
 {
-  seq++;
-
-  // Handle state
-  switch (state)
+  // Update controller
+  geometry_msgs::TransformStamped transform_msg;
+  tf2::Stamped<tf2::Transform> transform;
+  try
   {
-    case ControlState::error:
-    {
-      ROS_ERROR("[WaypointControlServer::update] In error state");
-      stop();
-      break;
-    }
-    case ControlState::ready:
-    {
-      // Do nothing
-      stop();
-      break;
-    }
-    case ControlState::in_progress:
-    {
-      if (autonomy_safety)
-      {
-        // TODO
-      }
-      else
-      {
-        stop();
-      }
-      break;
-    }
-    case ControlState::manual:
-    {
-      if (manual_safety)
-      {
-        teleop.update(teleop_left, teleop_right);
-      }
-      else
-      {
-        teleop.update(0.0f, 0.0f);
-      }
-      break;
-    }
-    case ControlState::new_goal:
-    case ControlState::cancel:
-    {
-      ROS_ERROR("[WaypointControlServer::update] Shouldn't be in control state from %s", to_string(state).c_str());
-      stop();
-    }
+    transform_msg = tf_buffer.lookupTransform("map", "base_link", ros::Time(0));
+    tf2::fromMsg(transform_msg, transform);
+    controller.update(manual_safety, autonomy_safety, transform, teleop_left, teleop_right);
+  }
+  catch (tf2::TransformException &ex)
+  {
+    ROS_WARN("%s",ex.what());
+    ros::Duration(1.0).sleep();
+    controller.stop();
   }
 
   // Visuals
   joint_angles.header.stamp = ros::Time::now();
-  joint_angles.header.seq = seq;
+  joint_angles.header.seq = seq++;
   joint_angles.position[0] += fl->getRadialVelocity() * dt;
   joint_angles.position[1] += fr->getRadialVelocity() * dt;
   joint_angles.position[2] += br->getRadialVelocity() * dt;
@@ -163,29 +102,27 @@ void WaypointControlServer::update(double dt)
   joint_publisher.publish(joint_angles);
 }
 
-void WaypointControlServer::stop()
-{
-
-}
-
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "waypoint_control_server");
   ros::NodeHandle nh("~");
+  ros::Rate rate(50);
+
+  double max_velocity;
+  nh.param<double>("max_velocity", max_velocity, 0.4);
+  double dt = rate.expectedCycleTime().toSec();
 
   iVescAccess *fl, *fr, *br, *bl;
   fl = new VescAccess(front_left_param);
   fr = new VescAccess(front_right_param);
   br = new VescAccess(back_right_param);
   bl = new VescAccess(back_left_param);
-  WaypointControlServer server(&nh, fl, fr, br, bl);
-  ros::Rate rate(50);
-  double dt = rate.expectedCycleTime().toSec();
+  WaypointControlServer server(&nh, fl, fr, br, bl, max_velocity, dt);
+
   while (ros::ok())
   {
-    server.update(dt);
+    server.update();
     ros::spinOnce();
     rate.sleep();
   }
-  server.stop();
 }

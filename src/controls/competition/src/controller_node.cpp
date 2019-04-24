@@ -16,7 +16,9 @@ int main(int argc, char **argv)
   path.p2.x = 2.94; path.p2.y = 4.67;
   path.p3.x = 2.61; path.p3.y = 6.00;
 
-  competition::Controller controller(&nh, &rate, &path);
+  waypoint_control::Waypoints waypoints;
+
+  competition::Controller controller(&nh, &rate, waypoints);
 
   while(ros::ok())
   {

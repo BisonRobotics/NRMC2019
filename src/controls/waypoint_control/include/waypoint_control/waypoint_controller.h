@@ -7,6 +7,7 @@
 
 #include <utilities/filter.h>
 #include <waypoint_control/waypoint_control_states.h>
+#include <tf2/LinearMath/Transform.h>
 
 namespace waypoint_control
 {
@@ -14,18 +15,23 @@ namespace waypoint_control
   {
   public:
     WaypointController(iVescAccess *front_left,   iVescAccess *front_right,
-                  iVescAccess *back_right, iVescAccess *back_left);
-    ~WaypointController();
+                       iVescAccess *back_right, iVescAccess *back_left, double max_velocity);
 
-    void update();
-
-    void setControlState(ControlState goal) ;
+    void update(bool manual_safety, bool autonomy_safety,
+                tf2::Transform transform, double left, double right);
+    void setPoint(double left, double right);
+    void setControlState(ControlState goal);
+    void setControlState(ControlState goal, const Waypoints &waypoint);
     void stop();
-    ControlState getControlState() const ;
+    ControlState getControlState() const;
 
   private:
-    iVescAccess *front_left, *front_right, *back_right, *back_left;
+    double max_velocity;
+    iVescAccess *fl, *fr, *br, *bl;
     ControlState state;
+    WaypointState waypoint_state;
+    Waypoints waypoints;
+    tf2::Transform last_transform;
   };
 
 }
