@@ -1,4 +1,4 @@
-#include <competition/controller.h>
+#include <competition/competition_controller.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 using namespace competition;
@@ -67,6 +67,7 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
       ROS_INFO("[Controller::joyCallback]: %s to %s",
                to_string(waypoint_client.getControlState()).c_str(),
                to_string(WaypointControlState::new_goal).c_str());
+      waypoints = visuals.getWaypoints();
       waypoint_client.setControlState(WaypointControlState::new_goal, waypoints);
       visuals.followRobot(false);
     }

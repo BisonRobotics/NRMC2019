@@ -1,7 +1,9 @@
 #include <competition/waypoint_visuals.h>
 #include <eigen3/Eigen/Geometry>
+#include <boost/math/constants/constants.hpp>
 
 using namespace competition;
+using boost::math::double_constants::pi;
 
 WaypointVisuals::WaypointVisuals(ros::NodeHandle *nh) :
   nh(nh), marker_server("path_control_points"),
@@ -238,7 +240,7 @@ std::string WaypointVisuals::markerString(const std::string &name, double x, dou
 {
   std::stringstream ss;
   ss.precision(precision);
-  ss << std::fixed << name << "("  << x << ", " << y << ", " << theta << ")";
+  ss << std::fixed << name << "("  << x << ", " << y << ", " << theta / pi * 180 << ")";
   return ss.str();
 }
 
@@ -249,11 +251,6 @@ void WaypointVisuals::followRobot(bool follow)
   {
     if (marker_server.get("robot", control_point))
     {
-      control_point.controls[1].markers[0].pose.position.x = -0.1;
-      control_point.controls[1].markers[0].pose.position.y =  0.35;
-      //control_point.controls[0].markers[0].scale.x = width;
-      //control_point.controls[0].markers[0].scale.y = width;
-      //control_point.controls[0].markers[0].scale.z = height;
       control_point.controls[0].interaction_mode = InteractiveMarkerControl::MOVE_PLANE;
       marker_server.insert(control_point, boostControlMarkerFeedback);
       marker_server.applyChanges();
@@ -277,4 +274,9 @@ void WaypointVisuals::clearWaypoints()
   marker_server.clear();
   addControlMarker("robot", robot.getOrigin().x(), robot.getOrigin().y());
   marker_server.applyChanges();
+}
+
+Waypoints WaypointVisuals::getWaypoints()
+{
+  return waypoints;
 }

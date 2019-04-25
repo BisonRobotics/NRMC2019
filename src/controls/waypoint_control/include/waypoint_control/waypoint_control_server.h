@@ -16,7 +16,7 @@
 #include <waypoint_control/WaypointControlAction.h>
 #include <teleop_interface/teleop_interface.h>
 #include <localization/StateVector.h>
-#include <waypoint_control/waypoint_control_states.h>
+#include <waypoint_control/waypoint_control_config.h>
 #include <waypoint_control/waypoint_controller.h>
 
 namespace waypoint_control
@@ -27,8 +27,8 @@ namespace waypoint_control
   {
   public:
 
-    WaypointControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl,
-        double max_velocity, double dt);
+    WaypointControlServer(ros::NodeHandle *nh,
+        iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl, Config *config, double dt);
 
     void goalCallback();
     void preemptCallback();
@@ -38,7 +38,8 @@ namespace waypoint_control
   private:
     bool debug, manual_safety, autonomy_safety;
     uint32_t seq;
-    double max_velocity, dt, teleop_left, teleop_right;
+    Config *config;
+    double dt, teleop_left, teleop_right;
 
     iVescAccess *fl, *fr, *br, *bl;
     WaypointController controller;
@@ -50,7 +51,6 @@ namespace waypoint_control
     tf2_ros::TransformListener tf_listener;
     actionlib::SimpleActionServer<WaypointControlAction> server;
     sensor_msgs::JointState joint_angles;
-
   };
 }
 

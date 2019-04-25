@@ -43,7 +43,7 @@ generate_messages(DEPENDENCIES std_msgs actionlib_msgs geometry_msgs navigation_
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES waypoint_control_client waypoint_control_states teleop_interface
+  LIBRARIES waypoint_control_client waypoint_control_config teleop_interface
   CATKIN_DEPENDS roscpp std_msgs navigation_msgs vesc_access
 )
 
@@ -57,28 +57,28 @@ include_directories(${Eigen3_INCLUDE_DIRS})
 add_library(teleop_interface src/teleop_interface/teleop_interface.cpp)
 target_link_libraries(teleop_interface ${catkin_LIBRARIES})
 
-add_library(waypoint_control_states src/waypoint_control/waypoint_control_states.cpp)
-add_dependencies(waypoint_control_states ${waypoint_control_EXPORTED_TARGETS})
-target_link_libraries(waypoint_control_states ${catkin_LIBRARIES})
+add_library(waypoint_control_config src/waypoint_control/waypoint_control_config.cpp)
+add_dependencies(waypoint_control_config ${waypoint_control_EXPORTED_TARGETS})
+target_link_libraries(waypoint_control_config ${catkin_LIBRARIES})
 
 add_library(waypoint_controller src/waypoint_control/waypoint_controller.cpp)
 add_dependencies(waypoint_controller ${waypoint_control_EXPORTED_TARGETS})
-target_link_libraries(waypoint_controller waypoint_control_states ${catkin_LIBRARIES})
+target_link_libraries(waypoint_controller waypoint_control_config ${catkin_LIBRARIES})
 
 add_library(waypoint_control_client src/waypoint_control/waypoint_control_client.cpp)
 add_dependencies(waypoint_control_client ${waypoint_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(waypoint_control_client waypoint_control_states ${catkin_LIBRARIES})
+target_link_libraries(waypoint_control_client waypoint_control_config ${catkin_LIBRARIES})
 
 add_executable(teleop src/teleop_interface/teleop.cpp)
 target_link_libraries(teleop teleop_interface ${catkin_LIBRARIES})
 
 add_executable(waypoint_control_server src/waypoint_control/waypoint_control_server.cpp)
 add_dependencies(waypoint_control_server ${waypoint_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(waypoint_control_server waypoint_control_states waypoint_controller teleop_interface ${catkin_LIBRARIES})
+target_link_libraries(waypoint_control_server waypoint_control_config waypoint_controller teleop_interface ${catkin_LIBRARIES})
 
 add_executable(waypoint_control_client_node src/waypoint_control/waypoint_control_client_node.cpp)
 add_dependencies(waypoint_control_client_node ${waypoint_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(waypoint_control_client_node waypoint_control_states waypoint_control_client ${catkin_LIBRARIES})
+target_link_libraries(waypoint_control_client_node waypoint_control_config waypoint_control_client ${catkin_LIBRARIES})
 
 
 if(DEFINED ENV{ON_ROBOT})

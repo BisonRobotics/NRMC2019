@@ -23,12 +23,13 @@ void WaypointControlClient::setControlState(ControlState state)
 
 void WaypointControlClient::setControlState(ControlState state, const Waypoints &waypoints)
 {
+  if (state == ControlState::new_goal)
+  {
+
+  }
   waypoint_control::WaypointControlGoal goal;
   goal.control_state = (uint8_t)state;
-  for (int i = 0; i < waypoints.size(); i++)
-  {
-    goal.waypoints.emplace_back(waypoints[i]);
-  }
+  goal.waypoints = waypoints;
   client.sendGoal(goal, boostDoneCallback, boostActiveCallback, boostFeedbackCallback);
 }
 

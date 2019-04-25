@@ -7,10 +7,11 @@ using namespace waypoint_control;
 
 
 WaypointControlServer::WaypointControlServer(ros::NodeHandle *nh,
-    iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl, double max_velocity, double dt) :
+    iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl, Config *config, double dt) :
   nh(nh), tf_listener(tf_buffer), fl(fl), fr(fr), bl(bl), br(br), server(*nh, "action", false),
-  controller(fl, fr, br, bl, max_velocity), debug(true), manual_safety(false), autonomy_safety(false),
-  dt(dt), teleop_left(0.0), teleop_right(0.0), seq(0), max_velocity(max_velocity)
+  controller(fl, fr, br, bl, config), config(config),
+  debug(true), manual_safety(false), autonomy_safety(false),
+  dt(dt), teleop_left(0.0), teleop_right(0.0), seq(0)
 {
   joint_angles.header.stamp = ros::Time::now();
   joint_angles.header.seq = seq;
@@ -65,8 +66,8 @@ void WaypointControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_ms
   autonomy_safety = joy.get(Joy::AUTONOMY_SAFETY);
   if (manual_safety)
   {
-    teleop_left  = max_velocity * joy.get(Joy::TELEOP_LEFT);
-    teleop_right = max_velocity * joy.get(Joy::TELEOP_RIGHT);
+    teleop_left  = config->max_velocity * joy.get(Joy::TELEOP_LEFT);
+    teleop_right = config->max_velocity * joy.get(Joy::TELEOP_RIGHT);
   }
   else
   {
@@ -118,7 +119,8 @@ int main(int argc, char* argv[])
   fr = new VescAccess(front_right_param);
   br = new VescAccess(back_right_param);
   bl = new VescAccess(back_left_param);
-  WaypointControlServer server(&nh, fl, fr, br, bl, max_velocity, dt);
+  Config config(&nh);
+  WaypointControlServer server(&nh, fl, fr, br, bl, &config, dt);
 
   while (ros::ok())
   {

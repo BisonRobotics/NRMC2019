@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include <competition/controller.h>
+#include <competition/competition_controller.h>
 
 int main(int argc, char **argv)
 {

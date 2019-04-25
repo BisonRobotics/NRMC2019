@@ -33,6 +33,7 @@ namespace competition
     void updateWaypoints(const Waypoints &s);
     void addWaypoint(const geometry_msgs::PointStampedConstPtr &point);
     void clearWaypoints();
+    Waypoints getWaypoints();
     void followRobot(bool follow);
     void dynamicWaypoints(bool dynamic_waypoints);
 
