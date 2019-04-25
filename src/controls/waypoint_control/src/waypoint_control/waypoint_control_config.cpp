@@ -3,17 +3,27 @@
 using namespace waypoint_control;
 
 Config::Config() :
-    initial_angular_variation(default_config::INITIAL_ANGULAR_VELOCITY),
-    max_velocity(default_config::MAX_VELOCITY),
-    max_linear_velocity(default_config::MAX_LINEAR_VELOCITY),
-    max_angular_velocity(default_config::MAX_ANGULAR_VELOCITY) {}
+    max_duty(default_config::MAX_DUTY),
+    max_in_place_duty(default_config::MAX_IN_PLACE_DUTY),
+    min_in_place_duty(default_config::MIN_IN_PLACE_DUTY),
+    max_driving_duty(default_config::MAX_DRIVING_DUTY),
+    min_driving_duty(default_config::MIN_DRIVING_DUTY),
+    max_manual_duty(default_config::MAX_MANUAL_DUTY),
+    in_place_k(default_config::IN_PLACE_K),
+    driving_k(default_config::DRIVING_K)
+{}
 
 Config::Config(ros::NodeHandle *nh)
 {
-  nh->param<double>("initial_angular_velocity", initial_angular_variation, default_config::INITIAL_ANGULAR_VELOCITY);
-  nh->param<double>("max_velocity", max_velocity, default_config::MAX_VELOCITY);
-  nh->param<double>("max_linear_velocity", max_linear_velocity, default_config::MAX_LINEAR_VELOCITY);
-  nh->param<double>("max_angular_velocity", max_angular_velocity, default_config::MAX_ANGULAR_VELOCITY);
+  nh->param<double>("max_duty", max_duty, default_config::MAX_DUTY);
+  nh->param<double>("max_in_place_duty", max_in_place_duty, default_config::MAX_IN_PLACE_DUTY);
+  nh->param<double>("min_in_place_duty", min_in_place_duty, default_config::MIN_IN_PLACE_DUTY);
+  nh->param<double>("max_driving_duty", max_driving_duty, default_config::MAX_DRIVING_DUTY);
+  nh->param<double>("min_driving_duty", min_driving_duty, default_config::MIN_DRIVING_DUTY);
+  nh->param<double>("max_manual_duty", max_manual_duty, default_config::MAX_MANUAL_DUTY);
+  nh->param<double>("min_manual_duty", min_manual_duty, default_config::MIN_MANUAL_DUTY);
+  nh->param<double>("in_place_k", in_place_k, default_config::IN_PLACE_K);
+  nh->param<double>("driving_k", driving_k, default_config::DRIVING_K);
 }
 
 std::string waypoint_control::to_string(ControlState state)
@@ -28,6 +38,8 @@ std::string waypoint_control::to_string(ControlState state)
       return "new_goal";
     case ControlState::in_progress:
       return "in_progress";
+    case ControlState::finished:
+      return "finish";
     case ControlState::cancel:
       return "cancel";
     case ControlState::manual:
@@ -43,8 +55,6 @@ std::string waypoint_control::to_string(WaypointState state)
       return "error";
     case WaypointState::ready:
       return "ready";
-    case WaypointState::starting_orientation:
-      return "starting_orientation";
     case WaypointState::initial_angle_correction:
       return "initial_angle_correction";
     case WaypointState::driving:
@@ -53,6 +63,8 @@ std::string waypoint_control::to_string(WaypointState state)
       return "angle_correction";
     case WaypointState::final_angle_correction:
       return "final_angle_correction";
+    case WaypointState::finished:
+      return "finish";
   }
 }
 

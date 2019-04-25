@@ -31,6 +31,7 @@ namespace waypoint_control
     void setPoint(double left, double right, bool reverse = false);
     void setControlState(ControlState goal);
     void setControlState(ControlState goal, const Waypoints &waypoint);
+    size_t remainingWaypoints();
     void stop();
     ControlState getControlState() const;
 

@@ -1,2 +1,3 @@
-float64 teleop_left
-float64 teleop_right
+float64 left_velocity
+float64 right_velocity
+Feedback feedback

@@ -81,4 +81,3 @@ double Feedback::theta()
 {
   return theta_;
 }
-

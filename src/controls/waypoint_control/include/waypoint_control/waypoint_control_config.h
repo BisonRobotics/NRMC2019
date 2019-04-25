@@ -16,10 +16,15 @@ namespace waypoint_control
 
   namespace default_config
   {
-    const double INITIAL_ANGULAR_VELOCITY = 10.0*pi/180.0;
-    const double MAX_VELOCITY = 0.1;
-    const double MAX_LINEAR_VELOCITY = 0.1;
-    const double MAX_ANGULAR_VELOCITY = 0.05;
+    const double MAX_DUTY = 0.3;
+    const double MAX_IN_PLACE_DUTY = 0.2;
+    const double MIN_IN_PLACE_DUTY = 0.1;
+    const double MAX_DRIVING_DUTY = 0.4;
+    const double MIN_DRIVING_DUTY = 0.2;
+    const double MAX_MANUAL_DUTY = 0.2;
+    const double MIN_MANUAL_DUTY = 0.05;
+    const double IN_PLACE_K = 0.1;
+    const double DRIVING_K = 0.1;
   };
 
   class Config
@@ -28,10 +33,15 @@ namespace waypoint_control
     Config();
     Config(ros::NodeHandle *nh);
 
-    double initial_angular_variation;
-    double max_velocity;
-    double max_angular_velocity;
-    double max_linear_velocity;
+    double max_duty;
+    double max_in_place_duty;
+    double min_in_place_duty;
+    double max_driving_duty;
+    double min_driving_duty;
+    double max_manual_duty;
+    double min_manual_duty;
+    double in_place_k;
+    double driving_k;
   };
 
   enum class ControlState
@@ -40,6 +50,7 @@ namespace waypoint_control
     ready,
     new_goal,
     in_progress,
+    finished,
     cancel,
     manual
   };
@@ -48,11 +59,11 @@ namespace waypoint_control
   {
     error = 0,
     ready,
-    starting_orientation,
     initial_angle_correction,
     driving,
     angle_correction,
     final_angle_correction,
+    finished,
   };
 
   WaypointControlResult toResult(ControlState state);

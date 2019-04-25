@@ -76,7 +76,7 @@ void WaypointController::setControlState(ControlState state, const Waypoints &wa
              waypoints.size());
     this->waypoints = waypoints;
     this->state = ControlState::in_progress;
-    this->waypoint_state = WaypointState::starting_orientation;
+    this->waypoint_state = WaypointState::ready;
   }
   else
   {
@@ -97,11 +97,18 @@ void WaypointController::update(bool manual_safety, bool autonomy_safety,
     {
       if (autonomy_safety)
       {
-        updateControls(transform);
+        if (waypoints.empty())
+        {
+          ROS_INFO("[WaypointController::update]: Processed all waypoints");
+          state = ControlState::ready;
+        }
+        else
+        {
+          updateControls(transform);
+        }
       }
       else
       {
-        ROS_WARN("[WaypointController::update]: Stopped autonomy");
         stop();
       }
       break;
@@ -138,7 +145,7 @@ void WaypointController::updateControls(const tf2::Transform &transform)
     return;
   }
 
-  Waypoint waypoint = waypoints.front();
+  Waypoint waypoint = waypoints.back();
   last_feedback = feedback;
   feedback = Feedback(transform, waypoint);
 
@@ -151,25 +158,20 @@ void WaypointController::updateControls(const tf2::Transform &transform)
     }
     case WaypointState::ready:
     {
-      ROS_WARN("[WaypointController::updateControls::ready]: Should be in a different state");
-      break;
-    }
-    case WaypointState::starting_orientation:
-    {
-      ROS_INFO("[WaypointController::updateControls::starting_orientation]: %s to %s, theta = %f",
+      ROS_INFO("[WaypointController::updateControls::ready]: [P%i]: %s to %s",
+               waypoint.header.seq,
                to_string(waypoint_state).c_str(),
-               to_string(WaypointState::initial_angle_correction).c_str(),
-               feedback.theta()/pi*180.0);
+               to_string(WaypointState::driving).c_str());
       waypoint_state = WaypointState::initial_angle_correction;
       break;
     }
     case WaypointState::initial_angle_correction:
     {
-      ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: theta = %f",
+      ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: angle = %f",
                feedback.theta()/pi*180.0);
-      if (signbit(feedback.theta()) != signbit(feedback.theta()))
+      if (signbit(feedback.theta()) != signbit(last_feedback.theta()))
       {
-        ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: %s to %s, theta = %f",
+        ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: %s to %s, angle = %f",
                  to_string(waypoint_state).c_str(),
                  to_string(WaypointState::driving).c_str(),
                  feedback.theta()/pi*180.0);
@@ -178,13 +180,14 @@ void WaypointController::updateControls(const tf2::Transform &transform)
       }
       else
       {
+        double duty = clamp(config->max_in_place_duty, config->min_in_place_duty, config->max_in_place_duty);
         if (feedback.theta() > 0.0)
         {
-          setPoint(-config->max_angular_velocity, config->max_angular_velocity, waypoint.reverse);
+          setPoint(-duty, duty, waypoint.reverse);
         }
         else
         {
-          setPoint(config->max_angular_velocity, -config->max_angular_velocity, waypoint.reverse);
+          setPoint(duty, -duty, waypoint.reverse);
         }
       }
       break;
@@ -192,32 +195,50 @@ void WaypointController::updateControls(const tf2::Transform &transform)
     case WaypointState::driving:
     {
       ROS_INFO("[WaypointController::updateControls::driving]: theta = %f", feedback.theta()/pi*180.0);
-      if (signbit(feedback.theta()) != signbit(feedback.theta()))
+      if (signbit(feedback.x()) != signbit(last_feedback.x()))
       {
-        ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: %s to %s, theta = %f",
+        ROS_INFO("[WaypointController::updateControls::driving]: %s to %s, dx = %3f, dy = %3f",
                  to_string(waypoint_state).c_str(),
                  to_string(WaypointState::driving).c_str(),
-                 feedback.theta()/pi*180.0);
+                 feedback.x(),
+                 feedback.y());
         setPoint(0.0, 0.0, waypoint.reverse);
-        waypoint_state = WaypointState::driving;
+        waypoint_state = WaypointState::final_angle_correction;
       }
       else
       {
-        if (feedback.theta() > 0.0)
+        ROS_INFO("[WaypointController::updateControls::driving]: dx = %3f, dy = %3f",
+                 feedback.x(),
+                 feedback.y());
+        double duty = clamp(config->max_driving_duty, config->min_driving_duty, config->max_driving_duty);
+        if (feedback.y() > 0.0)
         {
-          setPoint(-config->max_angular_velocity, config->max_angular_velocity, waypoint.reverse);
+          setPoint(duty, duty, waypoint.reverse);
         }
         else
         {
-          setPoint(config->max_angular_velocity, -config->max_angular_velocity, waypoint.reverse);
+          setPoint(duty, duty, waypoint.reverse);
         }
       }
       break;
     }
     case WaypointState::angle_correction:
+    {
+      ROS_WARN("[WaypointController::updateControls::angle_correction]: Not implemented yet");
+      break;
+    }
     case WaypointState::final_angle_correction:
     {
-      ROS_WARN("[WaypointController::updateControls]: Not implemented yet");
+      //ROS_WARN("[WaypointController::updateControls::final_angle_correction]: Not implemented yet");
+      waypoint_state = WaypointState::finished;
+      break;
+    }
+    case WaypointState::finished:
+    {
+      ROS_INFO("[WaypointController::updateControls::finish]: Finished waypoint %i (%f, %f)",
+          waypoint.header.seq, waypoint.pose.position.x, waypoint.pose.position.y);
+      waypoints.pop_back();
+      waypoint_state = WaypointState::ready;
       break;
     }
   }
@@ -226,25 +247,24 @@ void WaypointController::updateControls(const tf2::Transform &transform)
 
 void WaypointController::setPoint(double left, double right, bool reverse)
 {
-  // Adjust sign and clamp
-  left  = clamp(reverse ?  -left : left,  -config->max_velocity, config->max_velocity);
-  right = clamp(reverse ? -right : right, -config->max_velocity, config->max_velocity);
   if (state == ControlState::manual)
   {
-    if (std::abs(left) > 0.001f)
+    if (std::abs(left) > 1.0e-6)
     {
-      fl->setLinearVelocity((float)left);
-      bl->setLinearVelocity((float)left);
+      left  = clamp(left, -config->max_manual_duty, config->max_manual_duty);
+      fl->setDuty((float)left);
+      bl->setDuty((float)left);
     }
     else
     {
       fl->setTorque(0.0f);
       bl->setTorque(0.0f);
     }
-    if (std::abs(right) > 0.001f)
+    if (std::abs(right) > 1.0e-6)
     {
-      fr->setLinearVelocity((float)right);
-      br->setLinearVelocity((float)right);
+      right  = clamp(right, -config->max_manual_duty, config->max_manual_duty);
+      fr->setDuty((float)right);
+      br->setDuty((float)right);
     }
     else
     {
@@ -254,10 +274,13 @@ void WaypointController::setPoint(double left, double right, bool reverse)
   }
   else
   {
-    fl->setLinearVelocity((float)left);
-    bl->setLinearVelocity((float)left);
-    fr->setLinearVelocity((float)right);
-    br->setLinearVelocity((float)right);
+    // Adjust sign and clamp
+    left  = clamp(reverse ?  -left : left,  -config->max_duty, config->max_duty);
+    right = clamp(reverse ? -right : right, -config->max_duty, config->max_duty);
+    fl->setDuty((float)left);
+    bl->setDuty((float)left);
+    fr->setDuty((float)right);
+    br->setDuty((float)right);
   }
 }
 
@@ -269,4 +292,9 @@ setPoint(0.0, 0.0);
 ControlState WaypointController::getControlState() const
 {
 return state;
+}
+
+size_t WaypointController::remainingWaypoints()
+{
+  return waypoints.size();
 }

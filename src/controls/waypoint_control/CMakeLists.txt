@@ -37,7 +37,7 @@ add_action_files(
   WaypointControl.action
 )
 
-add_message_files(FILES Waypoint.msg Debug.msg)
+add_message_files(FILES Feedback.msg Waypoint.msg Debug.msg)
 
 generate_messages(DEPENDENCIES std_msgs actionlib_msgs geometry_msgs navigation_msgs)
 

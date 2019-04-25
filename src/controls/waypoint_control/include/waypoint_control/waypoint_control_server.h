@@ -40,6 +40,7 @@ namespace waypoint_control
     uint32_t seq;
     Config *config;
     double dt, teleop_left, teleop_right;
+    Waypoints waypoints;
 
     iVescAccess *fl, *fr, *br, *bl;
     WaypointController controller;

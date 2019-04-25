@@ -1,6 +1,9 @@
 #include <waypoint_control/waypoint_control_server.h>
 #include <wheel_params/wheel_params.h>
 #include <utilities/joy.h>
+#include <vector>
+#include <iterator>
+#include <algorithm>
 
 
 using namespace waypoint_control;
@@ -42,7 +45,9 @@ void WaypointControlServer::goalCallback()
            to_string(request).c_str());
   if (request == ControlState::new_goal)
   {
-    controller.setControlState(request, goal->waypoints);
+    waypoints = goal->waypoints;
+    std::reverse(std::begin(waypoints), std::end(waypoints)); // Easier to pop elements from the back
+    controller.setControlState(request, waypoints);
   }
   else
   {
@@ -66,8 +71,8 @@ void WaypointControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_ms
   autonomy_safety = joy.get(Joy::AUTONOMY_SAFETY);
   if (manual_safety)
   {
-    teleop_left  = config->max_velocity * joy.get(Joy::TELEOP_LEFT);
-    teleop_right = config->max_velocity * joy.get(Joy::TELEOP_RIGHT);
+    teleop_left  = config->max_manual_duty * joy.get(Joy::TELEOP_LEFT);
+    teleop_right = config->max_manual_duty * joy.get(Joy::TELEOP_RIGHT);
   }
   else
   {
@@ -86,6 +91,26 @@ void WaypointControlServer::update()
     transform_msg = tf_buffer.lookupTransform("map", "base_link", ros::Time(0));
     tf2::fromMsg(transform_msg, transform);
     controller.update(manual_safety, autonomy_safety, transform, teleop_left, teleop_right);
+    ControlState state = controller.getControlState();
+    if (state == ControlState::finished)
+    {
+      WaypointControlResult result;
+      result.progress = 1.0;
+      result.angular_deviation = 0.0;
+      result.linear_deviation = 0.0;
+      result.control_state = (uint)ControlState::finished;
+      server.setSucceeded(result);
+      controller.setControlState(ControlState::ready);
+    }
+    else if (state == ControlState::in_progress)
+    {
+      WaypointControlFeedback feedback;
+      feedback.control_state = (uint)ControlState::in_progress;
+      feedback.angular_deviation = 0.0;
+      feedback.linear_deviation = 0.0;
+      feedback.progress = ((double)controller.remainingWaypoints()) / waypoints.size();
+      server.publishFeedback(feedback);
+    }
   }
   catch (tf2::TransformException &ex)
   {
