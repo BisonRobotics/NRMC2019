@@ -1,7 +1,7 @@
 <launch>
     <include file="$(find description)/launch/load_robot_and_arena.launch" />
-    <node name="tracker" pkg="tracker" type="tracker_node" />
-    <node name="localizer" pkg="localization" type="ultra_localizer_node" />
-    <node name="waypoint_control_server" pkg="waypoint_control" type="waypoint_control_server" />
-    <node name="dig_control_server" pkg="dig_control" type="dig_control_server" />
+    <node name="tracker" pkg="tracker" type="tracker_node" output="screen" />
+    <node name="localizer" pkg="localization" type="ultra_localizer_node" output="screen" />
+    <!--<node name="waypoint_control_server" pkg="waypoint_control" type="waypoint_control_server" output="screen" />-->
+    <node name="dig_control_server" pkg="dig_control" type="dig_control_server" output="screen" />
 </launch>

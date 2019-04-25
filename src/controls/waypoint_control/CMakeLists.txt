@@ -61,7 +61,7 @@ add_library(waypoint_control_config src/waypoint_control/waypoint_control_config
 add_dependencies(waypoint_control_config ${waypoint_control_EXPORTED_TARGETS})
 target_link_libraries(waypoint_control_config ${catkin_LIBRARIES})
 
-add_library(waypoint_controller src/waypoint_control/waypoint_controller.cpp)
+add_library(waypoint_controller src/waypoint_control/waypoint_controller.cpp src/waypoint_control/feedback.cpp)
 add_dependencies(waypoint_controller ${waypoint_control_EXPORTED_TARGETS})
 target_link_libraries(waypoint_controller waypoint_control_config ${catkin_LIBRARIES})
 

@@ -139,8 +139,8 @@ void WaypointController::updateControls(const tf2::Transform &transform)
   }
 
   Waypoint waypoint = waypoints.front();
-  linear_error;
-  angular_error = getAngularError(transform, waypoint);
+  last_feedback = feedback;
+  feedback = Feedback(transform, waypoint);
 
   switch (waypoint_state)
   {
@@ -159,48 +159,57 @@ void WaypointController::updateControls(const tf2::Transform &transform)
       ROS_INFO("[WaypointController::updateControls::starting_orientation]: %s to %s, theta = %f",
                to_string(waypoint_state).c_str(),
                to_string(WaypointState::initial_angle_correction).c_str(),
-               angular_error.smallestAngle());
+               feedback.theta()/pi*180.0);
+      waypoint_state = WaypointState::initial_angle_correction;
       break;
     }
     case WaypointState::initial_angle_correction:
     {
       ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: theta = %f",
-               angular_error.smallestAngle());
-      if (signbit(angular_error.smallestAngle()) == signbit(last_angular_error.smallestAngle()))
+               feedback.theta()/pi*180.0);
+      if (signbit(feedback.theta()) != signbit(feedback.theta()))
       {
-        setPoint(0.0, 0.0);
-        ROS_INFO("Made it!");
+        ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: %s to %s, theta = %f",
+                 to_string(waypoint_state).c_str(),
+                 to_string(WaypointState::driving).c_str(),
+                 feedback.theta()/pi*180.0);
+        setPoint(0.0, 0.0, waypoint.reverse);
+        waypoint_state = WaypointState::driving;
       }
       else
       {
-        if (angular_error.smallestAngle() > 0.0)
+        if (feedback.theta() > 0.0)
         {
-          setPoint(config->max_angular_velocity, -config->max_angular_velocity, waypoint.reverse);
+          setPoint(-config->max_angular_velocity, config->max_angular_velocity, waypoint.reverse);
         }
         else
         {
-          setPoint(-config->max_angular_velocity, config->max_angular_velocity, waypoint.reverse);
+          setPoint(config->max_angular_velocity, -config->max_angular_velocity, waypoint.reverse);
         }
       }
       break;
     }
     case WaypointState::driving:
     {
-      ROS_INFO("[WaypointController::updateControls::driving]: theta = %f", angular_error.smallestAngle());
-      if (signbit(angular_error.smallestAngle()) == signbit(last_angular_error.smallestAngle()))
+      ROS_INFO("[WaypointController::updateControls::driving]: theta = %f", feedback.theta()/pi*180.0);
+      if (signbit(feedback.theta()) != signbit(feedback.theta()))
       {
-        setPoint(0.0, 0.0);
-        ROS_INFO("Made it!");
+        ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: %s to %s, theta = %f",
+                 to_string(waypoint_state).c_str(),
+                 to_string(WaypointState::driving).c_str(),
+                 feedback.theta()/pi*180.0);
+        setPoint(0.0, 0.0, waypoint.reverse);
+        waypoint_state = WaypointState::driving;
       }
       else
       {
-        if (angular_error.smallestAngle() > 0.0)
+        if (feedback.theta() > 0.0)
         {
-          setPoint(config->max_angular_velocity, config->max_angular_velocity, waypoint.reverse);
+          setPoint(-config->max_angular_velocity, config->max_angular_velocity, waypoint.reverse);
         }
         else
         {
-          setPoint(-config->max_angular_velocity, config->max_angular_velocity, waypoint.reverse);
+          setPoint(config->max_angular_velocity, -config->max_angular_velocity, waypoint.reverse);
         }
       }
       break;
@@ -212,30 +221,6 @@ void WaypointController::updateControls(const tf2::Transform &transform)
       break;
     }
   }
-  last_angular_error = angular_error;
-}
-
-/*
- * A   = position vector of robot
- * B   = position vector of goal position
- * C   = is the vector that goes from A to B
- * th1 = angular difference between A and B with respect to the map's orientation
- * th2 = angle of the robot with respect to the map's orientation
- */
-Rotation2D waypoint_control::getAngularError(const tf2::Transform &current, const Waypoint &waypoint, bool reverse)
-{
-  Rotation2D T1, T2, T3;
-  double dy = waypoint.pose.position.y - current.getOrigin().y();
-  double dx = waypoint.pose.position.x - current.getOrigin().x();
-  T1 = Rotation2D(std::atan2(dy, dx));
-
-  tf2::Matrix3x3 O(current.getRotation());
-  double roll, pitch, yaw;
-  O.getRPY(roll, pitch, yaw);
-  T2 = Rotation2D(-yaw);
-  T3 = Rotation2D((reverse) ? pi : 0.0);
-
-  return T1*T2*T3;
 }
 
 

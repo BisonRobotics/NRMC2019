@@ -9,6 +9,7 @@
 #include <waypoint_control/waypoint_control_config.h>
 #include <tf2/LinearMath/Transform.h>
 #include <eigen3/Eigen/Geometry>
+#include <waypoint_control/feedback.h>
 
 
 namespace waypoint_control
@@ -16,6 +17,7 @@ namespace waypoint_control
   using Rotation2D = Eigen::Rotation2D<double>;
 
   Rotation2D getAngularError(const tf2::Transform &transform, const Waypoint &waypoint, bool reverse = false);
+  double getLinearError(const tf2::Transform &R, const Waypoint &waypoint, bool reverse = false);
 
   class WaypointController
   {
@@ -38,8 +40,7 @@ namespace waypoint_control
     ControlState state;
     WaypointState waypoint_state;
     Waypoints waypoints;
-    double linear_error, last_linear_error;
-    Rotation2D angular_error, last_angular_error;
+    Feedback feedback, last_feedback;
     tf2::Transform last_transform;
   };
 
