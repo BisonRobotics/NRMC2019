@@ -1,3 +1,6 @@
-float64 left_velocity
-float64 right_velocity
-Feedback feedback
+string command_state
+string waypoint_state
+FeedbackInfo feedback
+Command command
+Waypoint waypoint
+geometry_msgs/Transform transform

@@ -4,6 +4,7 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
+#include <waypoint_control/Debug.h>
 
 
 using namespace waypoint_control;

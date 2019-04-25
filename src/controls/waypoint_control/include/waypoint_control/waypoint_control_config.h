@@ -23,8 +23,8 @@ namespace waypoint_control
     const double MIN_DRIVING_DUTY = 0.2;
     const double MAX_MANUAL_DUTY = 0.2;
     const double MIN_MANUAL_DUTY = 0.05;
-    const double IN_PLACE_K = 0.1;
-    const double DRIVING_K = 0.1;
+    const double IN_PLACE_K = 1.0;
+    const double DRIVING_K = 100;
   };
 
   class Config

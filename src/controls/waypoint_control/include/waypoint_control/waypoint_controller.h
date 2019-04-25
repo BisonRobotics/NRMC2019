@@ -10,6 +10,7 @@
 #include <tf2/LinearMath/Transform.h>
 #include <eigen3/Eigen/Geometry>
 #include <waypoint_control/feedback.h>
+#include <waypoint_control/Debug.h>
 
 
 namespace waypoint_control
@@ -34,15 +35,18 @@ namespace waypoint_control
     size_t remainingWaypoints();
     void stop();
     ControlState getControlState() const;
+    Debug getDebugInfo() const;
 
   private:
     Config *config;
+    Debug debug_info;
     iVescAccess *fl, *fr, *br, *bl;
     ControlState state;
     WaypointState waypoint_state;
     Waypoints waypoints;
     Feedback feedback, last_feedback;
     tf2::Transform last_transform;
+
   };
 
 }

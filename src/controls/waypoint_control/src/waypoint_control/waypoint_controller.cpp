@@ -91,6 +91,7 @@ void WaypointController::setControlState(ControlState state, const Waypoints &wa
 void WaypointController::update(bool manual_safety, bool autonomy_safety,
     tf2::Transform transform, double left, double right)
 {
+  debug_info.waypoint = Waypoint();
   switch (state)
   {
     case ControlState::in_progress:
@@ -104,6 +105,7 @@ void WaypointController::update(bool manual_safety, bool autonomy_safety,
         }
         else
         {
+          debug_info.waypoint = waypoints.back();
           updateControls(transform);
         }
       }
@@ -134,6 +136,15 @@ void WaypointController::update(bool manual_safety, bool autonomy_safety,
       break;
     }
   }
+
+  // Update debug info
+  debug_info.command_state = to_string(state);
+  debug_info.waypoint_state = to_string(waypoint_state);
+  debug_info.feedback.dx = feedback.x();
+  debug_info.feedback.dy = feedback.y();
+  debug_info.feedback.dr = feedback.r();
+  debug_info.feedback.th = feedback.theta();
+  debug_info.transform = tf2::toMsg(transform);
   this->last_transform = transform;
 }
 
@@ -180,7 +191,8 @@ void WaypointController::updateControls(const tf2::Transform &transform)
       }
       else
       {
-        double duty = clamp(config->max_in_place_duty, config->min_in_place_duty, config->max_in_place_duty);
+        double duty = clamp(config->in_place_k * feedback.theta(),
+            config->min_in_place_duty, config->max_in_place_duty);
         if (feedback.theta() > 0.0)
         {
           setPoint(-duty, duty, waypoint.reverse);
@@ -210,14 +222,18 @@ void WaypointController::updateControls(const tf2::Transform &transform)
         ROS_INFO("[WaypointController::updateControls::driving]: dx = %3f, dy = %3f",
                  feedback.x(),
                  feedback.y());
-        double duty = clamp(config->max_driving_duty, config->min_driving_duty, config->max_driving_duty);
+        double max = config->max_driving_duty;
+        double k = config->driving_k;
+        double brake = clamp(max * (1 - k*feedback.y()),
+                             config->min_driving_duty, config->max_driving_duty);
         if (feedback.y() > 0.0)
         {
-          setPoint(duty, duty, waypoint.reverse);
+
+          setPoint(brake, max, waypoint.reverse);
         }
         else
         {
-          setPoint(duty, duty, waypoint.reverse);
+          setPoint(max, brake, waypoint.reverse);
         }
       }
       break;
@@ -254,6 +270,7 @@ void WaypointController::setPoint(double left, double right, bool reverse)
       left  = clamp(left, -config->max_manual_duty, config->max_manual_duty);
       fl->setDuty((float)left);
       bl->setDuty((float)left);
+      debug_info.command.left = left;
     }
     else
     {
@@ -265,6 +282,7 @@ void WaypointController::setPoint(double left, double right, bool reverse)
       right  = clamp(right, -config->max_manual_duty, config->max_manual_duty);
       fr->setDuty((float)right);
       br->setDuty((float)right);
+      debug_info.command.right = right;
     }
     else
     {
@@ -281,12 +299,14 @@ void WaypointController::setPoint(double left, double right, bool reverse)
     bl->setDuty((float)left);
     fr->setDuty((float)right);
     br->setDuty((float)right);
+    debug_info.command.left = left;
+    debug_info.command.right = right;
   }
 }
 
 void WaypointController::stop()
 {
-setPoint(0.0, 0.0);
+  setPoint(0.0, 0.0);
 }
 
 ControlState WaypointController::getControlState() const
@@ -297,4 +317,9 @@ return state;
 size_t WaypointController::remainingWaypoints()
 {
   return waypoints.size();
+}
+
+Debug WaypointController::getDebugInfo() const
+{
+  return debug_info;
 }
