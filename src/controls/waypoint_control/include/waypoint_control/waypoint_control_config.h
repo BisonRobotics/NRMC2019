@@ -14,25 +14,14 @@ namespace waypoint_control
   typedef std::vector<Waypoint> Waypoints;
   using boost::math::double_constants::pi;
 
-  namespace default_config
-  {
-    const double MAX_DUTY = 0.3;
-    const double MAX_IN_PLACE_DUTY = 0.2;
-    const double MIN_IN_PLACE_DUTY = 0.1;
-    const double MAX_DRIVING_DUTY = 0.4;
-    const double MIN_DRIVING_DUTY = 0.2;
-    const double MAX_MANUAL_DUTY = 0.2;
-    const double MIN_MANUAL_DUTY = 0.05;
-    const double IN_PLACE_K = 1.0;
-    const double DRIVING_K = 100;
-  };
-
   class Config
   {
   public:
     Config(ros::NodeHandle *nh);
     static void loadParam(ros::NodeHandle *nh, const std::string &name, double &param, double default_param);
 
+    double rate;
+    double max_acceleration;
     double max_duty;
     double max_in_place_duty;
     double min_in_place_duty;

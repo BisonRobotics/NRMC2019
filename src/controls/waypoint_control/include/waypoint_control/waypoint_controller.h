@@ -17,8 +17,7 @@ namespace waypoint_control
 {
   using Rotation2D = Eigen::Rotation2D<double>;
 
-  Rotation2D getAngularError(const tf2::Transform &transform, const Waypoint &waypoint, bool reverse = false);
-  double getLinearError(const tf2::Transform &R, const Waypoint &waypoint, bool reverse = false);
+  double clampAcceleration(double value, double last_value, double limit, double dt);
 
   class WaypointController
   {
@@ -38,6 +37,7 @@ namespace waypoint_control
     Debug getDebugInfo() const;
 
   private:
+    double last_left, last_right, dt;
     Config *config;
     Debug debug_info;
     iVescAccess *fl, *fr, *br, *bl;

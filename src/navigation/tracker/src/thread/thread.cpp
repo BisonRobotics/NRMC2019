@@ -123,9 +123,23 @@ void Thread::thread()
       catch (std::runtime_error &e)
       {
         ROS_WARN("%s", e.what());
-        camera->stop();
+        try
+        {
+          camera->stop();
+        }
+        catch (std::runtime_error &e)
+        {
+          ROS_WARN("%s", e.what());
+        }
         ros::Duration(0.1).sleep();
-        camera->start();
+        try
+        {
+          camera->start();
+        }
+        catch (std::runtime_error &e)
+        {
+          ROS_WARN("%s", e.what());
+        }
       }
     }
 

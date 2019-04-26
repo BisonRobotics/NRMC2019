@@ -24,9 +24,9 @@ using std::abs;
 WaypointController::WaypointController(iVescAccess *front_left, iVescAccess *front_right,
     iVescAccess *back_right, iVescAccess *back_left, Config *config) :
     fl(front_left), fr(front_right), br(back_right), bl(back_left), config(config),
-    state(ControlState::manual), waypoint_state(WaypointState::ready)
+    state(ControlState::manual), waypoint_state(WaypointState::ready), last_left(0.0), last_right(0.0)
 {
-
+  dt = 1.0/config->rate;
 }
 
 void WaypointController::setControlState(ControlState state)
@@ -277,8 +277,13 @@ void WaypointController::updateControls(const tf2::Transform &transform)
 }
 
 
+
+
 void WaypointController::setPoint(double left, double right, bool reverse)
 {
+  left  = clampAcceleration( left,  last_left, config->max_acceleration, dt);
+  right = clampAcceleration(right, last_right, config->max_acceleration, dt);
+
   if (state == ControlState::manual)
   {
     if (std::abs(left) > 1.0e-3)
@@ -290,9 +295,10 @@ void WaypointController::setPoint(double left, double right, bool reverse)
     }
     else
     {
-      debug_info.command.left = 0.0;
+      left = 0.0;
       fl->setTorque(0.0f);
       bl->setTorque(0.0f);
+      debug_info.command.left = 0.0;
     }
     if (std::abs(right) > 1.0e-3)
     {
@@ -303,9 +309,10 @@ void WaypointController::setPoint(double left, double right, bool reverse)
     }
     else
     {
-      debug_info.command.right = 0.0;
+      right = 0.0;
       fr->setTorque(0.0f);
       br->setTorque(0.0f);
+      debug_info.command.right = 0.0;
     }
   }
   else
@@ -320,6 +327,8 @@ void WaypointController::setPoint(double left, double right, bool reverse)
     debug_info.command.left = left;
     debug_info.command.right = right;
   }
+  last_left = left;
+  last_right = right;
 }
 
 void WaypointController::stop()
@@ -340,4 +349,14 @@ size_t WaypointController::remainingWaypoints()
 Debug WaypointController::getDebugInfo() const
 {
   return debug_info;
+}
+
+double waypoint_control::clampAcceleration(double value, double last_value, double limit, double dt)
+{
+  double acceleration = (value - last_value) / dt;
+  if (abs(acceleration) > limit)
+  {
+    return (acceleration > 0.0 ? 1.0 : -1.0) * limit * dt + last_value;
+  }
+  return value;
 }
