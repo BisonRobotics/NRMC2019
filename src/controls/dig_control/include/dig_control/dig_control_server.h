@@ -33,7 +33,7 @@ namespace dig_control
     // Minimum 0.22
     // Dump angle 2.12 // Austin has it at 1.3
     // Maximum 2.35
-    bool dig_safety;
+    bool manual_safety, autonomy_safety;
     float backhoe_duty, bucket_duty, central_duty, vibrator_duty;
     uint32_t seq;
     bool debug;

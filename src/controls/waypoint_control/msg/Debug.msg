@@ -1,0 +1,6 @@
+string command_state
+string waypoint_state
+FeedbackInfo feedback
+Command command
+Waypoint waypoint
+geometry_msgs/Transform transform

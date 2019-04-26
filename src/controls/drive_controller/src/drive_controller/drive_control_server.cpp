@@ -1,5 +1,6 @@
 #include <drive_controller/drive_control_server.h>
 #include <wheel_params/wheel_params.h>
+#include <utilities/joy.h>
 
 
 using namespace drive_controller;
@@ -8,14 +9,14 @@ using namespace drive_controller;
 DriveControlServer::DriveControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl) :
   nh(nh), fl(fl), fr(fr), bl(bl), br(br), debug(true), server(*nh, "action", false), direction(true),
   controller(fr, fl, bl, br), teleop(TeleopInterface::Mode::velocity, 0.4, fl, fr, br, bl),
-  state(ControlState::manual), safety(false), teleop_left(0.0f), teleop_right(0.0f), seq(0)
+  state(ControlState::manual), manual_safety(false), autonomy_safety(false), teleop_left(0.0f), teleop_right(0.0f), seq(0)
 {
   joint_angles.header.stamp = ros::Time::now();
   joint_angles.header.seq = seq;
-  joint_angles.name.emplace_back("front_left_wheel");
-  joint_angles.name.emplace_back("front_right_wheel");
-  joint_angles.name.emplace_back("back_right_wheel");
-  joint_angles.name.emplace_back("back_left_wheel");
+  joint_angles.name.emplace_back("front_left_wheel_joint");
+  joint_angles.name.emplace_back("front_right_wheel_joint");
+  joint_angles.name.emplace_back("back_right_wheel_joint");
+  joint_angles.name.emplace_back("back_left_wheel_joint");
   joint_angles.position.emplace_back(0.0);
   joint_angles.position.emplace_back(0.0);
   joint_angles.position.emplace_back(0.0);
@@ -32,18 +33,6 @@ DriveControlServer::DriveControlServer(ros::NodeHandle *nh, iVescAccess *fl, iVe
   server.start();
 }
 
-DriveControlResult drive_controller::toResult(ControlState state)
-{
-  DriveControlResult result;
-  result.control_state = (DriveControlResult::_control_state_type)state;
-  return result;
-}
-
-ControlState drive_controller::toControlState(DriveControlGoal goal)
-{
-  return (ControlState)goal.control_state;
-}
-
 void DriveControlServer::goalCallback()
 {
   auto goal = server.acceptNewGoal();
@@ -56,31 +45,34 @@ void DriveControlServer::goalCallback()
     case ControlState::new_goal:
     {
       // Only accepts one segment
+      stop();
       direction = goal->path[0].direction_of_travel == 1;
       path = toBezierPath(goal->path[0]);
       modified_path = path;
-      controller.cleanPath(&modified_path, x, y, theta, false);
+      controller.cleanPath(&modified_path, x, y, theta, direction);
       controller.addPath(modified_path, direction);
+      //controller.addPath(modified_path, direction);
       state = ControlState::in_progress;
       server.setSucceeded(toResult(state));
       break;
     }
     case ControlState::cancel:
     {
+      stop();
       state = ControlState::ready;
       server.setSucceeded(toResult(state));
-      stop();
     }
     case ControlState::manual:
     {
+      stop();
       state = ControlState::manual;
       server.setSucceeded(toResult(state));
       break;
     }
     default:
     {
-      state = ControlState::error;
       stop();
+      state = ControlState::error;
       server.setAborted(toResult(state));
       ROS_ERROR("[DriveControlServer::goalCallback] Unable to set control state from %s to %s",
                 to_string(state).c_str(), to_string(request).c_str());
@@ -96,18 +88,17 @@ void DriveControlServer::preemptCallback()
   ROS_INFO("[DigControlServer::preemptCallback] Preempting from %s", to_string(state).c_str());
 }
 
-void DriveControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
+void DriveControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
 {
-  bool lb = joy->buttons[4] == 1; // Safety
-  float ls = joy->axes[1];        // Left wheels
-  float rs = joy->axes[3];        // Right wheels
+  using utilities::Joy;
+  Joy joy(joy_msg);
 
-  safety = lb;
-
-  if (safety)
+  manual_safety = joy.get(Joy::MANUAL_SAFETY);
+  autonomy_safety = joy.get(Joy::AUTONOMY_SAFETY);
+  if (manual_safety)
   {
-    teleop_left  = max_velocity * ls;
-    teleop_right = max_velocity * rs;
+    teleop_left  = max_velocity * (float)joy.get(Joy::TELEOP_LEFT);
+    teleop_right = max_velocity * (float)joy.get(Joy::TELEOP_RIGHT);
   }
   else
   {
@@ -137,7 +128,7 @@ void DriveControlServer::update(double dt)
     }
     case ControlState::in_progress:
     {
-      if (safety)
+      if (autonomy_safety)
       {
         controller.update(state_vector, dt);
       }
@@ -149,7 +140,7 @@ void DriveControlServer::update(double dt)
     }
     case ControlState::manual:
     {
-      if (safety)
+      if (manual_safety)
       {
         teleop.update(teleop_left, teleop_right);
       }
@@ -180,6 +171,7 @@ void DriveControlServer::update(double dt)
 void DriveControlServer::stop()
 {
   controller.haltAndAbort();
+  controller.update(state_vector, 1.0/50.0); // TODO add what this really is
 }
 
 void DriveControlServer::stateVectorCallback(const localization::StateVector::ConstPtr &state_vector_msg)
@@ -193,25 +185,6 @@ void DriveControlServer::stateVectorCallback(const localization::StateVector::Co
   state_vector.x_accel = state_vector_msg->x_accel;
   state_vector.y_accel = state_vector_msg->y_accel;
   state_vector.alpha   = state_vector_msg->alpha;
-}
-
-std::string drive_controller::to_string(ControlState state)
-{
-  switch (state)
-  {
-    case ControlState::error:
-      return "error";
-    case ControlState::ready:
-      return "ready";
-    case ControlState::new_goal:
-      return "new_goal";
-    case ControlState::in_progress:
-      return "in_progress";
-    case ControlState::cancel:
-      return "cancel";
-    case ControlState::manual:
-      return "manual";
-  }
 }
 
 bezier_path drive_controller::toBezierPath(const navigation_msgs::BezierSegment &segment)

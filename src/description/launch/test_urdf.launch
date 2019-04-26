@@ -3,7 +3,7 @@
     Launches the nodes necessary for urdf development
   -->
   <arg name="test_urdf" value="true" />
-  <arg name="fixed_central_drive" default="false" />
+  <arg name="fixed_central_drive" default="true" />
   <arg name="fixed_drivetrains" default="true" />
   <!--<include file="$(find description)/launch/rviz.launch" />-->
   <include file="$(find description)/launch/load_robot_and_arena.launch" pass_all_args="true" />

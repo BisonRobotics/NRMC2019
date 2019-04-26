@@ -17,4 +17,6 @@
   <depend>actionlib_msgs</depend>
   <depend>visualization_msgs</depend>
   <depend>interactive_markers</depend>
+  <depend>utilities</depend>
+  <depend>waypoint_control</depend>
 </package>

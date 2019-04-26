@@ -7,7 +7,7 @@ DriveControlClient::DriveControlClient() :
   boostDoneCallback(boost::bind(&DriveControlClient::doneCallback, this, _1, _2)),
   boostActiveCallback(boost::bind(&DriveControlClient::activeCallback, this)),
   boostFeedbackCallback(boost::bind(&DriveControlClient::feedbackCallback, this, _1)),
-  control_state(ControlState::ready)
+  control_state(ControlState::manual)
 {
   ROS_INFO("Waiting for drive_control_server to start");
   client.waitForServer();

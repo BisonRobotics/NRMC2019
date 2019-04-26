@@ -7,6 +7,7 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  waypoint_control
   roscpp
   std_msgs
   vesc_access
@@ -25,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
   joy
   visualization_msgs
   interactive_markers
+  utilities
 )
 
 link_directories(/usr/src/gmock/build)
@@ -47,6 +49,7 @@ generate_messages(DEPENDENCIES std_msgs actionlib_msgs geometry_msgs navigation_
 
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES drive_controller drive_control_client drive_control_states
   CATKIN_DEPENDS driver_access roscpp std_msgs navigation_msgs localization cv_bridge
 )
 
@@ -56,31 +59,29 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 
+add_library(drive_control_states src/drive_controller/drive_control_states.cpp)
+add_dependencies(drive_control_states ${drive_controller_EXPORTED_TARGETS})
+target_link_libraries(drive_control_states ${catkin_LIBRARIES})
+
 add_library(drive_controller src/drive_controller/drive_controller.cpp)
 add_dependencies(drive_controller ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
 target_link_libraries(drive_controller ${catkin_LIBRARIES})
 
-add_library(teleop_interface src/teleop_interface/teleop_interface.cpp)
-target_link_libraries(teleop_interface ${catkin_LIBRARIES})
-
 add_library(drive_control_client src/drive_controller/drive_control_client.cpp)
 add_dependencies(drive_control_client ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(drive_control_client ${catkin_LIBRARIES})
+target_link_libraries(drive_control_client drive_control_states ${catkin_LIBRARIES})
 
 add_executable(drive_controller_master src/drive_controller/drive_controller_master.cpp)
 add_dependencies(drive_controller_master ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
 target_link_libraries(drive_controller_master drive_controller ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
-add_executable(teleop src/teleop_interface/teleop.cpp)
-target_link_libraries(teleop teleop_interface ${catkin_LIBRARIES})
-
 add_executable(drive_control_server src/drive_controller/drive_control_server.cpp)
 add_dependencies(drive_control_server ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(drive_control_server drive_controller teleop_interface ${catkin_LIBRARIES})
+target_link_libraries(drive_control_server drive_control_states drive_controller ${catkin_LIBRARIES})
 
 add_executable(drive_control_client_node src/drive_controller/drive_control_client_node.cpp)
 add_dependencies(drive_control_client_node ${drive_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(drive_control_client_node drive_control_client ${catkin_LIBRARIES})
+target_link_libraries(drive_control_client_node drive_control_states drive_control_client ${catkin_LIBRARIES})
 
 
 if(DEFINED ENV{ON_ROBOT})
@@ -105,9 +106,4 @@ endif()
 catkin_add_gtest(test_drive_controller src/drive_controller/test/drive_controller_tests.cpp)
 if(TARGET test_drive_controller)
   target_link_libraries(test_drive_controller drive_controller ${catkin_LIBRARIES} gmock_main)
-endif()
-
-catkin_add_gtest(teleop_interface_tests src/teleop_interface/tests/teleop_interface_tests.cpp)
-if(TARGET teleop_interface_tests)
-  target_link_libraries(teleop_interface_tests  teleop_interface ${catkin_LIBRARIES} gmock_main)
 endif()

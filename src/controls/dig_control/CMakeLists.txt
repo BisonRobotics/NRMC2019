@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   actionlib_msgs
   actionlib
+  utilities
 )
 
 find_package(Boost REQUIRED COMPONENTS system)
@@ -48,7 +49,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES dig_controller
+  LIBRARIES dig_controller dig_control_client
   CATKIN_DEPENDS roscpp message_generation actionlib_msgs
   #  DEPENDS system_lib
 )

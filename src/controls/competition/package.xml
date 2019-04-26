@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>competition</name>
+  <version>0.0.0</version>
+  <description>The competition controller package</description>
+  <maintainer email="jacob.huesman@ndsu.edu">jacob</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>actionlib</depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>navigation_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>waypoint_control</depend>
+  <depend>dig_control</depend>
+  <depend>path_planner</depend>
+  <depend>joy</depend>
+  <depend>visualization_msgs</depend>
+  <depend>interactive_markers</depend>
+  <depend>utilities</depend>
+</package>

@@ -111,6 +111,7 @@ void Thread::thread()
     // Get frame from camera (blocking)
     Debug debug_msg;
     total.start();
+    uint i = 0;
     while (true)
     {
       if (!ros::ok()) return;
@@ -124,6 +125,23 @@ void Thread::thread()
       {
         ROS_WARN("%s", e.what());
         ros::Duration(0.1).sleep();
+        if (i++ >= 10)
+        {
+          i = 0;
+          try
+          {
+            ROS_INFO("Attempting to reboot...");
+            camera->reboot();
+            ros::Duration(10.0).sleep();
+            ROS_INFO("Attempting to start...");
+            camera->start();
+          }
+          catch (std::runtime_error &e)
+          {
+            ROS_WARN("%s", e.what());
+            ros::Duration(0.1).sleep();
+          }
+        }
       }
     }
 

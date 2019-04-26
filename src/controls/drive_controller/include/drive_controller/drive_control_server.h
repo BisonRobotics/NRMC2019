@@ -16,25 +16,13 @@
 #include <drive_controller/DriveControlAction.h>
 #include <teleop_interface/teleop_interface.h>
 #include <localization/StateVector.h>
+#include <drive_controller/drive_control_states.h>
 
 namespace drive_controller
 {
   using navigation_msgs::BezierSegment;
   typedef tf2::Stamped<tf2::Transform> StampedTransform;
 
-  enum class ControlState
-  {
-    error = 0,
-    ready,
-    new_goal,
-    in_progress,
-    cancel,
-    manual
-  };
-
-  DriveControlResult toResult(ControlState state);
-  ControlState toControlState(DriveControlGoal goal);
-  std::string to_string(ControlState state);
   bezier_path toBezierPath(const navigation_msgs::BezierSegment &segment);
 
   class DriveControlServer
@@ -51,7 +39,7 @@ namespace drive_controller
     void stop();
 
   private:
-    bool debug, safety, direction; // forward = true
+    bool debug, manual_safety, autonomy_safety, direction; // forward = true
     uint32_t seq;
     float teleop_left, teleop_right, max_velocity;
     double x, y, theta;

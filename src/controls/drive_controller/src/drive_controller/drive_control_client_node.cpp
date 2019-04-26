@@ -6,6 +6,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <occupancy_grid/bezier.h>
 #include <sstream>
+#include <tf2_ros/transform_listener.h>
 
 using namespace drive_controller;
 using visualization_msgs::Marker;
@@ -31,6 +32,7 @@ void joyCallback(const sensor_msgs::Joy::ConstPtr &joy)
   bool lb = joy->buttons[4] == 1; // Safety
 
   safety = lb;
+  //ROS_INFO("Safety: %i", lb);
 
   if (!safety)
   {
@@ -218,7 +220,9 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "drive_control_client");
   ros::NodeHandle nh;
   ros::Rate rate(10);
-  ros::Subscriber joy_sub = nh.subscribe("joy", 2, joyCallback);
+  tf2_ros::Buffer tf_buffer;
+  tf2_ros::TransformListener tf_listener(tf_buffer);
+  ros::Subscriber joy_sub = nh.subscribe("/joy", 2, joyCallback);
   ros::Publisher path_pub = nh.advertise<visualization_msgs::MarkerArray>("path_visual", 1);
   control_point_server = new InteractiveMarkerServer("path_control_points");
 
@@ -237,6 +241,18 @@ int main(int argc, char **argv)
   while(ros::ok())
   {
     ros::spinOnce();
+    geometry_msgs::TransformStamped transform;
+    try
+    {
+      transform = tf_buffer.lookupTransform("map", "base_link", ros::Time(0));
+    }
+    catch (tf2::TransformException &ex)
+    {
+      ROS_WARN("%s",ex.what());
+      ros::Duration(1.0).sleep();
+      continue;
+    }
+
     updatePathVisual(&path_visual, path, path_size);
     path_pub.publish(path_visual);
     rate.sleep();
