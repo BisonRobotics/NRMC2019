@@ -232,18 +232,20 @@ void WaypointController::updateControls(const tf2::Transform &transform)
       }
       else
       {
+        double kx  = config->driving_kx;
+        double ky  = config->driving_ky;
+        double min = config->min_driving_duty;
         double max = config->max_driving_duty;
-        double k = config->driving_k;
-        double brake = clamp(max * (1 - k * abs(feedback.y())),
-                             config->min_driving_duty, config->max_driving_duty);
+        double p = clamp(kx * abs(feedback.x()), 0.0, 1.0);
+        double high = clamp(p*max, min, max);
+        double low = clamp(p*max*(1 - ky * abs(feedback.y())), min, max);
         if (feedback.y() > 0.0)
         {
-
-          setPoint(brake, max, waypoint.reverse);
+          setPoint(low, high, waypoint.reverse);
         }
         else
         {
-          setPoint(max, brake, waypoint.reverse);
+          setPoint(high, low, waypoint.reverse);
         }
       }
       break;

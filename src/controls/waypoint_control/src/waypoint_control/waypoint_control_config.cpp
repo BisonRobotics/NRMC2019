@@ -25,7 +25,8 @@ Config::Config(ros::NodeHandle *nh)
   loadParam(nh, "max_manual_duty",   max_manual_duty,    0.20);
   loadParam(nh, "min_manual_duty",   min_manual_duty,    0.05);
   loadParam(nh, "in_place_k",        in_place_k,         1.00);
-  loadParam(nh, "driving_k",         driving_k,          1.00);
+  loadParam(nh, "driving_kx",        driving_kx,         1.00);
+  loadParam(nh, "driving_ky",        driving_ky,         1.00);
 }
 
 void Config::loadParam(ros::NodeHandle *nh, const std::string &name, double &param, double default_param)

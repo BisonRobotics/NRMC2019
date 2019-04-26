@@ -30,7 +30,8 @@ namespace waypoint_control
     double max_manual_duty;
     double min_manual_duty;
     double in_place_k;
-    double driving_k;
+    double driving_kx;
+    double driving_ky;
   };
 
   enum class ControlState
