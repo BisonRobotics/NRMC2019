@@ -265,7 +265,7 @@ void WaypointController::setPoint(double left, double right, bool reverse)
 {
   if (state == ControlState::manual)
   {
-    if (std::abs(left) > 1.0e-6)
+    if (std::abs(left) > 1.0e-3)
     {
       left  = clamp(left, -config->max_manual_duty, config->max_manual_duty);
       fl->setDuty((float)left);
@@ -277,7 +277,7 @@ void WaypointController::setPoint(double left, double right, bool reverse)
       fl->setTorque(0.0f);
       bl->setTorque(0.0f);
     }
-    if (std::abs(right) > 1.0e-6)
+    if (std::abs(right) > 1.0e-3)
     {
       right  = clamp(right, -config->max_manual_duty, config->max_manual_duty);
       fr->setDuty((float)right);

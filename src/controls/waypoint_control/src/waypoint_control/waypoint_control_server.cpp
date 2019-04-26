@@ -72,8 +72,8 @@ void WaypointControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_ms
   autonomy_safety = joy.get(Joy::AUTONOMY_SAFETY);
   if (manual_safety)
   {
-    teleop_left  = config->max_manual_duty * joy.get(Joy::TELEOP_LEFT);
-    teleop_right = config->max_manual_duty * joy.get(Joy::TELEOP_RIGHT);
+    teleop_left  = joy.get(Joy::TELEOP_LEFT);
+    teleop_right = joy.get(Joy::TELEOP_RIGHT);
   }
   else
   {
@@ -137,7 +137,6 @@ int main(int argc, char* argv[])
   ros::Rate rate(50);
 
   double max_velocity;
-  nh.param<double>("max_velocity", max_velocity, 0.1);
   double dt = rate.expectedCycleTime().toSec();
 
   iVescAccess *fl, *fr, *br, *bl;
