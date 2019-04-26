@@ -4,7 +4,7 @@
 using namespace competition;
 
 Controller::Controller(ros::NodeHandle *nh, ros::Rate *rate, const Waypoints &waypoints) :
-  nh(nh), rate(rate), tf_listener(tf_buffer), waypoints(waypoints), visuals(nh),
+  nh(nh), rate(rate), tf_listener(tf_buffer), waypoints(waypoints), visuals(nh), state(ControlState::manual),
   dt(rate->expectedCycleTime().toSec()), reverse(false)
 {
   joy_subscriber = nh->subscribe("joy", 1, &Controller::joyCallback, this);
@@ -15,6 +15,7 @@ Controller::Controller(ros::NodeHandle *nh, ros::Rate *rate, const Waypoints &wa
 
 void Controller::update()
 {
+  // Get latest TF
   try
   {
     tf2::fromMsg(tf_buffer.lookupTransform("map", "base_link", ros::Time(0)), transform);
@@ -24,8 +25,93 @@ void Controller::update()
   {
     ROS_WARN("%s",ex.what());
     ros::Duration(1.0).sleep();
-    return;
   }
+
+  switch (state)
+  {
+    case ControlState::manual:
+    case ControlState::assisted_autonomy:
+    {
+      // Controllers more or less handle themselves
+      break;
+    }
+    case ControlState::wait_for_start:
+    {
+      // Make sure we're connected to all systems, wait for start command
+      break;
+    }
+    case ControlState::start:
+    {
+      // Make sure systems are in starting positions
+      break;
+    }
+    case ControlState::check_for_apriltag:
+    {
+      // Check to make sure we have received an apriltag, if not rotate in place
+      break;
+    }
+    case ControlState::wait_for_localization:
+    {
+      // Wait until localization stabalizes
+      break;
+    }
+    case ControlState::navigate_to_dig_zone_1:
+    {
+
+      break;
+    }
+    case ControlState::dig_1:
+    {
+
+      break;
+    }
+    case ControlState::finish_dig_1:
+    {
+
+      break;
+    }
+    case ControlState::navigate_to_hopper_1:
+    {
+
+      break;
+    }
+    case ControlState::dump_1:
+    {
+
+      break;
+    }
+    case ControlState::navigate_to_dig_zone_2:
+    {
+
+      break;
+    }
+    case ControlState::dig_2:
+    {
+
+      break;
+    }
+    case ControlState::finish_dig_2:
+    {
+
+      break;
+    }
+    case ControlState::navigate_to_hopper_2:
+    {
+
+      break;
+    }
+    case ControlState::dump_2:
+    {
+
+      break;
+    }
+    case ControlState::finish:
+    {
+
+      break;
+    }
+  }
+
 }
 
 void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)

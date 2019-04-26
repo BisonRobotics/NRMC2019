@@ -64,9 +64,13 @@ add_library(waypoint_visuals src/waypoint_visuals.cpp)
 add_dependencies(waypoint_visuals ${waypoint_control_EXPORTED_TARGETS} ${visualization_msgs_EXPORTED_TARGETS})
 target_link_libraries(waypoint_visuals ${catkin_LIBRARIES})
 
+add_library(competition_config src/competition_config.cpp)
+add_dependencies(competition_config ${waypoint_control_EXPORTED_TARGETS} ${visualization_msgs_EXPORTED_TARGETS})
+target_link_libraries(competition_config ${catkin_LIBRARIES})
+
 add_library(competition_controller src/competition_controller.cpp)
 add_dependencies(competition_controller ${competition_EXPORTED_TARGETS} ${waypoint_control_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(competition_controller waypoint_visuals ${catkin_LIBRARIES})
+target_link_libraries(competition_controller competition_config waypoint_visuals ${catkin_LIBRARIES})
 
 add_executable(competition_node src/competition_node.cpp)
 add_dependencies(competition_node ${competition_EXPORTED_TARGETS} ${waypoint_control_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})

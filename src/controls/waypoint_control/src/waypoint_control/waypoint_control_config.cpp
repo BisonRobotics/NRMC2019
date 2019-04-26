@@ -2,7 +2,7 @@
 
 using namespace waypoint_control;
 
-Config::Config() :
+/*Config::Config() :
     max_duty(default_config::MAX_DUTY),
     max_in_place_duty(default_config::MAX_IN_PLACE_DUTY),
     min_in_place_duty(default_config::MIN_IN_PLACE_DUTY),
@@ -11,11 +11,20 @@ Config::Config() :
     max_manual_duty(default_config::MAX_MANUAL_DUTY),
     in_place_k(default_config::IN_PLACE_K),
     driving_k(default_config::DRIVING_K)
-{}
+{}  */
 
 Config::Config(ros::NodeHandle *nh)
 {
-  nh->param<double>("max_duty", max_duty, default_config::MAX_DUTY);
+  loadParam(nh, "max_duty", max_duty, default_config::MAX_DUTY);
+  loadParam(nh, "max_in_place_duty", max_in_place_duty, default_config::MAX_IN_PLACE_DUTY);
+  loadParam(nh, "min_in_place_duty", min_in_place_duty, default_config::MIN_IN_PLACE_DUTY);
+  loadParam(nh, "max_driving_duty", max_driving_duty, default_config::MAX_DRIVING_DUTY);
+  loadParam(nh, "min_driving_duty", min_driving_duty, default_config::MIN_DRIVING_DUTY);
+  loadParam(nh, "max_manual_duty", max_manual_duty, default_config::MAX_MANUAL_DUTY);
+  loadParam(nh, "min_manual_duty", min_manual_duty, default_config::MIN_MANUAL_DUTY);
+  loadParam(nh, "in_place_k", in_place_k, default_config::IN_PLACE_K);
+  loadParam(nh, "driving_k", driving_k, default_config::DRIVING_K);
+  /*nh->param<double>("max_duty", max_duty, default_config::MAX_DUTY);
   nh->param<double>("max_in_place_duty", max_in_place_duty, default_config::MAX_IN_PLACE_DUTY);
   nh->param<double>("min_in_place_duty", min_in_place_duty, default_config::MIN_IN_PLACE_DUTY);
   nh->param<double>("max_driving_duty", max_driving_duty, default_config::MAX_DRIVING_DUTY);
@@ -23,7 +32,13 @@ Config::Config(ros::NodeHandle *nh)
   nh->param<double>("max_manual_duty", max_manual_duty, default_config::MAX_MANUAL_DUTY);
   nh->param<double>("min_manual_duty", min_manual_duty, default_config::MIN_MANUAL_DUTY);
   nh->param<double>("in_place_k", in_place_k, default_config::IN_PLACE_K);
-  nh->param<double>("driving_k", driving_k, default_config::DRIVING_K);
+  nh->param<double>("driving_k", driving_k, default_config::DRIVING_K);*/
+}
+
+void Config::loadParam(ros::NodeHandle *nh, const std::string &name, double &param, double default_param)
+{
+  nh->param<double>(name, param, default_param);
+  ROS_INFO("[waypoint_control::Config::loadParam]: | %20s | %7f |", name.c_str(), param);
 }
 
 std::string waypoint_control::to_string(ControlState state)

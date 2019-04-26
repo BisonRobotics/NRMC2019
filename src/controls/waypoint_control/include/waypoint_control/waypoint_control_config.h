@@ -30,8 +30,8 @@ namespace waypoint_control
   class Config
   {
   public:
-    Config();
     Config(ros::NodeHandle *nh);
+    static void loadParam(ros::NodeHandle *nh, const std::string &name, double &param, double default_param);
 
     double max_duty;
     double max_in_place_duty;

@@ -48,6 +48,7 @@ namespace waypoint_control
     ros::NodeHandle *nh;
     ros::Subscriber joy_subscriber;
     ros::Publisher joint_publisher;
+    ros::Publisher debug_publisher;
     tf2_ros::Buffer tf_buffer;
     tf2_ros::TransformListener tf_listener;
     actionlib::SimpleActionServer<WaypointControlAction> server;

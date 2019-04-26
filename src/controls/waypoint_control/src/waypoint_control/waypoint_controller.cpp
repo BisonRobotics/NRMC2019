@@ -18,6 +18,7 @@ using namespace waypoint_control;
 using boost::algorithm::clamp;
 using boost::math::double_constants::pi;
 using std::signbit;
+using std::abs;
 
 
 WaypointController::WaypointController(iVescAccess *front_left, iVescAccess *front_right,
@@ -30,19 +31,31 @@ WaypointController::WaypointController(iVescAccess *front_left, iVescAccess *fro
 
 void WaypointController::setControlState(ControlState state)
 {
-  stop();
   switch (state)
   {
     case ControlState::ready:
     case ControlState::manual:
     {
-      this->state = state;
-      ROS_INFO("[WaypointController::setControlState]: %s to %s",
-               to_string(this->state).c_str(), to_string(state).c_str());
+      waypoint_state = WaypointState::ready;
+      waypoints.clear();
+      if (this->state != state)
+      {
+        stop();
+        this->state = state;
+        ROS_INFO("[WaypointController::setControlState]: %s to %s",
+                 to_string(this->state).c_str(), to_string(state).c_str());
+      }
+      else
+      {
+        ROS_WARN("[WaypointController::setControlState]: %s to %s",
+                 to_string(this->state).c_str(), to_string(state).c_str());
+      }
+
       break;
     }
     case ControlState::cancel:
     {
+      stop();
       this->state = ControlState::ready;
       ROS_INFO("[WaypointController::setControlState]: %s to %s",
                to_string(this->state).c_str(), to_string(state).c_str());
@@ -52,6 +65,7 @@ void WaypointController::setControlState(ControlState state)
     case ControlState::new_goal:
     case ControlState::in_progress:
     {
+      stop();
       this->state = ControlState::error;
       ROS_WARN("[WaypointController::setControlState]: Invalid transition %s to %s",
                to_string(this->state).c_str(), to_string(state).c_str());
@@ -128,6 +142,7 @@ void WaypointController::update(bool manual_safety, bool autonomy_safety,
       break;
     }
     case ControlState::ready:
+    case ControlState::finished:
     case ControlState::cancel:
     case ControlState::new_goal:
     case ControlState::error:
@@ -143,7 +158,8 @@ void WaypointController::update(bool manual_safety, bool autonomy_safety,
   debug_info.feedback.dx = feedback.x();
   debug_info.feedback.dy = feedback.y();
   debug_info.feedback.dr = feedback.r();
-  debug_info.feedback.th = feedback.theta();
+  debug_info.feedback.tr = feedback.theta();
+  debug_info.feedback.td = feedback.theta()/pi*180.0;
   debug_info.transform = tf2::toMsg(transform);
   this->last_transform = transform;
 }
@@ -178,8 +194,8 @@ void WaypointController::updateControls(const tf2::Transform &transform)
     }
     case WaypointState::initial_angle_correction:
     {
-      ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: angle = %f",
-               feedback.theta()/pi*180.0);
+      //ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: angle = %f",
+      //         feedback.theta()/pi*180.0);
       if (signbit(feedback.theta()) != signbit(last_feedback.theta()))
       {
         ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: %s to %s, angle = %f",
@@ -191,7 +207,7 @@ void WaypointController::updateControls(const tf2::Transform &transform)
       }
       else
       {
-        double duty = clamp(config->in_place_k * feedback.theta(),
+        double duty = clamp(config->in_place_k * abs(feedback.theta()),
             config->min_in_place_duty, config->max_in_place_duty);
         if (feedback.theta() > 0.0)
         {
@@ -206,7 +222,7 @@ void WaypointController::updateControls(const tf2::Transform &transform)
     }
     case WaypointState::driving:
     {
-      ROS_INFO("[WaypointController::updateControls::driving]: theta = %f", feedback.theta()/pi*180.0);
+      //ROS_INFO("[WaypointController::updateControls::driving]: theta = %f", feedback.theta()/pi*180.0);
       if (signbit(feedback.x()) != signbit(last_feedback.x()))
       {
         ROS_INFO("[WaypointController::updateControls::driving]: %s to %s, dx = %3f, dy = %3f",
@@ -219,9 +235,9 @@ void WaypointController::updateControls(const tf2::Transform &transform)
       }
       else
       {
-        ROS_INFO("[WaypointController::updateControls::driving]: dx = %3f, dy = %3f",
-                 feedback.x(),
-                 feedback.y());
+        //ROS_INFO("[WaypointController::updateControls::driving]: dx = %3f, dy = %3f",
+        //         feedback.x(),
+        //         feedback.y());
         double max = config->max_driving_duty;
         double k = config->driving_k;
         double brake = clamp(max * (1 - k*feedback.y()),
@@ -274,6 +290,7 @@ void WaypointController::setPoint(double left, double right, bool reverse)
     }
     else
     {
+      debug_info.command.left = 0.0;
       fl->setTorque(0.0f);
       bl->setTorque(0.0f);
     }
@@ -286,6 +303,7 @@ void WaypointController::setPoint(double left, double right, bool reverse)
     }
     else
     {
+      debug_info.command.right = 0.0;
       fr->setTorque(0.0f);
       br->setTorque(0.0f);
     }
@@ -311,7 +329,7 @@ void WaypointController::stop()
 
 ControlState WaypointController::getControlState() const
 {
-return state;
+  return state;
 }
 
 size_t WaypointController::remainingWaypoints()

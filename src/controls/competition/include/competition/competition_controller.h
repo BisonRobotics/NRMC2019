@@ -6,6 +6,7 @@
 #include <competition/waypoint_visuals.h>
 #include <waypoint_control/waypoint_control_client.h>
 #include <dig_control/dig_control_client.h>
+#include <competition/competition_config.h>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/transform_datatypes.h>
@@ -34,6 +35,7 @@ namespace competition
     waypoint_control::WaypointControlClient waypoint_client;
     dig_control::DigControlClient dig_client;
     Joy joy;
+    ControlState state;
     WaypointVisuals visuals;
     Waypoints waypoints;
     bool reverse;

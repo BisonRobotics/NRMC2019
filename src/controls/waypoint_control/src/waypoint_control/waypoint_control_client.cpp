@@ -16,6 +16,7 @@ WaypointControlClient::WaypointControlClient() :
 
 void WaypointControlClient::setControlState(ControlState state)
 {
+  control_state = state;
   waypoint_control::WaypointControlGoal goal;
   goal.control_state = (uint8_t)state;
   client.sendGoal(goal, boostDoneCallback, boostActiveCallback, boostFeedbackCallback);
@@ -23,10 +24,7 @@ void WaypointControlClient::setControlState(ControlState state)
 
 void WaypointControlClient::setControlState(ControlState state, const Waypoints &waypoints)
 {
-  if (state == ControlState::new_goal)
-  {
-
-  }
+  control_state = state;
   waypoint_control::WaypointControlGoal goal;
   goal.control_state = (uint8_t)state;
   goal.waypoints = waypoints;

@@ -30,6 +30,7 @@ WaypointControlServer::WaypointControlServer(ros::NodeHandle *nh,
 
   joy_subscriber = nh->subscribe("/joy", 1, &WaypointControlServer::joyCallback, this);
   joint_publisher = nh->advertise<sensor_msgs::JointState>("/joint_states", 1);
+  debug_publisher = nh->advertise<waypoint_control::Debug>("debug", 1);
   server.registerGoalCallback(boost::bind(&WaypointControlServer::goalCallback, this));
   server.registerPreemptCallback(boost::bind(&WaypointControlServer::preemptCallback, this));
   server.start();
@@ -93,24 +94,45 @@ void WaypointControlServer::update()
     tf2::fromMsg(transform_msg, transform);
     controller.update(manual_safety, autonomy_safety, transform, teleop_left, teleop_right);
     ControlState state = controller.getControlState();
-    if (state == ControlState::finished)
+
+    switch (state)
     {
-      WaypointControlResult result;
-      result.progress = 1.0;
-      result.angular_deviation = 0.0;
-      result.linear_deviation = 0.0;
-      result.control_state = (uint)ControlState::finished;
-      server.setSucceeded(result);
-      controller.setControlState(ControlState::ready);
-    }
-    else if (state == ControlState::in_progress)
-    {
-      WaypointControlFeedback feedback;
-      feedback.control_state = (uint)ControlState::in_progress;
-      feedback.angular_deviation = 0.0;
-      feedback.linear_deviation = 0.0;
-      feedback.progress = ((double)controller.remainingWaypoints()) / waypoints.size();
-      server.publishFeedback(feedback);
+      case ControlState::error:
+      {
+        WaypointControlResult result;
+        result.control_state = (uint)ControlState::error;
+        server.setAborted(result);
+        controller.setControlState(ControlState::manual);
+      }
+      case ControlState::in_progress:
+      {
+        WaypointControlFeedback feedback;
+        feedback.control_state = (uint)ControlState::in_progress;
+        feedback.angular_deviation = 0.0;
+        feedback.linear_deviation = 0.0;
+        feedback.progress = ((double)controller.remainingWaypoints()) / waypoints.size();
+        server.publishFeedback(feedback);
+        break;
+      }
+      case ControlState::finished:
+      {
+        WaypointControlResult result;
+        result.progress = 1.0;
+        result.angular_deviation = 0.0;
+        result.linear_deviation = 0.0;
+        result.control_state = (uint)ControlState::finished;
+        server.setSucceeded(result);
+        controller.setControlState(ControlState::manual);
+        break;
+      }
+      case ControlState::ready:
+      case ControlState::new_goal:
+      case ControlState::cancel:
+      case ControlState::manual:
+      {
+        // Do nothing
+        break;
+      }
     }
   }
   catch (tf2::TransformException &ex)
@@ -128,6 +150,9 @@ void WaypointControlServer::update()
   joint_angles.position[2] += br->getRadialVelocity() * dt;
   joint_angles.position[3] += bl->getRadialVelocity() * dt;
   joint_publisher.publish(joint_angles);
+
+  // Debug info
+  debug_publisher.publish(controller.getDebugInfo());
 }
 
 int main(int argc, char* argv[])

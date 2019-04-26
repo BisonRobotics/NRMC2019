@@ -1,13 +1,13 @@
 <launch>
-    <node name="waypoint_control_server" pkg="waypoint_control" type="waypoint_control_server">
+    <node name="waypoint_control_server" pkg="waypoint_control" type="waypoint_control_server" output="screen">
         <param name="max_duty"          type="double" value="0.3" />
-        <param name="max_in_place_duty" type="double" value="0.2" />
-        <param name="min_in_place_duty" type="double" value="0.1" />
-        <param name="max_driving_duty"  type="double" value="0.4" />
+        <param name="max_in_place_duty" type="double" value="0.3" />
+        <param name="min_in_place_duty" type="double" value="0.2" />
+        <param name="max_driving_duty"  type="double" value="0.3" />
         <param name="min_driving_duty"  type="double" value="0.2" />
         <param name="max_manual_duty"   type="double" value="0.3" />
         <param name="min_manual_duty"   type="double" value="0.05" />
-        <param name="in_place_k"        type="double" value="0.1" />
+        <param name="in_place_k"        type="double" value="100" />
         <param name="driving_k"         type="double" value="0.1" />
     </node>
 </launch>
