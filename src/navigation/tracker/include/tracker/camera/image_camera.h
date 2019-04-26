@@ -17,6 +17,7 @@ namespace tracker
 
         void start() override;
         void stop() override;
+        void reboot() override;
         void getFrame(unsigned char* image_buffer) override;
         uint getBrightness() override;
         void setBrightness(uint brightness) override;

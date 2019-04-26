@@ -2,7 +2,7 @@
 #include <fstream>
 
 tracker::OCamCamera::OCamCamera(CameraInfo info, uint fps, uint brightness, uint exposure):
-                                info(info)
+                                info(info), fps(fps), brightness(brightness), exposure(exposure)
 {
   // Make sure camera is exists
   std::ifstream f(info.path);
@@ -121,4 +121,34 @@ tracker::CameraInfo tracker::OCamCamera::getInfo()
 std::string tracker::OCamCamera::getName()
 {
   return info.name;
+}
+
+void tracker::OCamCamera::reboot()
+{
+  delete(camera);
+
+  // Make sure camera is exists
+  std::ifstream f(info.path);
+  if (!f.good())
+  {
+    throw std::runtime_error("Unable to find camera");
+  }
+
+  // Set camera parameters
+  camera = new ocam::Camera(info.path.c_str());
+  camera->set_format(info.width, info.height, ocam::fourcc_to_pixformat('G','R','E','Y'), 1, fps);
+  setBrightness(brightness);
+  setExposure(exposure);
+  sequence = 0;
+
+  // Make sure all parameters were set properly
+  camera->get_current_format(cam_format);
+  if (cam_format.height != info.height ||
+      cam_format.width != info.width ||
+      cam_format.rate_denominator != fps ||
+      getBrightness() != brightness ||
+      getExposure() != exposure)
+  {
+    throw std::runtime_error("Device parameters don't match those requested");
+  }
 }

@@ -10,6 +10,6 @@
         <param name="max_manual_duty"   type="double" value="0.30" />
         <param name="min_manual_duty"   type="double" value="0.05" />
         <param name="in_place_k"        type="double" value="0.40" />
-        <param name="driving_k"         type="double" value="0.10" />
+        <param name="driving_k"         type="double" value="5.00" />
     </node>
 </launch>

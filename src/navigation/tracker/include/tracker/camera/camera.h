@@ -10,6 +10,7 @@ namespace tracker
     public:
       virtual void start() = 0;
       virtual void stop() = 0;
+      virtual void reboot() = 0;
       virtual void getFrame(unsigned char* image_buffer) = 0;
       virtual void setBrightness(uint brightness) = 0;
       virtual uint getBrightness() = 0;

@@ -62,3 +62,18 @@ uint tracker::ImageCamera::getSequence()
 {
  return seq;
 }
+
+void tracker::ImageCamera::reboot()
+{
+
+}
+
+uint tracker::ImageCamera::getWidth()
+{
+  return 0;
+}
+
+uint tracker::ImageCamera::getHeight()
+{
+  return 0;
+}

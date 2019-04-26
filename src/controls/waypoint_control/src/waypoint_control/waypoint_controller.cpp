@@ -222,25 +222,19 @@ void WaypointController::updateControls(const tf2::Transform &transform)
     }
     case WaypointState::driving:
     {
-      //ROS_INFO("[WaypointController::updateControls::driving]: theta = %f", feedback.theta()/pi*180.0);
       if (signbit(feedback.x()) != signbit(last_feedback.x()))
       {
         ROS_INFO("[WaypointController::updateControls::driving]: %s to %s, dx = %3f, dy = %3f",
-                 to_string(waypoint_state).c_str(),
-                 to_string(WaypointState::driving).c_str(),
-                 feedback.x(),
-                 feedback.y());
+                 to_string(waypoint_state).c_str(), to_string(WaypointState::driving).c_str(),
+                 feedback.x(), feedback.y());
         setPoint(0.0, 0.0, waypoint.reverse);
         waypoint_state = WaypointState::final_angle_correction;
       }
       else
       {
-        //ROS_INFO("[WaypointController::updateControls::driving]: dx = %3f, dy = %3f",
-        //         feedback.x(),
-        //         feedback.y());
         double max = config->max_driving_duty;
         double k = config->driving_k;
-        double brake = clamp(max * (1 - k*feedback.y()),
+        double brake = clamp(max * (1 - k * abs(feedback.y())),
                              config->min_driving_duty, config->max_driving_duty);
         if (feedback.y() > 0.0)
         {

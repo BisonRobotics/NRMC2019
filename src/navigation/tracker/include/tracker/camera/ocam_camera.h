@@ -15,6 +15,7 @@ namespace tracker
 
         void start() override;
         void stop() override;
+        void reboot() override;
         void getFrame(unsigned char* image_buffer) override;
         uint getBrightness() override;
         void setBrightness(uint brightness) override;
@@ -32,6 +33,7 @@ namespace tracker
         ocam::camera_format cam_format;
         uint sequence;
         CameraInfo info;
+        uint brightness, exposure, fps;
     };
 }
 
