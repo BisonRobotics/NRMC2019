@@ -65,6 +65,11 @@ include_directories(${Eigen3_INCLUDE_DIRS})
 link_directories(/usr/src/gmock/build)
 set(GTEST_LIBRARIES gmock_main)
 
+# Config
+add_library(tracker_config src/config.cpp)
+target_link_libraries(tracker_config ${catkin_LIBRARIES})
+
+
 # Camera
 add_library(camera_info src/camera/camera_info.cpp)
 add_library(ocam_camera src/camera/ocam_camera.cpp)
@@ -79,20 +84,22 @@ add_library(detector
   src/tag.cpp
   src/util.cpp)
 target_link_libraries(detector
-        ${apriltags_LIBRARIES}
-        ${catkin_LIBRARIES})
+  ${catkin_LIBRARIES}
+  ${apriltags_LIBRARIES}
+  tracker_config)
 
 # Tracker node
 add_executable(tracker_node
   src/thread.cpp
   src/tracker_node.cpp)
 target_link_libraries(tracker_node
-        ${catkin_LIBRARIES}
-        ${OpenCV_LIBS}
-        ${Boost_LIBRARIES}
-        ocam_camera
-        detector
-        camera_info)
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${Boost_LIBRARIES}
+  ocam_camera
+  detector
+  tracker_config
+  camera_info)
 add_dependencies(tracker_node tracker_gencpp)
 
 catkin_add_gtest(tag_tests src/tag.cpp src/tests/tag_tests.cpp)

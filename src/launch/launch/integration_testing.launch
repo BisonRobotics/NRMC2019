@@ -1,6 +1,6 @@
 <launch>
     <include file="$(find description)/launch/load_robot_and_arena.launch" />
-    <node name="tracker" pkg="tracker" type="tracker_node" output="screen" />
+    <include file="$(find tracker)/launch/tracker.launch" />
     <node name="localizer" pkg="localization" type="ultra_localizer_node" output="screen" />
     <!--<node name="waypoint_control_server" pkg="waypoint_control" type="waypoint_control_server" output="screen" />-->
     <node name="dig_control_server" pkg="dig_control" type="dig_control_server" output="screen" />

@@ -15,13 +15,14 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <stepper/stepper.h>
+#include <tracker/config.h>
 
 namespace tracker
 {
   class Thread
   {
   public:
-    Thread(CameraInfo camera_info);
+    Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, CameraInfo camera_info);
 
     void thread();
     void join();
@@ -39,8 +40,9 @@ namespace tracker
     Detector *detector;
     boost::thread *thread_handle;
     std::vector<Tag> tags;
+    Config config;
 
-    ros::NodeHandle nh;
+    ros::NodeHandle base_nh, nh;
     ros::Publisher pose_pub, pose_pub1, debug_pub;
     ros::ServiceServer get_brightness_service, get_exposure_service;
     actionlib::SimpleActionServer<SetUIntAction> set_brightness_server, set_exposure_server;

@@ -28,19 +28,20 @@ tracker::Camera* initializeOCam(CameraInfo info, uint brightness, uint exposure)
 
 int main (int argc, char* argv[])
 {
-  ros::init(argc, argv, "tracker_node");
-  ros::NodeHandle nh;
-  // Instantiate cameras
-  /*tracker::Camera *camera1 = initializeOCam("/dev/v4l/by-id/usb-WITHROBOT_Inc._oCam-1MGN-U_SN_2C183178-video-index0",
-                                             width, height);*/
+  ros::init(argc, argv, "tracker");
+  ros::NodeHandle base_nh("~");
+  ros::NodeHandle left_nh("~/left");
+  ros::NodeHandle right_nh("~/right");
+  Config left_config(&base_nh, &left_nh, "left");
+  Config right_config(&base_nh, &right_nh, "right");
 
   // Start threads
-  //Thread thread0(tracker::right_camera);
-  Thread thread1(tracker::right_camera);
+  Thread thread0(base_nh, left_nh, left_config, tracker::left_camera);
+  Thread thread1(base_nh, right_nh, right_config, tracker::right_camera);
   ros::spin();
 
   // Wait and exit
-  //thread0.join();
+  thread0.join();
   thread1.join();
   return 0;
 }

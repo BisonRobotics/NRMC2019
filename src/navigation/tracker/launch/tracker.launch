@@ -1,12 +1,20 @@
 <launch>
-    <!-- URDF stuff -->
-    <arg name="test_urdf" value="true" />
-    <arg name="fixed_central_drive" default="true" />
-    <include file="$(find description)/launch/load_robot_and_arena.launch" pass_all_args="true" />
-    <arg name="source_list" default="[bucket_joint_states]"/>
+    <node pkg="tracker" name="tracker" type="tracker_node" output="screen" >
+        <!-- both -->
+        <param name="max_initialization_velocity" type="double" value="0.3" />
+        <param name="max_scan_velocity"           type="double" value="0.1" />
+        <param name="max_velocity"                type="double" value="0.15" />
+        <param name="k"                           type="double" value="4.0" />
+        <param name="brightness"                  type="int"    value="54" />
+        <param name="exposure"                    type="int"    value="89" />
+        <!-- left -->
+        <param name="left/stepper_controller_id"  type="int"    value="1" />
+        <param name="left/stepper_client_id"      type="int"    value="3" />
+        <!-- right -->
+        <param name="right/stepper_controller_id" type="int"    value="2" />
+        <param name="right/stepper_client_id"     type="int"    value="4" />
+    </node>
 
-    <!-- Tracker detector -->
-    <node pkg="tracker" name="tracker_node" type="tracker_node" output="screen"/>
     
     <!-- Avoid slowing down tracker nodes with image compression -->
     <!--<node pkg="image_transport" name="tracker0_republisher"

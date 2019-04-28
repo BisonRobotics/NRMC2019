@@ -1,5 +1,5 @@
-#ifndef TRACKER_CONFIG_H
-#define TRACKER_CONFIG_H
+#ifndef TRACKER_CAMERA_CONFIG_H
+#define TRACKER_CAMERA_CONFIG_H
 
 #include <tracker/camera/camera_info.h>
 
@@ -30,4 +30,4 @@ namespace tracker
 
 }
 
-#endif //TRACKER_CONFIG_H
+#endif //TRACKER_CAMERA_CONFIG_H

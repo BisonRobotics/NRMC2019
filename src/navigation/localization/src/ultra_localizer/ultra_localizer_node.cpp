@@ -92,7 +92,7 @@ int main(int argc, char **argv)
   uint seq = 0;
   bool simulating; nh.param<bool>("simulating", simulating, false);
   if (simulating) ROS_WARN("Running as simulation");
-  double settling_time; nh.param<double>("settling_time", settling_time, 7);
+  double settling_time; nh.param<double>("settling_time", settling_time, 10);
   ROS_INFO("Localization settling time: %f", settling_time);
 
   // Initialize localizer
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
   }
   else
   {
-    pos = new AprilTagTrackerInterface("/tracker0/pose_estimate", .1);
+    pos = new AprilTagTrackerInterface("/tracker/pose_estimate", .1);
     imu = new LpResearchImu("imu");
   }
   mm.giveImu(imu, 0, 0, 0);
