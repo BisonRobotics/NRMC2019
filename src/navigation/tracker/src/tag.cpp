@@ -1,4 +1,4 @@
-#include <tracker/detector/tag.h>
+#include <tracker/tag.h>
 #include <Eigen/Dense>
 
 /*

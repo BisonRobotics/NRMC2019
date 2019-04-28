@@ -7,7 +7,7 @@
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 #include <image_transport/image_transport.h>
-#include <tracker/detector/detector.h>
+#include <tracker/detector.h>
 #include <tracker/GetUInt.h>
 #include <tracker/SetUIntAction.h>
 #include <actionlib/server/simple_action_server.h>

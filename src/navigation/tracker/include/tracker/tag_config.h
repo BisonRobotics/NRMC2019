@@ -1,7 +1,7 @@
 #ifndef TRACKER_LOAD_TAGS_H
 #define TRACKER_LOAD_TAGS_H
 
-#include <tracker/detector/tag.h>
+#include "tag.h"
 
 namespace tracker
 {

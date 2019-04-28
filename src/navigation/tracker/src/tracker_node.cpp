@@ -8,9 +8,9 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 
-#include <tracker/detector/detector.h>
+#include <tracker/detector.h>
 #include <tracker/camera/ocam_camera.h>
-#include <tracker/thread/thread.h>
+#include <tracker/thread.h>
 
 #include <stepper/stepper.h>
 

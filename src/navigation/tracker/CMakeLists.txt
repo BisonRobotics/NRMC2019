@@ -19,15 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   stepper
 )
 
-find_package(OpenCV 4.0 QUIET)
-if(OpenCV_FOUND)
-    message("Found OpenCV 4.0")
-    set(BUILD_CAMERA_CALIBRATION 1)
-else()
-    message("Unable to find OpenCV 4.0")
-    find_package(OpenCV 3.2.0 REQUIRED)
-endif()
-
+find_package(OpenCV 3.2.0 REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost COMPONENTS timer REQUIRED)
 
@@ -73,12 +65,6 @@ include_directories(${Eigen3_INCLUDE_DIRS})
 link_directories(/usr/src/gmock/build)
 set(GTEST_LIBRARIES gmock_main)
 
-#if (OpenCV_FOUND)
-#  add_definitions(-DOPENCV_ENABLED)
-#else()
-#  message([WARN] "Unable to find OpenCV, some features will not be enabled")
-#endif()
-
 # Camera
 add_library(camera_info src/camera/camera_info.cpp)
 add_library(ocam_camera src/camera/ocam_camera.cpp)
@@ -86,28 +72,20 @@ target_link_libraries(ocam_camera ${ocam_LIBRARIES} camera_info)
 add_library(image_camera src/camera/image_camera.cpp)
 target_link_libraries(image_camera ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
-# Camera calibration
-if (BUILD_CAMERA_CALIBRATION)
-    message("Building camera calibration")
-    add_executable(camera_calibration src/calibration/camera_calibration.cpp)
-    target_link_libraries(camera_calibration ocam_camera ${OpenCV_LIBS})
-    #add_executable(record_images src/calibration/record_images.cpp)
-    #target_link_libraries(record_images ${OpenCV_LIBS} ocam_camera)
-endif()
 
 # Detector
 add_library(detector
-        src/detector/detector.cpp
-        src/detector/tag.cpp
-        src/detector/util.cpp)
+  src/detector.cpp
+  src/tag.cpp
+  src/util.cpp)
 target_link_libraries(detector
         ${apriltags_LIBRARIES}
         ${catkin_LIBRARIES})
 
 # Tracker node
 add_executable(tracker_node
-        src/thread/thread.cpp
-        src/tracker_node.cpp)
+  src/thread.cpp
+  src/tracker_node.cpp)
 target_link_libraries(tracker_node
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
@@ -117,7 +95,7 @@ target_link_libraries(tracker_node
         camera_info)
 add_dependencies(tracker_node tracker_gencpp)
 
-catkin_add_gtest(tag_tests src/detector/tag.cpp src/detector/tests/tag_tests.cpp)
+catkin_add_gtest(tag_tests src/tag.cpp src/tests/tag_tests.cpp)
 if(TARGET tag_tests)
     target_link_libraries(tag_tests gmock_main ${catkin_LIBRARIES})
 endif()

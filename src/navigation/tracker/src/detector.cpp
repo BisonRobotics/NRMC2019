@@ -1,4 +1,4 @@
-#include <tracker/detector/detector.h>
+#include <tracker/detector.h>
 
 extern "C"
 {

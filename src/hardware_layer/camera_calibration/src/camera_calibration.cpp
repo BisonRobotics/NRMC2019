@@ -12,7 +12,7 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 
-#include <tracker/camera/ocam_camera.h>
+#include <camera/ocam_camera.h>
 
 using namespace cv;
 using namespace std;

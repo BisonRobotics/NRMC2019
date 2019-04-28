@@ -1,12 +1,12 @@
-#include <tracker/thread/thread.h>
+#include <tracker/thread.h>
 #include <boost/timer/timer.hpp>
 #include <tracker/camera/ocam_camera.h>
 #include <tracker/Debug.h>
 #include <algorithm>
 
 // Must be included once in the project
-#include <tracker/config/camera_config.h>
-#include <tracker/config/tag_config.h>
+#include <tracker/camera/camera_config.h>
+#include <tracker/tag_config.h>
 
 
 using namespace tracker;

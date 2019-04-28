@@ -12,7 +12,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <tracker/camera/camera_info.h>
-#include <tracker/detector/tag.h>
+#include <tracker/tag.h>
 
 typedef struct apriltag_family apriltag_family_t;
 typedef struct apriltag_detector apriltag_detector_t;

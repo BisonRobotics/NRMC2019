@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <tracker/detector/tag.h>
+#include <tracker/tag.h>
 
 
 using ::testing::AtLeast;
