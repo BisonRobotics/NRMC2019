@@ -41,34 +41,14 @@
         <xacro:property name="drivetrain_joint_type" value="fixed" />
     </xacro:if>
 
-    <!--<joint name="map_to_tag1" type="fixed">
-        <origin xyz="0 0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
-        <parent link="map" />
-        <child link = "tag1" />
-    </joint>
-
-    <joint name="map_to_tag4" type="fixed">
-        <origin xyz="0 -0.5025 0.2563" rpy="${pi/2} 0 ${pi/2}" />
-        <parent link="map" />
-        <child link = "tag4" />
-    </joint>-->
+    <xacro:arg name="fixed_nodeys" default="0" />
+    <xacro:property name="nodey_joint_type" value="revolute" />
+    <xacro:if value="$(arg fixed_nodeys)">
+        <xacro:property name="nodey_joint_type" value="fixed" />
+    </xacro:if>
 
     <!-- Define linkages and joints -->
     <link name="base_link" />
-        <!--<visual>
-            <geometry>
-                <box size="0.001 0.001 0.001" />
-            </geometry>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <material name="orange" />
-        </visual>
-        <collision>
-            <geometry>
-                <box size="0.001 0.001 0.001" />
-            </geometry>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-        </collision>
-    </link>-->
 
     <link name="frame">
         <visual>
@@ -110,16 +90,7 @@
     <xacro:wheel x_name="back"  y_name="left"  rot="${-pi/2}" r_z="-1.575" y_dir="1.15"  xdist="0.1655676" color="gold"   />
     <xacro:wheel x_name="back"  y_name="right" rot="${pi/2}"  r_z="1.575" y_dir="-1.15" xdist="0.1655676" color="gold"  />
 
-
     <link name="central_drive" />
-    <!--<visual>
-            <geometry>
-                <mesh filename="package://description/meshes/central_drive.stl" />
-            </geometry>
-            <origin xyz="0.125 0.03 -0.375" rpy="0 0 1.57" />
-            <material name="black" />
-        </visual>
-    </link>-->
 
     <joint name="frame_to_central_drive" type="${central_drive_joint_type}">
         <parent link="frame"/>
@@ -235,104 +206,69 @@
 
     </joint>
 
-
     <link name="right_flap">
         <visual>
             <geometry>
                 <mesh filename="package://description/meshes/right_flap.stl" />
             </geometry>
-            <origin xyz="0 0 0" rpy="0 3.14 0" />
+            <origin xyz="0 0 0" rpy="0 ${pi} 0" />
             <material name="grey" />
         </visual>
     </link>
 
     <joint name="right_flap_joint" type="${central_drive_joint_type}">
-        <origin xyz="0.53 -0.125 -0.2" rpy="1.57 0 -1.57" />
+        <origin xyz="0.53 -0.125 -0.2" rpy="${pi/2} 0 -${pi/2}" />
         <axis xyz="0 0 -1" />
         <parent link="frame" />
         <child link="right_flap" />
         <limit effort="1000.0" lower="-1.55" upper="1.25" velocity="1.0" />
     </joint>
 
-    <link name="right_tracker_mount">
-        <visual>
-            <geometry>
-                <mesh filename="package://description/meshes/right_tracker.stl" />
-            </geometry>
-            <origin xyz="0.035 0.32 -0.04" rpy="1.57 0 0" />
-            <material name="black" />
-        </visual>
-    </link>
+    <xacro:macro name="camera" params="side direction rotation">
+        <link name="${side}_tracker_mount">
+            <visual>
+                <geometry>
+                    <mesh filename="package://description/meshes/${side}_tracker.stl" />
+                </geometry>
+                <origin xyz="0.035 ${direction*0.32} -0.04" rpy="${pi/2} 0 0" />
+                <material name="black" />
+            </visual>
+        </link>
 
-    <joint name="right_tracker_fixed" type="fixed">
-        <origin xyz="-0.035 -0.32 0.04" rpy="0 0 0" />
-        <parent link= "frame" />
-        <child link = "right_tracker_mount" />
-        
-    </joint>
+        <joint name="${side}_tracker_fixed" type="fixed">
+            <origin xyz="-0.035 ${-direction*0.32} 0.04" rpy="0 0 0" />
+            <parent link= "frame" />
+            <child link = "${side}_tracker_mount" />
+        </joint>
 
-    <link name="right_camera_base"/>
+        <link name="${side}_camera_base"/>
 
-    <link name="right_camera">
-        <visual>
-            <geometry>
-                <mesh filename="package://description/meshes/tracker_camera.stl" />
-            </geometry>
-            <origin xyz="0 0 0.01" rpy="0 0 ${pi/2}" />
-            <material name="black" />
-        </visual>
-    </link>
+        <joint name="${side}_tracker_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="${pi/2} ${pi} 0" />
+            <parent link="${side}_tracker_mount" />
+            <child link = "${side}_camera_base" />
+        </joint>
 
-    <joint name="right_tracker_joint" type="fixed">
-        <!--<origin xyz="-0.035 -0.32 0.04" rpy="0 1.57 0" />-->
-        <origin xyz="0 0 0" rpy="${pi/2} ${pi} 0" />
-        <parent link="right_tracker_mount" />
-        <child link = "right_camera_base" />
-        <limit effort="1000.0" lower="-1" upper="4" velocity="1.0" />
-    </joint>
+        <link name="${side}_camera">
+            <visual>
+                <geometry>
+                    <mesh filename="package://description/meshes/tracker_camera.stl" />
+                </geometry>
+                <origin xyz="0 0 0.01" rpy="0 0 ${pi/2}" />
+                <material name="black" />
+            </visual>
+        </link>
 
-    <joint name="right_tracker_joint_2" type="revolute">
-        <!--<origin xyz="-0.035 -0.32 0.04" rpy="0 1.57 0" />-->
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <parent link="right_camera_base" />
-        <child link = "right_camera" />
-        <limit effort="1000.0" lower="-4" upper="1" velocity="1.0" />
-    </joint>
-
-    <link name="left_tracker_mount">
-        <visual>
-            <geometry>
-                <mesh filename="package://description/meshes/left_tracker.stl"/>
-            </geometry>
-            <origin xyz="0 0 0" rpy="1.57 0 0"/>
-            <material name="black" />
-        </visual>
-    </link>
-
-    <joint name="left_tracker_fixed" type="fixed">
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <parent link="frame" />
-        <child link = "left_tracker_mount" />
-    </joint>    
-
-    <link name="left_camera">
-        <visual>
-            <geometry>
-                <mesh filename="package://description/meshes/tracker_camera.stl" />
-            </geometry>
-            <origin xyz="0 0 0.01" rpy="0 0 ${pi/2}" />
-            <material name="black" />
-        </visual>
-    </link>
-
-    <joint name="left_tracker_joint" type="revolute">
-        <!--<origin xyz= "-0.035 0.32 0.04" rpy="0 1.57 0" />-->
-        <origin xyz="-0.035 0.32 0.04" rpy="${-pi/2} 0 0" />
-        <parent link="left_tracker_mount" />
-        <child link = "left_camera" />
-        <limit effort="1000.0" lower="-4" upper="1" velocity="1.0" />
-    </joint>
-
+        <joint name="${side}_tracker_joint_2" type="${nodey_joint_type}">
+            <origin xyz="0 0 0" rpy="0 ${rotation} 0" />
+            <parent link="${side}_camera_base" />
+            <child link = "${side}_camera" />
+            <limit effort="1000.0" lower="-4" upper="1" velocity="1.0" />
+        </joint>
+    </xacro:macro>
+    <xacro:camera side="right" direction="1.0" rotation="0.0" />
+    <xacro:camera side="left" direction="-1.0" rotation="${pi}" />
+    
     <!-- Add a few static transforms for testing -->
     <xacro:arg name="test_urdf" default="false"/>
     <xacro:if value="$(arg test_urdf)">
