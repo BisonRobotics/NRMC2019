@@ -29,7 +29,7 @@ Detector::Detector(CameraInfo camera_info, uint8_t *buffer, TagsVector *tags):
   //family = tag25h10_create();
   family = tag36h11_create();
   detector = apriltag_detector_create();
-  detector->quad_decimate = 3.0;      // Default = 2.0
+  detector->quad_decimate = 6.0;      // Default = 2.0, most of semester was 3.0
   detector->quad_sigma = 0.0;         // Default = 0.0
   detector->refine_edges = 1;         // Default = 1
   detector->decode_sharpening = 0.25; // Default = 0.25

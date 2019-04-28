@@ -3,9 +3,12 @@ project(camera_calibration)
 
 add_compile_options(-std=c++11)
 
+find_package(catkin REQUIRED)
 find_package(OpenCV 4.0 QUIET)
 if(OpenCV_FOUND)
     message("Found OpenCV 4.0")
+
+    catkin_package()
 
     include_directories(include)
     include_directories(${OpenCV_INCLUDE_DIRS})

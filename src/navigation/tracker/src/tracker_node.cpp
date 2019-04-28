@@ -13,6 +13,7 @@
 #include <tracker/thread.h>
 
 #include <stepper/stepper.h>
+#include <tracker/camera/camera_config.h>
 
 // Only load in main executable
 //#include <tracker/config/camera_config.h>
@@ -34,12 +35,12 @@ int main (int argc, char* argv[])
                                              width, height);*/
 
   // Start threads
-  Thread thread0("tracker0");
-  //boost::thread thread1(trackerThread, "tracker1", camera1, &nh);
+  //Thread thread0(tracker::right_camera);
+  Thread thread1(tracker::right_camera);
   ros::spin();
 
   // Wait and exit
-  thread0.join();
-  //thread1.join();
+  //thread0.join();
+  thread1.join();
   return 0;
 }

@@ -5,7 +5,6 @@
 #include <algorithm>
 
 // Must be included once in the project
-#include <tracker/camera/camera_config.h>
 #include <tracker/tag_config.h>
 
 
@@ -44,16 +43,16 @@ tracker::Camera* initializeOCam(CameraInfo info, uint brightness, uint exposure)
   return camera;
 }
 
-Thread::Thread(std::string name) :
-  name(name), nh(name), it(nh),
+Thread::Thread(CameraInfo camera_info) :
+  name(camera_info.name + "_tracker"), nh(name), it(nh),
   set_brightness_server(nh, "set_brightness", boost::bind(&Thread::setBrightnessCallback, this, _1), false),
   set_exposure_server(nh, "set_exposure", boost::bind(&Thread::setExposureCallback, this, _1), false)
 {
   Tag::init(50, ros::Duration(2.0), true);
   tags = Tag::getTags();
-  Tag::setTransformCaches(&tags, "right");
+  Tag::setTransformCaches(&tags, camera_info.name);
 
-  camera = initializeOCam(tracker::right_camera, 54, 89);
+  camera = initializeOCam(camera_info, 54, 89);
   if (camera == nullptr)
   {
     ROS_WARN("Camera 0 handle invalid, shutting down");
@@ -62,7 +61,8 @@ Thread::Thread(std::string name) :
 
   ROS_INFO("Initializing stepper");
   // TODO add initialization confirmation
-  stepper = new Stepper("tracker_can", 1, 3);
+  //stepper = new Stepper("tracker_can", 1, 3);
+  stepper = new Stepper("tracker_can", 2, 4);
   stepper->setMode(Mode::Initialize, 0.25);
   ros::Duration(5.0).sleep();
   stepper->setMode(Mode::Velocity, 0.0);
@@ -132,7 +132,7 @@ void Thread::thread()
           {
             ROS_INFO("Attempting to reboot...");
             camera->reboot();
-            ros::Duration(10.0).sleep();
+            ros::Duration(1.0).sleep();
             ROS_INFO("Attempting to start...");
             camera->start();
           }

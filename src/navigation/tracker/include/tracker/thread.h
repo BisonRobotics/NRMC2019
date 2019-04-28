@@ -21,7 +21,7 @@ namespace tracker
   class Thread
   {
   public:
-    Thread(std::string name);
+    Thread(CameraInfo camera_info);
 
     void thread();
     void join();
