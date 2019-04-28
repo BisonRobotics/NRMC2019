@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="competition" name="config_test_node" type="config_test_node" output="screen" >
+        <rosparam file="$(find competition)/config/config.yaml" />
+    </node>
+</launch>

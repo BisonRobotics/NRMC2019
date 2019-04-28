@@ -30,21 +30,9 @@ Feedback::Feedback(tf2::Transform R, Waypoint W)
     throw std::runtime_error("[Feedback::Feedback]: Robot orientation isn't normalized");
   }
 
-  // Make sure that the waypoint rotation is valid, correct if not
-  auto Q2 = W.pose.orientation;
-  double Q2m = Q2.x*Q2.x + Q2.y*Q2.y + Q2.z*Q2.z + Q2.w*Q2.w;
-  if (std::abs(Q2m - 1.0) > 1.0e-6)
-  {
-    ROS_WARN("[Feedback::Feedback]: Waypoint quaternion isn't normalized, assuming default orientation");
-    W.pose.orientation.x = 0.0;
-    W.pose.orientation.y = 0.0;
-    W.pose.orientation.z = 0.0;
-    W.pose.orientation.w = 1.0;
-  }
-
   // Get feedback
-  double dy = W.pose.position.y - R.getOrigin().y();
-  double dx = W.pose.position.x - R.getOrigin().x();
+  double dy = W.pose.y - R.getOrigin().y();
+  double dx = W.pose.x - R.getOrigin().x();
   r_ = sqrt(dx*dx + dy*dy);
 
   double roll, pitch, yaw;

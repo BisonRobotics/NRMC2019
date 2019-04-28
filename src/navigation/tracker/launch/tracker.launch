@@ -15,7 +15,6 @@
         <param name="right/stepper_client_id"     type="int"    value="4" />
     </node>
 
-    
     <!-- Avoid slowing down tracker nodes with image compression -->
     <!--<node pkg="image_transport" name="tracker0_republisher"
           type="republish" output="screen"

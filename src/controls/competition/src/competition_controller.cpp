@@ -5,7 +5,7 @@ using namespace competition;
 
 Controller::Controller(ros::NodeHandle *nh, ros::Rate *rate, const Waypoints &waypoints) :
   nh(nh), rate(rate), tf_listener(tf_buffer), waypoints(waypoints), visuals(nh), state(ControlState::manual),
-  dt(rate->expectedCycleTime().toSec()), reverse(false)
+  dt(rate->expectedCycleTime().toSec())
 {
   joy_subscriber = nh->subscribe("joy", 1, &Controller::joyCallback, this);
   waypoint_client.setControlState(WaypointControlState::manual);
@@ -178,12 +178,12 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     else if (joy.get(Joy::FORWARD))
     {
       ROS_INFO("[Controller::joyCallback]: Setting direction of travel to forward");
-      reverse = false;
+      visuals.setReverse(false);
     }
     else if (joy.get(Joy::REVERSE))
     {
       ROS_INFO("[Controller::joyCallback]: Setting direction of travel to reverse");
-      reverse = true;
+      visuals.setReverse(true);
     }
   }
   else

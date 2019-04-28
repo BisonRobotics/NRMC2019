@@ -79,3 +79,7 @@ target_link_libraries(competition_node competition_controller ${catkin_LIBRARIES
 add_executable(visuals_test_node src/visuals_test_node.cpp)
 add_dependencies(visuals_test_node ${competition_EXPORTED_TARGETS} ${waypoint_control_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
 target_link_libraries(visuals_test_node waypoint_visuals ${catkin_LIBRARIES})
+
+add_executable(config_test_node src/config_test_node.cpp)
+add_dependencies(config_test_node ${competition_EXPORTED_TARGETS} ${waypoint_control_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
+target_link_libraries(config_test_node competition_config ${catkin_LIBRARIES})

@@ -38,7 +38,6 @@ namespace competition
     ControlState state;
     WaypointVisuals visuals;
     Waypoints waypoints;
-    bool reverse;
 
     double dt;
     ros::NodeHandle *nh;

@@ -1,0 +1,14 @@
+<launch>
+    <node pkg="competition" name="competition_node" type="competition_node" output="screen" >
+        <rosparam file="$(find competition)/config/config.yaml" />
+    </node>
+
+    
+    <!-- Avoid slowing down tracker nodes with image compression -->
+    <!--<node pkg="image_transport" name="tracker0_republisher"
+          type="republish" output="screen"
+          args="raw in:=/tracker0/image compressed out:=/tracker0/reimage" />
+    <node pkg="image_transport" name="tracker1_republisher"
+          type="republish" output="screen"
+          args="raw in:=/tracker1/image compressed out:=/tracker1/reimage" />-->
+</launch>

@@ -209,6 +209,7 @@ void WaypointController::updateControls(const tf2::Transform &transform)
       {
         double duty = clamp(config->in_place_k * abs(feedback.theta()),
             config->min_in_place_duty, config->max_in_place_duty);
+        //ROS_INFO("Duty %f", duty);
         if (feedback.theta() > 0.0)
         {
           setPoint(-duty, duty, waypoint.reverse);
@@ -264,7 +265,7 @@ void WaypointController::updateControls(const tf2::Transform &transform)
     case WaypointState::finished:
     {
       ROS_INFO("[WaypointController::updateControls::finish]: Finished waypoint %i (%f, %f)",
-          waypoint.header.seq, waypoint.pose.position.x, waypoint.pose.position.y);
+          waypoint.header.seq, waypoint.pose.x, waypoint.pose.y);
       waypoints.pop_back();
       waypoint_state = WaypointState::ready;
       break;
@@ -277,8 +278,11 @@ void WaypointController::updateControls(const tf2::Transform &transform)
 
 void WaypointController::setPoint(double left, double right, bool reverse)
 {
-  left  = clampAcceleration( left,  last_left, config->max_acceleration, dt);
-  right = clampAcceleration(right, last_right, config->max_acceleration, dt);
+  double tmp_left, tmp_right;
+  tmp_left  = clamp((reverse ? -right : left),  -config->max_duty, config->max_duty);
+  tmp_right = clamp((reverse ?  -left : right), -config->max_duty, config->max_duty);
+  left  = clampAcceleration(tmp_left,  last_left, config->max_acceleration, dt);
+  right = clampAcceleration(tmp_right, last_right, config->max_acceleration, dt);
 
   if (state == ControlState::manual)
   {
@@ -314,8 +318,6 @@ void WaypointController::setPoint(double left, double right, bool reverse)
   else
   {
     // Adjust sign and clamp
-    left  = clamp(reverse ?  -left : left,  -config->max_duty, config->max_duty);
-    right = clamp(reverse ? -right : right, -config->max_duty, config->max_duty);
     fl->setDuty((float)left);
     bl->setDuty((float)left);
     fr->setDuty((float)right);
@@ -352,7 +354,7 @@ double waypoint_control::clampAcceleration(double value, double last_value, doub
   double acceleration = (value - last_value) / dt;
   if (abs(acceleration) > limit)
   {
-    return (acceleration > 0.0 ? 1.0 : -1.0) * limit * dt + last_value;
+    return (acceleration >= 0.0 ? 1.0 : -1.0) * limit * dt + last_value;
   }
   return value;
 }

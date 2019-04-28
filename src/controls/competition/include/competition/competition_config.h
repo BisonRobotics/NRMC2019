@@ -1,6 +1,7 @@
 #ifndef COMPETITION_COMPETITION_CONFIG_H
 #define COMPETITION_COMPETITION_CONFIG_H
 
+#include <ros/ros.h>
 #include <string>
 
 namespace competition
@@ -27,6 +28,19 @@ namespace competition
   };
 
   std::string to_string(ControlState state);
+
+  class Config
+  {
+  public:
+    Config(ros::NodeHandle *nh);
+
+    void loadParam(ros::NodeHandle *nh, std::string name, std::string &param, std::string default_param);
+    void loadParam(ros::NodeHandle *nh, std::string name, int &param, int default_param);
+    void loadParam(ros::NodeHandle *nh, std::string name, double &param, double default_param);
+
+    double max_initialization_velocity;
+
+  };
 
 
 }

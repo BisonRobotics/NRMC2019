@@ -65,13 +65,6 @@ Thread::Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, Camer
     return;
   }
 
-  ROS_INFO("Initializing stepper");
-  // TODO add initialization confirmation
-  stepper = new Stepper("tracker_can", (uint)config.stepper_controller_id, (uint)config.stepper_client_id);
-  stepper->setMode(Mode::Initialize, (float)config.max_initialization_velocity);
-  ros::Duration(5.0).sleep();
-  stepper->setMode(Mode::Velocity, 0.0);
-
   drops = 0;
   drop_count = 0;
   nh.setCallbackQueue(&callback_queue);
@@ -103,6 +96,12 @@ Thread::Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, Camer
 
 void Thread::thread()
 {
+  ROS_INFO("Initializing stepper for %s", config.name.c_str());
+  stepper = new Stepper("tracker_can", (uint)config.stepper_controller_id, (uint)config.stepper_client_id);
+  stepper->setMode(Mode::Initialize, (float)config.max_initialization_velocity);
+  ros::Duration(5.0).sleep();
+  stepper->setMode(Mode::Velocity, 0.0);
+
   ROS_INFO("Starting %s", camera->getName().c_str());
   camera->start();
   ros::Time stamp;

@@ -6,7 +6,7 @@ using namespace competition;
 using boost::math::double_constants::pi;
 
 WaypointVisuals::WaypointVisuals(ros::NodeHandle *nh) :
-  nh(nh), marker_server("path_control_points"),
+  nh(nh), marker_server("path_control_points"), reverse(false),
   height(0.2), width(0.1), text_size(0.1), precision(2), size(20), seq(0),
   boostControlMarkerFeedback(boost::bind(&WaypointVisuals::controlMarkerFeedback, this, _1))
 {
@@ -29,12 +29,12 @@ void WaypointVisuals::addWaypoint(const geometry_msgs::PointStampedConstPtr &poi
   waypoint.header.frame_id = "P" + std::to_string(seq);
   waypoint.header.seq = seq;
   waypoint.header.stamp = ros::Time::now();
-  waypoint.pose.position = point->point;
-  waypoint.pose.position.z = height / 2.0;
-  waypoint.pose.orientation.w = 1.0;
+  waypoint.pose.x = point->point.x;
+  waypoint.pose.y = point->point.y;
+  waypoint.reverse = (uint8_t)reverse;
   waypoints.emplace_back(waypoint);
-  double x = waypoint.pose.position.x;
-  double y = waypoint.pose.position.y;
+  double x = waypoint.pose.x;
+  double y = waypoint.pose.y;
   addControlMarker(waypoint.header.frame_id, x, y);
   marker_server.applyChanges();
   updateWaypointVisuals(waypoints, robot);
@@ -47,7 +47,7 @@ void WaypointVisuals::updateWaypoints(const Waypoints &s)
   for (auto waypoint = s.begin(); waypoint != s.end(); ++waypoint)
   {
     waypoints.emplace_back(*waypoint);
-    addControlMarker(waypoint->header.frame_id, waypoint->pose.position.x, waypoint->pose.position.y);
+    addControlMarker(waypoint->header.frame_id, waypoint->pose.x, waypoint->pose.y);
     seq = waypoint->header.seq;
   }
   marker_server.applyChanges();
@@ -97,8 +97,8 @@ void WaypointVisuals::controlMarkerFeedback(const InteractiveMarkerFeedback::Con
   {
     if (feedback->marker_name == waypoints[i].header.frame_id)
     {
-      waypoints[i].pose.position.x = feedback->pose.position.x;
-      waypoints[i].pose.position.y = feedback->pose.position.y;
+      waypoints[i].pose.x = feedback->pose.position.x;
+      waypoints[i].pose.y = feedback->pose.position.y;
       found = true;
     }
   }
@@ -200,9 +200,13 @@ void WaypointVisuals::updateWaypointVisuals(const Waypoints &s, const tf2::Trans
   waypoints_marker.points.emplace_back(robot_point);
   for (int i = 0; i < s.size(); i++)
   {
-    waypoints_marker.points.emplace_back(waypoints[i].pose.position);
-    double x = waypoints[i].pose.position.x;
-    double y = waypoints[i].pose.position.y;
+    double x = waypoints[i].pose.x;
+    double y = waypoints[i].pose.y;
+    geometry_msgs::Point p;
+    p.x = x;
+    p.y = y;
+    p.z = height / 2.0;
+    waypoints_marker.points.emplace_back(p);
     Marker text_marker;
     text_marker.id = waypoints[i].header.seq;
     text_marker.header.seq = waypoints[i].header.seq;
@@ -279,4 +283,9 @@ void WaypointVisuals::clearWaypoints()
 Waypoints WaypointVisuals::getWaypoints()
 {
   return waypoints;
+}
+
+void WaypointVisuals::setReverse(bool reverse)
+{
+  this->reverse = reverse;
 }

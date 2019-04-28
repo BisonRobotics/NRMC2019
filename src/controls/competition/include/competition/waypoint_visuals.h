@@ -32,6 +32,7 @@ namespace competition
     void update(tf2::Transform robot);
     void updateWaypoints(const Waypoints &s);
     void addWaypoint(const geometry_msgs::PointStampedConstPtr &point);
+    void setReverse(bool reverse);
     void clearWaypoints();
     Waypoints getWaypoints();
     void followRobot(bool follow);
@@ -53,6 +54,7 @@ namespace competition
     Waypoints waypoints;
     bool dynamic_waypoints, follow_robot;
     tf2::Transform robot;
+    bool reverse;
 
     ros::NodeHandle *nh;
     InteractiveMarkerServer marker_server;
