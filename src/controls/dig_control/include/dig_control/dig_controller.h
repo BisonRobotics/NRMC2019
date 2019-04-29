@@ -1,7 +1,6 @@
 #ifndef DIG_CONTROL_2_DIG_CONTROLLER_H
 #define DIG_CONTROL_2_DIG_CONTROLLER_H
 
-#include <dig_control/dig_controller_interface.h>
 #include <vesc_access/ivesc_access.h>
 #include <vesc_access/vesc_access.h>
 #include <string>
@@ -26,7 +25,109 @@ namespace dig_control
     value -= filter_constant * (value - sample);
   }
 
-  class DigController : public DigControllerInterface
+  enum class ControlState
+  {
+    error = 0,
+    ready,
+    manual,
+    dig,
+    finish_dig,
+    dump,
+    finish_dump
+  };
+
+  enum class DigState
+  {
+    dig_transition = 0,
+    digging,
+    closing_backhoe,
+    dump_transition,
+    moving_flaps_up,
+    stow
+  };
+
+  enum class CentralDriveState
+  {
+    at_bottom_limit = 0,
+    digging,
+    near_digging,
+    flap_transition_down,
+    near_dump_point,
+    at_dump_point,
+    flap_transition_up,
+    at_top_limit
+  };
+
+  enum class BackhoeState
+  {
+    open = 0,
+    closed,
+    traveling,
+    stuck,
+  };
+
+  enum class BucketState
+  {
+    up = 0,
+    down,
+    traveling,
+    stuck,
+  };
+
+  std::string to_string(ControlState state);
+  std::string to_string(DigState state);
+  std::string to_string(CentralDriveState state);
+  std::string to_string(BackhoeState state);
+  std::string to_string(BucketState state);
+
+  class CentralDriveAngles
+  {
+  public:
+    static constexpr int variation      =   10;
+    static constexpr int bottom_limit   =  300;
+    static constexpr int digging_bottom =  300;
+    static constexpr int digging_top    =  900;
+    static constexpr int floor_limit    = 1250;//1146;
+    static constexpr int zero_angle     = 1330;
+    static constexpr int stow_position  = 1650;
+    static constexpr int flaps_bottom   = 2000;
+    static constexpr int dump_bottom    = 2250;
+    static constexpr int dump_point     = 2300;
+    static constexpr int dump_top       = 2350;
+    static constexpr int top_limit      = 2550;
+  };
+
+  class CentralDriveDuty
+  {
+  public:
+    static constexpr float slow = 0.1f;
+    static constexpr float normal = 0.3f;
+    static constexpr float fast = 0.5f;
+  };
+
+  class BackhoeDuty
+  {
+  public:
+    static constexpr float slow = 0.1f;
+    static constexpr float normal = 0.5f;
+    static constexpr float fast = 0.8f;
+  };
+
+  class VibratorDuty
+  {
+  public:
+    //static constexpr float normal = 0.4f;
+    static constexpr float normal = 0.0f;
+  };
+
+  class BucketDuty
+  {
+  public:
+    static constexpr float fast = 0.4f;
+    static constexpr float normal = 0.2f;
+  };
+  
+  class DigController
   {
   public:
     DigController(bool floor_test = false);
@@ -34,39 +135,39 @@ namespace dig_control
                   iVescAccess *bucket_actuator, iVescAccess *vibrator, bool floor_test = false);
     ~DigController();
 
-    void update() override;
+    void update();
     void updateCentralDriveState();
     void updateBackhoeState();
     void updateBucketState();
 
-    void setControlState(ControlState goal) override;
-    void setCentralDriveDuty(float value) override;
-    void setBackhoeDuty(float value) override;
-    void setBucketDuty(float value) override;
-    void setVibratorDuty(float value) override;
+    void setControlState(ControlState goal);
+    void setCentralDriveDuty(float value);
+    void setBackhoeDuty(float value);
+    void setBucketDuty(float value);
+    void setVibratorDuty(float value);
     void stop();
 
-    ControlState getControlState() const override;
-    CentralDriveState getCentralDriveState() const override;
-    BackhoeState getBackhoeState() const override;
-    BucketState getBucketState() const override;
-    DigState getDigState() const override;
-    float getCentralDriveDuty() const override;
-    float getBackhoeDuty() const override;
-    float getBucketDuty() const override;
-    float getVibratorDuty() const override;
-    float getCentralDriveCurrent() const override;
-    float getBackhoeCurrent() const override;
-    float getBucketCurrent() const override;
-    float getVibratorCurrent() const override;
-    int getCentralDrivePosition() const override;
-    int getBackhoePosition() const override;
-    float getBucketPosition() const override;
-    std::string getControlStateString() const override;
-    std::string getCentralDriveStateString() const override;
-    std::string getBackhoeStateString() const override;
-    std::string getDigStateString() const override;
-    std::string getBucketStateString() const override;
+    ControlState getControlState() const;
+    CentralDriveState getCentralDriveState() const;
+    BackhoeState getBackhoeState() const;
+    BucketState getBucketState() const;
+    DigState getDigState() const;
+    float getCentralDriveDuty() const;
+    float getBackhoeDuty() const;
+    float getBucketDuty() const;
+    float getVibratorDuty() const;
+    float getCentralDriveCurrent() const;
+    float getBackhoeCurrent() const;
+    float getBucketCurrent() const;
+    float getVibratorCurrent() const;
+    int getCentralDrivePosition() const;
+    int getBackhoePosition() const;
+    float getBucketPosition() const;
+    std::string getControlStateString() const;
+    std::string getCentralDriveStateString() const;
+    std::string getBackhoeStateString() const;
+    std::string getDigStateString() const;
+    std::string getBucketStateString() const;
 
     bool isInternallyAllocated();
 

@@ -6,7 +6,7 @@
 using namespace dig_control;
 
 
-DigControlServer::DigControlServer(ros::NodeHandle *nh, DigControllerInterface *controller) :
+DigControlServer::DigControlServer(ros::NodeHandle *nh, DigController *controller) :
   manual_safety(false), autonomy_safety(false),
   backhoe_duty(0.0f), bucket_duty(0.0f), central_duty(0.0f), vibrator_duty(0.0f), central_drive_angle(0.0f),
   monoboom_params{-.0808, -0.0073,  0.0462,  0.9498,  -0.0029},
@@ -366,7 +366,7 @@ int main(int argc, char* argv[])
   ros::NodeHandle nh("~");
   bool floor_test;
   nh.param<bool>("floor_test", floor_test, true);
-  DigControllerInterface *controller;
+  DigController *controller;
   controller = new DigController(floor_test);
   DigControlServer server(&nh, controller);
   ros::Rate rate(50);
