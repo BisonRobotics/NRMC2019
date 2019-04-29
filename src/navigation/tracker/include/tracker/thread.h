@@ -41,6 +41,7 @@ namespace tracker
     boost::thread *thread_handle;
     std::vector<Tag> tags;
     Config config;
+    uint active_id;
 
     ros::NodeHandle base_nh, nh;
     ros::Publisher pose_pub, pose_pub1, debug_pub;
@@ -50,9 +51,9 @@ namespace tracker
     image_transport::Publisher pub;
     ros::CallbackQueue callback_queue;
     tf2_ros::TransformBroadcaster tf_pub;
-
-
-
+    tf2_ros::Buffer tf_buffer;
+    tf2_ros::TransformListener tf_listener;
+    tf2::Stamped<tf2::Transform> transform;
   };
 }
 

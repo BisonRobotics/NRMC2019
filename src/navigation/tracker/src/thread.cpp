@@ -50,7 +50,7 @@ tracker::Camera* initializeOCam(CameraInfo info, uint brightness, uint exposure)
 }
 
 Thread::Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, CameraInfo camera_info) :
-  name(config.name), base_nh(base_nh), nh(nh), config(config), it(nh),
+  name(config.name), base_nh(base_nh), nh(nh), config(config), it(nh), tf_listener(tf_buffer), active_id(1),
   set_brightness_server(nh, "set_brightness", boost::bind(&Thread::setBrightnessCallback, this, _1), false),
   set_exposure_server(nh, "set_exposure", boost::bind(&Thread::setExposureCallback, this, _1), false)
 {
@@ -148,7 +148,25 @@ void Thread::thread()
       }
     }
 
-    // Detect tags
+    // Get latest TF and select active tag
+    try
+    {
+      tf2::fromMsg(tf_buffer.lookupTransform("map", "base_link", ros::Time(0)), transform);
+    }
+    catch (tf2::TransformException &ex)
+    {
+      ROS_WARN("%s",ex.what());
+    }
+    if (transform.getOrigin().x() < 2.5)
+    {
+      active_id = 2;
+    }
+    else
+    {
+      active_id = 1;
+    }
+
+      // Detect tags
     actual.start();
     Tag::clearFlags(&tags);
     stamp = ros::Time::now();
@@ -204,20 +222,13 @@ void Thread::thread()
     // Publish pose estimate
     for (int i = 0; i < tags.size(); i++)
     {
-      if (tags[i].relativeTransformUpdated() &&
-          tags[i].stepperTransformUpdated())
+      if (tags[i].relativeTransformUpdated() && tags[i].stepperTransformUpdated())
       {
-        if (tags[i].getID() == 1)
+        if (tags[i].getID() == active_id)
         {
           geometry_msgs::PoseStamped pose_estimate = tags[i].estimatePose();
           pose_pub.publish(pose_estimate);
         }
-        /*else if (tags[i].getID() == 1)
-        {
-          //geometry_msgs::PoseStamped pose_estimate = (*tags)[i].estimatePose();
-          //pose_estimate.pose.position.z = 1.0;
-          //pose_pub1.publish(pose_estimate);
-        }*/
       }
     }
 
@@ -226,9 +237,8 @@ void Thread::thread()
     bool success = false;
     for (int i = 0; i < tags.size(); i++)
     {
-      if (tags[i].getID() == 1)
+      if (tags[i].getID() == active_id)
       {
-        //printf("size %i\n", tags[i].getRelativeTransformsSize());
         try
         {
           tf2::Vector3 T = tags[i].getMostRecentRelativeTransform().getOrigin();
