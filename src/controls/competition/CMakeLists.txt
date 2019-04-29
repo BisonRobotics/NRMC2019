@@ -29,6 +29,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)
 
+add_message_files(FILES Time.msg Debug.msg)
+generate_messages(DEPENDENCIES std_msgs)
+
+
 ###################################
 ## catkin specific configuration ##
 ###################################

@@ -7,6 +7,7 @@
 #include <waypoint_control/waypoint_control_client.h>
 #include <dig_control/dig_control_client.h>
 #include <competition/competition_config.h>
+#include <competition/Debug.h>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/transform_datatypes.h>
@@ -38,12 +39,14 @@ namespace competition
     ControlState state;
     WaypointVisuals visuals;
     Waypoints active_waypoints;
+    Debug debug;
 
     ros::NodeHandle *nh;
     Config *config;
     ros::Time start_time;
 
     ros::Subscriber joy_subscriber;
+    ros::Publisher debug_publisher;
     tf2_ros::Buffer tf_buffer;
     tf2_ros::TransformListener tf_listener;
     tf2::Stamped<tf2::Transform> transform;

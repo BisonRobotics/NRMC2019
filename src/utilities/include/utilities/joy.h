@@ -40,18 +40,18 @@ namespace utilities
       VIBRATOR_OFF = LT,
       CENTRAL_DRIVE_UP = PU,
       CENTRAL_DRIVE_DOWN = PD,
-      // Semi-autonomous state mappings
+      // Autonomous state mappings
       AUTONOMY_SAFETY = RB,
-      START_DIG = B,
-      END_DIG = A,
-      START_DUMP = Y,
-      END_DUMP = X,
-      START_PATH = ST,
-      CLEAR_WAYPOINTS = BK,
+      DIG = Y,
+      DUMP = X,
+      START_PATH = B,
+      CLEAR_WAYPOINTS = A,
       FOLLOW_ROBOT = PL,
       UNFOLLOW_ROBOT = PR,
       FORWARD = PU,
-      REVERSE = PD
+      REVERSE = PD,
+      START_COMPETITION = ST,
+      STOP_COMPETITION = BK
     };
 
     enum Axis // Six axis

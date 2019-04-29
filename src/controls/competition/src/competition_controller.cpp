@@ -7,6 +7,7 @@ Controller::Controller(ros::NodeHandle *nh, Config *config) :
   nh(nh), config(config), tf_listener(tf_buffer), visuals(nh), state(ControlState::manual)
 {
   joy_subscriber = nh->subscribe("joy", 1, &Controller::joyCallback, this);
+  debug_publisher = nh->advertise<Debug>("debug", 1);
   waypoint_client.setControlState(WaypointControlState::manual);
   dig_client.setControlState(DigControlState::manual);
   ROS_INFO("[Controller::Controller]: Online");
@@ -43,6 +44,7 @@ void Controller::update()
     {
       // Make sure systems are in starting positions
       start_time = ros::Time::now();
+      visuals.clearWaypoints();
       state = ControlState::check_for_apriltag;
       break;
     }
@@ -62,6 +64,7 @@ void Controller::update()
                to_string(state).c_str(),
                to_string(ControlState::navigate_to_dig_zone_1).c_str());
       state = ControlState::navigate_to_dig_zone_1;
+      visuals.updateWaypoints(config->dig_path_1);
       waypoint_client.setControlState(WaypointControlState::new_goal, config->dig_path_1);
       break;
     }
@@ -73,7 +76,6 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::dig_1).c_str());
         state = ControlState::dig_1;
-        waypoint_client.setControlState(WaypointControlState::ready);
         dig_client.setControlState(DigControlState::dig);
       }
       break;
@@ -96,8 +98,9 @@ void Controller::update()
       {
         ROS_INFO("[Controller::update]: %s to %s",
                  to_string(state).c_str(),
-                 to_string(ControlState::finish_dig_1).c_str());
+                 to_string(ControlState::navigate_to_hopper_1).c_str());
         state = ControlState::navigate_to_hopper_1;
+        visuals.updateWaypoints(config->hopper_path_1);
         waypoint_client.setControlState(WaypointControlState::new_goal, config->hopper_path_1);
       }
       break;
@@ -122,6 +125,7 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::navigate_to_dig_zone_2).c_str());
         state = ControlState::navigate_to_dig_zone_2;
+        visuals.updateWaypoints(config->dig_path_2);
         waypoint_client.setControlState(WaypointControlState::new_goal, config->dig_path_2);
       }
       break;
@@ -158,6 +162,7 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::navigate_to_hopper_2).c_str());
         state = ControlState::navigate_to_hopper_2;
+        visuals.updateWaypoints(config->hopper_path_2);
         waypoint_client.setControlState(WaypointControlState::new_goal, config->hopper_path_2);
       }
       break;
@@ -182,6 +187,7 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::finished).c_str());
         state = ControlState::finished;
+        visuals.updateWaypoints(config->final_position);
         waypoint_client.setControlState(WaypointControlState::new_goal, config->final_position);
       }
       break;
@@ -203,6 +209,15 @@ void Controller::update()
     }
   }
 
+  ros::Duration difference = ros::Time::now() - start_time;
+  int64_t minutes = difference.sec / 60;
+  int64_t seconds = difference.sec - minutes * 60;
+  debug.time.m = minutes;
+  debug.time.s = seconds;
+  debug.competition_state = to_string(state);
+  debug.waypoint_state = waypoint_control::to_string(waypoint_client.getControlState());
+  debug.dig_state = dig_control::to_string(dig_client.getControlState());
+
 }
 
 void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
@@ -211,33 +226,53 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
   
   if (joy.get(Joy::AUTONOMY_SAFETY))
   {
-    if (joy.get(Joy::START_DIG))
+    if (joy.get(Joy::START_COMPETITION))
     {
-      ROS_INFO("[Controller::joyCallback]: %s to %s",
-          to_string(dig_client.getControlState()).c_str(),
-          to_string(DigControlState::dig).c_str());
-      dig_client.setControlState(DigControlState::dig);
+      state = ControlState::start;
     }
-    else if (joy.get(Joy::END_DIG))
+    else if (joy.get(Joy::STOP_COMPETITION))
     {
-      ROS_INFO("[Controller::joyCallback]: %s to %s",
-               to_string(dig_client.getControlState()).c_str(),
-               to_string(DigControlState::finish_dig).c_str());
-      dig_client.setControlState(DigControlState::finish_dig);
+      dig_client.setControlState(DigControlState::manual);
+      waypoint_client.setControlState(WaypointControlState::manual);
+      state = ControlState::manual;
     }
-    else if (joy.get(Joy::START_DUMP))
+    else if (joy.get(Joy::DIG))
     {
-      ROS_INFO("[Controller::joyCallback]: %s to %s",
-               to_string(dig_client.getControlState()).c_str(),
-               to_string(DigControlState::dump).c_str());
-      dig_client.setControlState(DigControlState::dump);
+      DigControlState current = dig_client.getControlState();
+      if (current == DigControlState::ready)
+      {
+        ROS_INFO("[Controller::joyCallback]: %s to %s",
+                 to_string(current).c_str(),
+                 to_string(DigControlState::dig).c_str());
+        dig_client.setControlState(DigControlState::dig);
+      }
+      else if (current == DigControlState::dig)
+      {
+        ROS_INFO("[Controller::joyCallback]: %s to %s",
+                 to_string(current).c_str(),
+                 to_string(DigControlState::finish_dig).c_str());
+        dig_client.setControlState(DigControlState::finish_dig);
+      }
+      else
+      {
+        ROS_WARN("[Controller::joyCallback]: No dig transition from %s", to_string(current).c_str());
+      }
+
     }
-    else if (joy.get(Joy::END_DUMP))
+    else if (joy.get(Joy::DUMP))
     {
-      ROS_INFO("[Controller::joyCallback]: %s to %s",
-               to_string(dig_client.getControlState()).c_str(),
-               to_string(DigControlState::finish_dump).c_str());
-      dig_client.setControlState(DigControlState::finish_dump);
+      DigControlState current = dig_client.getControlState();
+      if (current == DigControlState::ready)
+      {
+        ROS_INFO("[Controller::joyCallback]: %s to %s",
+                 to_string(current).c_str(),
+                 to_string(DigControlState::dump).c_str());
+        dig_client.setControlState(DigControlState::dump);
+      }
+      else
+      {
+        ROS_WARN("[Controller::joyCallback]: No dump transition from %s", to_string(current).c_str());
+      }
     }
     else if (joy.get(Joy::START_PATH))
     {
