@@ -1,0 +1,84 @@
+# Arena locations
+# - Collector bin   = [0.00 0.25 0.48 1.90]
+# - Starting Zone B = [0.48 0.00 2.13 1.90]
+# - Starting Zone A = [2.13 0.00 3.78 1.90]
+# - Obstacle Zone   = [0.00 1.90 3.78 4.64]
+# - Mining Zone     = [0.00 4.64 3.78 7.38]
+
+timers:
+  finish_dig_1:
+    m: 4.0
+    s: 0.0
+  finish_dig_2:
+    m: 8.0
+    s: 0.0
+
+paths:
+  dig_1:
+    - # Center of the two starting zones
+      x: 2.13
+      y: 0.95
+      theta: 0.0
+      reverse: false
+      match_orientation: false
+      drive_profile: 0
+    - # Straight line over to mining zone
+      x: 2.13
+      y: 5.5
+      theta: 40.0
+      reverse: false
+      match_orientation: true
+      drive_profile: 0
+  hopper_1:
+    - # Center of the two starting zones
+      x: 2.13
+      y: 0.95
+      theta: 0.0
+      reverse: true
+      match_orientation: false
+      drive_profile: 0
+    - # Back to hopper
+      x: 1.23 # TODO approximate, need actual value
+      y: 0.95
+      theta: 0.0
+      reverse: true
+      match_orientation: true
+      drive_profile: 1
+  dig_2:
+    - # Center of the two starting zones
+      x: 2.13
+      y: 0.95
+      theta: 0.0
+      reverse: false
+      match_orientation: false
+      drive_profile: 0
+    - # Straight line over to mining zone
+      x: 2.13
+      y: 5.5
+      theta: 40.0
+      reverse: false
+      match_orientation: true
+      drive_profile: 0
+  hopper_2:
+    - # Center of the two starting zones
+      x: 2.13
+      y: 0.95
+      theta: 0.0
+      reverse: true
+      match_orientation: false
+      drive_profile: 0
+    - # Back to hopper
+      x: 1.23 # TODO approximate, need actual value
+      y: 0.95
+      theta: 0.0
+      reverse: true
+      match_orientation: true
+      drive_profile: 1
+  final_position:
+    - # Center of the two starting zones
+      x: 2.13
+      y: 0.95
+      theta: 0.0
+      reverse: true
+      match_orientation: false
+      drive_profile: 0

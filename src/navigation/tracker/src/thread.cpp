@@ -283,6 +283,7 @@ void Thread::thread()
   }
 
   // Exit
+  stepper->setMode(Mode::Disabled, 0.0f);
   camera->stop();
 }
 

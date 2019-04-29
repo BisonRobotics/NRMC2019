@@ -1,15 +1,15 @@
 #include <ros/ros.h>
 #include <competition/competition_controller.h>
 
+using namespace competition;
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "drive_control_client");
   ros::NodeHandle nh;
-  ros::Rate rate(50);
-
-  waypoint_control::Waypoints waypoints;
-
-  competition::Controller controller(&nh, &rate, waypoints);
+  Config config(&nh);
+  ros::Rate rate(config.rate);
+  Controller controller(&nh, &config);
 
   while(ros::ok())
   {

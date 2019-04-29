@@ -26,7 +26,7 @@ namespace competition
   class Controller
   {
   public:
-    Controller(ros::NodeHandle *nh, ros::Rate *rate, const Waypoints &path);
+    Controller(ros::NodeHandle *nh, Config *config);
 
     void update();
     void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
@@ -37,11 +37,12 @@ namespace competition
     Joy joy;
     ControlState state;
     WaypointVisuals visuals;
-    Waypoints waypoints;
+    Waypoints active_waypoints;
 
-    double dt;
     ros::NodeHandle *nh;
-    ros::Rate *rate;
+    Config *config;
+    ros::Time start_time;
+
     ros::Subscriber joy_subscriber;
     tf2_ros::Buffer tf_buffer;
     tf2_ros::TransformListener tf_listener;

@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include <string>
+#include <waypoint_control/Waypoint.h>
 
 namespace competition
 {
@@ -24,8 +25,12 @@ namespace competition
     finish_dig_2,
     navigate_to_hopper_2,
     dump_2,
-    finish
+    navigate_to_final_position,
+    finished,
   };
+
+  using waypoint_control::Waypoint;
+  using Waypoints = std::vector<Waypoint>;
 
   std::string to_string(ControlState state);
 
@@ -38,7 +43,11 @@ namespace competition
     void loadParam(ros::NodeHandle *nh, std::string name, int &param, int default_param);
     void loadParam(ros::NodeHandle *nh, std::string name, double &param, double default_param);
 
-    double max_initialization_velocity;
+    ros::Rate rate;
+    double dt;
+    ros::Duration finish_dig_1_time, finish_dig_2_time, finish;
+    Waypoints dig_path_1, dig_path_2, hopper_path_1, hopper_path_2, final_position;
+
 
   };
 
