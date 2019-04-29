@@ -10,12 +10,13 @@ using namespace dig_control;
 // TODO add initialize mode
 
 DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_actuator,
-                             iVescAccess *bucket_actuator, iVescAccess *vibrator, bool floor_test)
+                             iVescAccess *bucket_actuator, iVescAccess *vibrator, Config *config)
 {
   this->central_drive = central_drive;
   this->backhoe = backhoe_actuator;
   this->bucket = bucket_actuator;
   this->vibrator = vibrator;
+  this->config = config;
 
   central_current = 0.0f;
   backhoe_current = 0.0f;
@@ -38,9 +39,9 @@ DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_
   }
 }
 
-DigController::DigController(bool floor_test) :
+DigController::DigController(Config *config) :
     DigController(new VescAccess(central_drive_param),   new VescAccess(backhoe_actuator_param),
-                  new VescAccess(bucket_actuator_param), new VescAccess(vibrator_param), floor_test)
+                  new VescAccess(bucket_actuator_param), new VescAccess(vibrator_param), config)
 {
   internally_allocated = true;
 }
@@ -87,42 +88,42 @@ void DigController::updateCentralDriveState()
     lowPassFilter<float>(central_current, current, FILTER_CONSTANT);
   }
 
-  if (top_limit || central_drive_position >= CentralDriveAngles::top_limit)
+  if (top_limit || central_drive_position >= config->centralDriveAngles().top_limit)
   {
     central_drive_state = CentralDriveState::at_top_limit;
   }
-  else if (bottom_limit || central_drive_position <= CentralDriveAngles::bottom_limit ||
-          (floor_test   && central_drive_position <= CentralDriveAngles::floor_limit))
+  else if (bottom_limit || central_drive_position <= config->centralDriveAngles().bottom_limit ||
+          (floor_test   && central_drive_position <= config->centralDriveAngles().floor_limit))
   {
     central_drive_state = CentralDriveState::at_bottom_limit;
   }
-  else if (central_drive_position >= CentralDriveAngles::digging_bottom + CentralDriveAngles::variation &&
-           central_drive_position <  CentralDriveAngles::digging_top    - CentralDriveAngles::variation)
+  else if (central_drive_position >= config->centralDriveAngles().digging_bottom + config->centralDriveAngles().variation &&
+           central_drive_position <  config->centralDriveAngles().digging_top    - config->centralDriveAngles().variation)
   {
     central_drive_state = CentralDriveState::digging;
   }
-  else if (central_drive_position >= CentralDriveAngles::digging_top + CentralDriveAngles::variation &&
-           central_drive_position < CentralDriveAngles::flaps_bottom - CentralDriveAngles::variation)
+  else if (central_drive_position >= config->centralDriveAngles().digging_top + config->centralDriveAngles().variation &&
+           central_drive_position < config->centralDriveAngles().flaps_bottom - config->centralDriveAngles().variation)
   {
     central_drive_state = CentralDriveState::near_digging;
   }
-  else if (central_drive_position >= CentralDriveAngles::flaps_bottom + CentralDriveAngles::variation &&
-           central_drive_position < CentralDriveAngles::dump_bottom   - CentralDriveAngles::variation)
+  else if (central_drive_position >= config->centralDriveAngles().flaps_bottom + config->centralDriveAngles().variation &&
+           central_drive_position < config->centralDriveAngles().dump_bottom   - config->centralDriveAngles().variation)
   {
     central_drive_state = CentralDriveState::flap_transition_down;
   }
-  else if (central_drive_position >= CentralDriveAngles::dump_bottom + CentralDriveAngles::variation &&
-           central_drive_position < CentralDriveAngles::dump_point   - CentralDriveAngles::variation)
+  else if (central_drive_position >= config->centralDriveAngles().dump_bottom + config->centralDriveAngles().variation &&
+           central_drive_position < config->centralDriveAngles().dump_point   - config->centralDriveAngles().variation)
   {
     central_drive_state = CentralDriveState::near_dump_point;
   }
-  else if (central_drive_position >= CentralDriveAngles::dump_point + CentralDriveAngles::variation &&
-           central_drive_position < CentralDriveAngles::dump_top    - CentralDriveAngles::variation)
+  else if (central_drive_position >= config->centralDriveAngles().dump_point + config->centralDriveAngles().variation &&
+           central_drive_position < config->centralDriveAngles().dump_top    - config->centralDriveAngles().variation)
   {
     central_drive_state = CentralDriveState::at_dump_point;
   }
-  else if (central_drive_position >= CentralDriveAngles::dump_top  + CentralDriveAngles::variation &&
-           central_drive_position <= CentralDriveAngles::top_limit - CentralDriveAngles::variation)
+  else if (central_drive_position >= config->centralDriveAngles().dump_top  + config->centralDriveAngles().variation &&
+           central_drive_position <= config->centralDriveAngles().top_limit - config->centralDriveAngles().variation)
   {
     central_drive_state = CentralDriveState::flap_transition_up;
   }
@@ -306,7 +307,7 @@ void DigController::update()
             case CentralDriveState::flap_transition_up:
             case CentralDriveState::at_top_limit:
             {
-              if (central_drive_position <= CentralDriveAngles::stow_position)
+              if (central_drive_position <= config->centralDriveAngles().stow_position)
               {
                 setCentralDriveDuty(0.0f);
                 if (getBackhoePosition() > 100)
@@ -317,12 +318,12 @@ void DigController::update()
                 }
                 else
                 {
-                  setBackhoeDuty(BackhoeDuty::slow);
+                  setBackhoeDuty(config->backhoeDuty().slow);
                 }
               }
               else
               {
-                setCentralDriveDuty(-CentralDriveDuty::normal);
+                setCentralDriveDuty(-config->centralDriveDuty().normal);
               }
               break;
             }
@@ -362,7 +363,7 @@ void DigController::update()
             case CentralDriveState::at_top_limit:
             {
               ROS_DEBUG("[dig][dig_transition] Continue moving down");
-              setCentralDriveDuty(-CentralDriveDuty::fast);
+              setCentralDriveDuty(-config->centralDriveDuty().fast);
               setBackhoeDuty(0.0f);
               setBucketDuty(0.0f);
               setVibratorDuty(0.0f);
@@ -447,7 +448,7 @@ void DigController::update()
                 case BackhoeState::open:
                 {
                   ROS_DEBUG("[dig][closing_backhoe][digging][open] Closing backhoe");
-                  setBackhoeDuty(BackhoeDuty::normal);
+                  setBackhoeDuty(config->backhoeDuty().normal);
                   break;
                 }
               }
@@ -483,7 +484,7 @@ void DigController::update()
                 {
                   ROS_DEBUG("[dig][dump_transition][digging][closed] Moving to dump_transition");
                   setBackhoeDuty(0.0f);
-                  setCentralDriveDuty(CentralDriveDuty::fast);
+                  setCentralDriveDuty(config->centralDriveDuty().fast);
                   break;
                 }
                 case BackhoeState::traveling:
@@ -492,8 +493,8 @@ void DigController::update()
                 {
                   ROS_WARN("[dig][dump_transition][digging][open] "
                            "Trying to close stuck backhoe while transitioning to dump");
-                  setBackhoeDuty(BackhoeDuty::normal);
-                  setCentralDriveDuty(CentralDriveDuty::normal);
+                  setBackhoeDuty(config->backhoeDuty().normal);
+                  setCentralDriveDuty(config->centralDriveDuty().normal);
                   break;
                 }
               }
@@ -510,15 +511,15 @@ void DigController::update()
                 {
                   ROS_DEBUG("[dig][dump_transition][digging][closed] Moving to dump_transition");
                   setBackhoeDuty(0.0f);
-                  setCentralDriveDuty(CentralDriveDuty::fast);
+                  setCentralDriveDuty(config->centralDriveDuty().fast);
                   break;
                 }
                 case BackhoeState::traveling:
                 case BackhoeState::open:
                 {
                   ROS_WARN("[dig][dump_transition][normal][open] Trying to close backhoe while continuing");
-                  setBackhoeDuty(BackhoeDuty::fast); // TODO check current during this maneuver?
-                  setCentralDriveDuty(CentralDriveDuty::normal);
+                  setBackhoeDuty(config->backhoeDuty().fast); // TODO check current during this maneuver?
+                  setCentralDriveDuty(config->centralDriveDuty().normal);
                   break;
                 }
                 case BackhoeState::stuck:
@@ -535,7 +536,7 @@ void DigController::update()
             case CentralDriveState::flap_transition_down: // TODO can move faster for this portion
             {
               // Get vibrator started
-              setVibratorDuty(VibratorDuty::normal);
+              setVibratorDuty(config->vibratorDuty().normal);
 
               switch (backhoe_state)
               {
@@ -543,7 +544,7 @@ void DigController::update()
                 {
                   ROS_DEBUG("[dig][dump_transition][near_dump_point][closed] Moving to dump slowly");
                   setBackhoeDuty(0.0f);
-                  setCentralDriveDuty(CentralDriveDuty::slow);
+                  setCentralDriveDuty(config->centralDriveDuty().slow);
                   break;
                 }
                 case BackhoeState::traveling:
@@ -562,7 +563,7 @@ void DigController::update()
             case CentralDriveState::near_dump_point:
             {
               // Get vibrator started
-              setVibratorDuty(VibratorDuty::normal);
+              setVibratorDuty(config->vibratorDuty().normal);
 
               switch (backhoe_state)
               {
@@ -570,15 +571,15 @@ void DigController::update()
                 case BackhoeState::traveling:
                 {
                   ROS_DEBUG("[dig][dump_transition][near_dump_point][closed] Opening backhoe");
-                  setCentralDriveDuty(CentralDriveDuty::slow);
-                  setBackhoeDuty(-BackhoeDuty::normal);
+                  setCentralDriveDuty(config->centralDriveDuty().slow);
+                  setBackhoeDuty(-config->backhoeDuty().normal);
                   break;
                 }
                 case BackhoeState::stuck:
                 {
                   ROS_WARN("[dig][dump_transition][near_dump_point][stuck] Trying to open backhoe");
-                  setCentralDriveDuty(CentralDriveDuty::slow);
-                  setBackhoeDuty(-BackhoeDuty::normal);
+                  setCentralDriveDuty(config->centralDriveDuty().slow);
+                  setBackhoeDuty(-config->backhoeDuty().normal);
                   break;
                 }
                 case BackhoeState::open:
@@ -594,7 +595,7 @@ void DigController::update()
             case CentralDriveState::at_dump_point:
             {
               // Run vibrator
-              setVibratorDuty(VibratorDuty::normal);
+              setVibratorDuty(config->vibratorDuty().normal);
 
               switch (backhoe_state)
               {
@@ -603,14 +604,14 @@ void DigController::update()
                 {
                   ROS_DEBUG("[dig][dump_transition][at_dump_point][closed] Opening backhoe");
                   setCentralDriveDuty(0.0f);
-                  setBackhoeDuty(-BackhoeDuty::normal);
+                  setBackhoeDuty(-config->backhoeDuty().normal);
                   break;
                 }
                 case BackhoeState::stuck:
                 {
                   ROS_WARN("[dig][dump_transition][at_dump_point][stuck] Trying to open backhoe");
                   setCentralDriveDuty(0.0f);
-                  setBackhoeDuty(-BackhoeDuty::normal);
+                  setBackhoeDuty(-config->backhoeDuty().normal);
                   break;
                 }
                 case BackhoeState::open:
@@ -637,7 +638,7 @@ void DigController::update()
         case DigState::moving_flaps_up:
         {
           // Run vibrator
-          setVibratorDuty(VibratorDuty::normal);
+          setVibratorDuty(config->vibratorDuty().normal);
 
           // Make sure backhoe is open
           if (backhoe_state != BackhoeState::open)
@@ -655,7 +656,7 @@ void DigController::update()
             case CentralDriveState::flap_transition_up:
             {
               ROS_DEBUG("[dig][moving_flaps_up][at_dump_point] Moving flaps up");
-              setCentralDriveDuty(CentralDriveDuty::normal);
+              setCentralDriveDuty(config->centralDriveDuty().normal);
               setBackhoeDuty(0.0f);
               break;
             }
@@ -694,7 +695,7 @@ void DigController::update()
     {
       setCentralDriveDuty(0.0f);
       setBackhoeDuty(0.0f);
-      setVibratorDuty(VibratorDuty::normal);
+      setVibratorDuty(config->vibratorDuty().normal);
       switch (bucket_state)
       {
         case BucketState::up:
@@ -708,13 +709,13 @@ void DigController::update()
         case BucketState::traveling:
         {
           ROS_DEBUG("[dump][traveling] Moving bucket up");
-          setBucketDuty(BucketDuty::fast);
+          setBucketDuty(config->bucketDuty().fast);
           break;
         }
         case BucketState::stuck:
         {
           ROS_ERROR("[dump][stuck] Bucket is stuck, keep trying");
-          setBucketDuty(BucketDuty::fast);
+          setBucketDuty(config->bucketDuty().fast);
           break;
         }
       }
@@ -724,14 +725,14 @@ void DigController::update()
     {
       setCentralDriveDuty(0.0f);
       setBackhoeDuty(0.0f);
-      setVibratorDuty(VibratorDuty::normal);
+      setVibratorDuty(config->vibratorDuty().normal);
       switch (bucket_state)
       {
         case BucketState::up:
         case BucketState::traveling:
         {
           ROS_DEBUG("[dump][traveling] Finishing dump");
-          setBucketDuty(-BucketDuty::fast);
+          setBucketDuty(-config->bucketDuty().fast);
           break;
         }
         case BucketState::down:
@@ -744,7 +745,7 @@ void DigController::update()
         case BucketState::stuck:
         {
           ROS_ERROR("[dump][stuck] Bucket is stuck, keep trying");
-          setBucketDuty(-BucketDuty::fast);
+          setBucketDuty(-config->bucketDuty().fast);
           break;
         }
       }

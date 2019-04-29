@@ -19,4 +19,5 @@
   <depend>actionlib_msgs</depend>
   <depend>stepper</depend>
   <depend>ocam</depend>
+  <depend>utilities</depend>
 </package>

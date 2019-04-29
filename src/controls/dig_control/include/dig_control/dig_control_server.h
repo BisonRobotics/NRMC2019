@@ -12,7 +12,7 @@ namespace dig_control
   class DigControlServer
   {
   public:
-    explicit DigControlServer(ros::NodeHandle *nh, DigController *controller);
+    explicit DigControlServer(ros::NodeHandle *nh, DigController *controller, Config *config);
 
     void goalCallback();
     void preemptCallback();
@@ -47,6 +47,7 @@ namespace dig_control
     actionlib::SimpleActionServer<dig_control::DigControlAction> server;
     sensor_msgs::JointState joint_angles;
 
+    Config *config;
     DigController *controller;
   };
 }

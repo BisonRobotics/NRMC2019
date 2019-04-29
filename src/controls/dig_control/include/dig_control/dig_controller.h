@@ -4,6 +4,7 @@
 #include <vesc_access/ivesc_access.h>
 #include <vesc_access/vesc_access.h>
 #include <string>
+#include <dig_control/config.h>
 
 namespace dig_control
 {
@@ -79,60 +80,13 @@ namespace dig_control
   std::string to_string(CentralDriveState state);
   std::string to_string(BackhoeState state);
   std::string to_string(BucketState state);
-
-  class CentralDriveAngles
-  {
-  public:
-    static constexpr int variation      =   10;
-    static constexpr int bottom_limit   =  300;
-    static constexpr int digging_bottom =  300;
-    static constexpr int digging_top    =  900;
-    static constexpr int floor_limit    = 1250;//1146;
-    static constexpr int zero_angle     = 1330;
-    static constexpr int stow_position  = 1650;
-    static constexpr int flaps_bottom   = 2000;
-    static constexpr int dump_bottom    = 2250;
-    static constexpr int dump_point     = 2300;
-    static constexpr int dump_top       = 2350;
-    static constexpr int top_limit      = 2550;
-  };
-
-  class CentralDriveDuty
-  {
-  public:
-    static constexpr float slow = 0.1f;
-    static constexpr float normal = 0.3f;
-    static constexpr float fast = 0.5f;
-  };
-
-  class BackhoeDuty
-  {
-  public:
-    static constexpr float slow = 0.1f;
-    static constexpr float normal = 0.5f;
-    static constexpr float fast = 0.8f;
-  };
-
-  class VibratorDuty
-  {
-  public:
-    //static constexpr float normal = 0.4f;
-    static constexpr float normal = 0.0f;
-  };
-
-  class BucketDuty
-  {
-  public:
-    static constexpr float fast = 0.4f;
-    static constexpr float normal = 0.2f;
-  };
   
   class DigController
   {
   public:
-    DigController(bool floor_test = false);
+    DigController(Config *config);
     DigController(iVescAccess *central_drive,   iVescAccess *backhoe_actuator,
-                  iVescAccess *bucket_actuator, iVescAccess *vibrator, bool floor_test = false);
+                  iVescAccess *bucket_actuator, iVescAccess *vibrator, Config *config);
     ~DigController();
 
     void update();
@@ -172,6 +126,7 @@ namespace dig_control
     bool isInternallyAllocated();
 
   private:
+    Config *config;
     iVescAccess *central_drive, *backhoe, *bucket, *vibrator;
     bool internally_allocated;
     bool floor_test;

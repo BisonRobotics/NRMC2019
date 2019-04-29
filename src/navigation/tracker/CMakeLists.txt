@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   genmsg
   actionlib_msgs
   stepper
+  utilities
 )
 
 find_package(OpenCV 3.2.0 REQUIRED)

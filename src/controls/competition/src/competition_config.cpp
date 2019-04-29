@@ -40,7 +40,7 @@ void parseTimer(const std::string &timer_name, XmlRpc::XmlRpcValue &xml_timers, 
 }
 
 // Based on: https://answers.ros.org/question/189299/getting-hierarchy-level-of-yaml-parameter/
-Config::Config(ros::NodeHandle *nh) : rate(50.0)
+Config::Config(ros::NodeHandle *nh) : utilities::Config("competition"), rate(50.0)
 {
   // Load launch file parameters
   double rate_float;
@@ -80,24 +80,6 @@ Config::Config(ros::NodeHandle *nh) : rate(50.0)
   }
 
   finish = ros::Duration(60.0*10.0);
-}
-
-void Config::loadParam(ros::NodeHandle *nh, std::string name, std::string &param, std::string default_param)
-{
-  nh->param<std::string>(name, param, default_param);
-  ROS_INFO("[tracker::Config::loadParam::%s]: %s = %s ", nh->getNamespace().c_str(), name.c_str(), param.c_str());
-}
-
-void Config::loadParam(ros::NodeHandle *nh, std::string name, int &param, int default_param)
-{
-  nh->param<int>(name, param, default_param);
-  ROS_INFO("[tracker::Config::loadParam]: %s = %i ", name.c_str(), param);
-}
-
-void Config::loadParam(ros::NodeHandle *nh, std::string name, double &param, double default_param)
-{
-  nh->param<double>(name, param, default_param);
-  ROS_INFO("[tracker::Config::loadParam]: %s = %f ", name.c_str(), param);
 }
 
 std::string competition::to_string(competition::ControlState state)

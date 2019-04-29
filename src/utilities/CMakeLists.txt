@@ -23,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES joy
+  LIBRARIES joy config
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
@@ -32,6 +32,9 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
+
+add_library(config src/config.cpp)
+target_link_libraries(config ${catkin_LIBRARIES})
 
 add_library(joy src/joy.cpp)
 add_dependencies(joy ${sensor_msgs_EXPORTED_TARGETS})

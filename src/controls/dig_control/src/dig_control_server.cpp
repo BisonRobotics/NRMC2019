@@ -6,13 +6,13 @@
 using namespace dig_control;
 
 
-DigControlServer::DigControlServer(ros::NodeHandle *nh, DigController *controller) :
+DigControlServer::DigControlServer(ros::NodeHandle *nh, DigController *controller, Config *config) :
   manual_safety(false), autonomy_safety(false),
   backhoe_duty(0.0f), bucket_duty(0.0f), central_duty(0.0f), vibrator_duty(0.0f), central_drive_angle(0.0f),
   monoboom_params{-.0808, -0.0073,  0.0462,  0.9498,  -0.0029},
   flap_params{85.0010, -376.8576, 620.7329, -453.8172, 126.0475},
   backhoe_params{12.852515, -29.737412, 26.138260, -9.193020, 0.699974, 2.190548, 0.004798},
-  nh(nh), controller(controller), debug(true), seq(0),
+  nh(nh), controller(controller), config(config), debug(true), seq(0),
   server(*nh, "action", false)
 {
   joint_angles.header.stamp = ros::Time::now();
@@ -141,11 +141,11 @@ void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     }
     else if (joy.get(Joy::BUCKET_DOWN))
     {
-      bucket_duty = -BucketDuty::fast;
+      bucket_duty = -config->bucketDuty().fast;
     }
     else if (joy.get(Joy::BUCKET_UP))
     {
-      bucket_duty = BucketDuty::fast;
+      bucket_duty = config->bucketDuty().fast;
     }
 
     // Update backhoe (Maintain state)
@@ -156,11 +156,11 @@ void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     }
     else if (joy.get(Joy::LINEAR_IN))
     {
-      backhoe_duty = -BackhoeDuty::normal;
+      backhoe_duty = -config->backhoeDuty().normal;
     }
     else if (joy.get(Joy::LINEAR_OUT))
     {
-      backhoe_duty = BackhoeDuty::fast;
+      backhoe_duty = config->backhoeDuty().fast;
     }
 
     // Update central drive
@@ -171,11 +171,11 @@ void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     }
     else if (joy.get(Joy::CENTRAL_DRIVE_UP))
     {
-      central_duty = CentralDriveDuty::fast;
+      central_duty = config->centralDriveDuty().fast;
     }
     else if (joy.get(Joy::CENTRAL_DRIVE_DOWN))
     {
-      central_duty = -CentralDriveDuty::normal;
+      central_duty = -config->centralDriveDuty().normal;
     }
     else
     {
@@ -364,11 +364,9 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "dig_control_server");
   ros::NodeHandle nh("~");
-  bool floor_test;
-  nh.param<bool>("floor_test", floor_test, true);
-  DigController *controller;
-  controller = new DigController(floor_test);
-  DigControlServer server(&nh, controller);
+  Config config(&nh);
+  DigController controller(&config);
+  DigControlServer server(&nh, &controller, &config);
   ros::Rate rate(50);
   while (ros::ok())
   {
@@ -376,7 +374,7 @@ int main(int argc, char* argv[])
     ros::spinOnce();
     rate.sleep();
   }
-  controller->stop();
+  controller.stop();
 }
 
 

@@ -3,17 +3,14 @@
 
 #include <ros/ros.h>
 #include <string>
+#include <utilities/config.h>
 
 namespace tracker
 {
-  class Config
+  class Config : utilities::Config
   {
   public:
     Config(ros::NodeHandle *base_nh, ros::NodeHandle *nh, std::string name);
-
-    void loadParam(ros::NodeHandle *nh, std::string name, std::string &param, std::string default_param);
-    void loadParam(ros::NodeHandle *nh, std::string name, int &param, int default_param);
-    void loadParam(ros::NodeHandle *nh, std::string name, double &param, double default_param);
 
     std::string name;
     double max_initialization_velocity;

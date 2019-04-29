@@ -2,18 +2,7 @@
 
 using namespace waypoint_control;
 
-/*Config::Config() :
-    max_duty(default_config::MAX_DUTY),
-    max_in_place_duty(default_config::MAX_IN_PLACE_DUTY),
-    min_in_place_duty(default_config::MIN_IN_PLACE_DUTY),
-    max_driving_duty(default_config::MAX_DRIVING_DUTY),
-    min_driving_duty(default_config::MIN_DRIVING_DUTY),
-    max_manual_duty(default_config::MAX_MANUAL_DUTY),
-    in_place_k(default_config::IN_PLACE_K),
-    driving_k(default_config::DRIVING_K)
-{}  */
-
-Config::Config(ros::NodeHandle *nh)
+Config::Config(ros::NodeHandle *nh) : utilities::Config("waypoint_control")
 {
   loadParam(nh, "rate",              rate,              50.00);
   loadParam(nh, "max_acceleration",  max_acceleration,   0.01);
@@ -27,12 +16,6 @@ Config::Config(ros::NodeHandle *nh)
   loadParam(nh, "in_place_k",        in_place_k,         1.00);
   loadParam(nh, "driving_kx",        driving_kx,         1.00);
   loadParam(nh, "driving_ky",        driving_ky,         1.00);
-}
-
-void Config::loadParam(ros::NodeHandle *nh, const std::string &name, double &param, double default_param)
-{
-  nh->param<double>(name, param, default_param);
-  ROS_INFO("[waypoint_control::Config::loadParam]: | %20s | %7f |", name.c_str(), param);
 }
 
 std::string waypoint_control::to_string(ControlState state)

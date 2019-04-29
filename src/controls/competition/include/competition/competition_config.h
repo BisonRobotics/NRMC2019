@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <string>
 #include <waypoint_control/Waypoint.h>
+#include <utilities/config.h>
 
 namespace competition
 {
@@ -34,14 +35,10 @@ namespace competition
 
   std::string to_string(ControlState state);
 
-  class Config
+  class Config : public utilities::Config
   {
   public:
     Config(ros::NodeHandle *nh);
-
-    void loadParam(ros::NodeHandle *nh, std::string name, std::string &param, std::string default_param);
-    void loadParam(ros::NodeHandle *nh, std::string name, int &param, int default_param);
-    void loadParam(ros::NodeHandle *nh, std::string name, double &param, double default_param);
 
     ros::Rate rate;
     double dt;

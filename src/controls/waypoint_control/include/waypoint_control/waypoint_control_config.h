@@ -5,8 +5,8 @@
 #include <boost/math/constants/constants.hpp>
 
 #include <ros/ros.h>
-
 #include <waypoint_control/WaypointControlAction.h>
+#include <utilities/config.h>
 
 
 namespace waypoint_control
@@ -14,11 +14,10 @@ namespace waypoint_control
   typedef std::vector<Waypoint> Waypoints;
   using boost::math::double_constants::pi;
 
-  class Config
+  class Config : public utilities::Config
   {
   public:
     Config(ros::NodeHandle *nh);
-    static void loadParam(ros::NodeHandle *nh, const std::string &name, double &param, double default_param);
 
     double rate;
     double max_acceleration;
