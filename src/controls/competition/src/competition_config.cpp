@@ -76,7 +76,7 @@ Config::Config(ros::NodeHandle *nh) : rate(50.0)
   }
   else
   {
-    ROS_WARN("Couldn't find paths parameter");
+    ROS_WARN("Couldn't find timers parameter");
   }
 
   finish = ros::Duration(60.0*10.0);

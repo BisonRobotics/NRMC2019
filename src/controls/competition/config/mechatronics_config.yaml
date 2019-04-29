@@ -7,78 +7,110 @@
 
 timers:
   finish_dig_1:
-    m: 4.0
+    m: 1.0
     s: 0.0
   finish_dig_2:
-    m: 8.0
+    m: 2.0
     s: 0.0
 
 paths:
   dig_1:
-    - # Center of the two starting zones
-      x: 2.13
-      y: 0.95
+    -
+      x: 3.10
+      y: 2.85
       theta: 0.0
       reverse: false
       match_orientation: false
       drive_profile: 0
-    - # Straight line over to mining zone
-      x: 2.13
-      y: 5.5
-      theta: 40.0
+    -
+      x: 1.5
+      y: 2.85
+      theta: 0.0
       reverse: false
-      match_orientation: true
+      match_orientation: false
       drive_profile: 0
+    -
+      x: 1.5
+      y: 5.5
+      theta: 0.0
+      reverse: false
+      match_orientation: false
+      drive_profile: 0
+
   hopper_1:
-    - # Center of the two starting zones
-      x: 2.13
-      y: 0.95
+    -
+      x: 1.5
+      y: 2.85
       theta: 0.0
       reverse: true
       match_orientation: false
       drive_profile: 0
-    - # Back to hopper
-      x: 1.23 # TODO approximate, need actual value
-      y: 0.95
+    -
+      x: 3.10
+      y: 2.85
       theta: 0.0
       reverse: true
-      match_orientation: true
-      drive_profile: 1
+      match_orientation: false
+      drive_profile: 0
+    -
+      x: 3.10
+      y: 1.5
+      theta: 0.0
+      reverse: true
+      match_orientation: false
+      drive_profile: 0
+
   dig_2:
-    - # Center of the two starting zones
-      x: 2.13
-      y: 0.95
+    -
+      x: 3.10
+      y: 2.85
       theta: 0.0
       reverse: false
       match_orientation: false
       drive_profile: 0
-    - # Straight line over to mining zone
-      x: 2.13
+    -
+      x: 1.5
+      y: 2.85
+      theta: 0.0
+      reverse: false
+      match_orientation: false
+      drive_profile: 0
+    -
+      x: 1.5
       y: 5.5
-      theta: 40.0
+      theta: 0.0
       reverse: false
-      match_orientation: true
+      match_orientation: false
       drive_profile: 0
+
   hopper_2:
-    - # Center of the two starting zones
-      x: 2.13
-      y: 0.95
+    -
+      x: 1.5
+      y: 2.85
       theta: 0.0
       reverse: true
       match_orientation: false
       drive_profile: 0
-    - # Back to hopper
-      x: 1.23 # TODO approximate, need actual value
-      y: 0.95
+    -
+      x: 3.10
+      y: 2.85
       theta: 0.0
       reverse: true
-      match_orientation: true
-      drive_profile: 1
+      match_orientation: false
+      drive_profile: 0
+    -
+      x: 3.10
+      y: 1.5
+      theta: 0.0
+      reverse: true
+      match_orientation: false
+      drive_profile: 0
+
   final_position:
-    - # Center of the two starting zones
-      x: 2.13
-      y: 0.95
+    -
+      x: 3.10
+      y: 2.00
       theta: 0.0
-      reverse: true
+      reverse: false
       match_orientation: false
       drive_profile: 0

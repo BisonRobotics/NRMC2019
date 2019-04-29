@@ -115,7 +115,7 @@ void WaypointController::update(bool manual_safety, bool autonomy_safety,
         if (waypoints.empty())
         {
           ROS_INFO("[WaypointController::update]: Processed all waypoints");
-          state = ControlState::ready;
+          state = ControlState::finished;
         }
         else
         {

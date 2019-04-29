@@ -8,11 +8,11 @@
 
 TrackerGUI::TrackerGUI(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::TrackerGUI),
-    topic_base("/tracker0"), compression("raw"), enabled(false),
-    brightness_client0("/tracker0/set_brightness", false),
-    brightness_client1("/tracker1/set_brightness", false),
-    exposure_client0("/tracker0/set_exposure", false),
-    exposure_client1("/tracker1/set_exposure", false),
+    topic_base("/tracker/left"), compression("raw"), enabled(false),
+    brightness_client0("/tracker/left/set_brightness", false),
+    brightness_client1("/tracker/right/set_brightness", false),
+    exposure_client0("/tracker/left/set_exposure", false),
+    exposure_client1("/tracker/right/set_exposure", false),
     it(nh), scene(this)
 {
   service_timer = new QTimer(this);
@@ -34,8 +34,8 @@ TrackerGUI::TrackerGUI(QWidget *parent) :
   ui->exposureSlider->setMaximum(195);
   ui->exposureSpinBox->setMaximum(195);
   ui->imageView->setScene(&scene);
-  ui->topicComboBox->addItem("/tracker0");
-  ui->topicComboBox->addItem("/tracker1");
+  ui->topicComboBox->addItem("/tracker/left");
+  ui->topicComboBox->addItem("/tracker/right");
   ui->compressionComboBox->addItem("raw");
   ui->compressionComboBox->addItem("compressed");
   ui->compressionComboBox->addItem("theora");
@@ -167,12 +167,12 @@ void TrackerGUI::exposureSliderChanged(int value)
 void TrackerGUI::topicComboBoxChanged(QString value)
 {
   topic_base = value.toStdString();
-  if (topic_base == "/tracker0")
+  if (topic_base == "/tracker/left")
   {
     current_brightness_client = &brightness_client0;
     current_exposure_client = &exposure_client0;
   }
-  else if (topic_base == "/tracker1")
+  else if (topic_base == "/tracker/right")
   {
     current_brightness_client = &brightness_client1;
     current_exposure_client = &exposure_client1;

@@ -20,6 +20,7 @@ void DigControlClient::setControlState(ControlState state)
 {
   dig_control::DigControlGoal goal;
   goal.control_state = (uint8_t)state;
+  control_state = state;
   client.sendGoal(goal, boostDoneCallback, boostActiveCallback, boostFeedbackCallback);
 }
 

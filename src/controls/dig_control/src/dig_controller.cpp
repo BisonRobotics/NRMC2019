@@ -401,13 +401,17 @@ void DigController::update()
               break;
             }
             case CentralDriveState::near_digging:
+            {
+              ROS_WARN("[dig][digging][near_digging] Should not be in this state");
+              break;
+            }
             case CentralDriveState::flap_transition_down:
             case CentralDriveState::near_dump_point:
             case CentralDriveState::at_dump_point:
             case CentralDriveState::flap_transition_up:
             case CentralDriveState::at_top_limit:
             {
-              ROS_ERROR("[dig][digging][default] Should not be in this central drive state");
+              ROS_ERROR("[dig][digging][default] Should not be in this state");
               goal_state = ControlState::error;
               stop();
               break;

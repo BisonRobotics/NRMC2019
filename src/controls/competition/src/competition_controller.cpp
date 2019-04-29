@@ -6,7 +6,7 @@ using namespace competition;
 Controller::Controller(ros::NodeHandle *nh, Config *config) :
   nh(nh), config(config), tf_listener(tf_buffer), visuals(nh), state(ControlState::manual)
 {
-  joy_subscriber = nh->subscribe("joy", 1, &Controller::joyCallback, this);
+  joy_subscriber = nh->subscribe("/joy", 1, &Controller::joyCallback, this);
   debug_publisher = nh->advertise<Debug>("debug", 1);
   waypoint_client.setControlState(WaypointControlState::manual);
   dig_client.setControlState(DigControlState::manual);
@@ -32,6 +32,7 @@ void Controller::update()
     case ControlState::manual:
     case ControlState::assisted_autonomy:
     {
+      start_time = ros::Time::now();
       // Controllers more or less handle themselves
       break;
     }
@@ -149,7 +150,7 @@ void Controller::update()
         ROS_INFO("[Controller::update]: %s to %s",
                  to_string(state).c_str(),
                  to_string(ControlState::finish_dig_2).c_str());
-        state = ControlState::finish_dig_1;
+        state = ControlState::finish_dig_2;
         dig_client.setControlState(DigControlState::finish_dig);
       }
       break;
@@ -212,11 +213,14 @@ void Controller::update()
   ros::Duration difference = ros::Time::now() - start_time;
   int64_t minutes = difference.sec / 60;
   int64_t seconds = difference.sec - minutes * 60;
-  debug.time.m = minutes;
-  debug.time.s = seconds;
+  debug.header.seq++;
+  debug.header.stamp = ros::Time::now();
+  debug.competition_timer.m = minutes;
+  debug.competition_timer.s = seconds;
   debug.competition_state = to_string(state);
   debug.waypoint_state = waypoint_control::to_string(waypoint_client.getControlState());
   debug.dig_state = dig_control::to_string(dig_client.getControlState());
+  debug_publisher.publish(debug);
 
 }
 
@@ -226,12 +230,19 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
   
   if (joy.get(Joy::AUTONOMY_SAFETY))
   {
+    ROS_INFO("[Controller::joyCallback::AUTONOMY_SAFETY]");
     if (joy.get(Joy::START_COMPETITION))
     {
+      ROS_INFO("[Controller::joyCallback]: %s to %s",
+               to_string(state).c_str(),
+               to_string(ControlState::start).c_str());
       state = ControlState::start;
     }
     else if (joy.get(Joy::STOP_COMPETITION))
     {
+      ROS_INFO("[Controller::joyCallback]: %s to %s",
+               to_string(state).c_str(),
+               to_string(ControlState::manual).c_str());
       dig_client.setControlState(DigControlState::manual);
       waypoint_client.setControlState(WaypointControlState::manual);
       state = ControlState::manual;

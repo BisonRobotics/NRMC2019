@@ -5,8 +5,8 @@ using namespace competition;
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "drive_control_client");
-  ros::NodeHandle nh;
+  ros::init(argc, argv, "competition_controller");
+  ros::NodeHandle nh("~");
   Config config(&nh);
   ros::Rate rate(config.rate);
   Controller controller(&nh, &config);

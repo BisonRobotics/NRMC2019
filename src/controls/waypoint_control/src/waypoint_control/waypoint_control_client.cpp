@@ -34,6 +34,8 @@ void WaypointControlClient::setControlState(ControlState state, const Waypoints 
 void WaypointControlClient::doneCallback(const actionlib::SimpleClientGoalState &state,
                                       const WaypointControlResultConstPtr &result)
 {
+  ROS_INFO("[WaypointControlClient::doneCallback]: %s to %s",
+      to_string(control_state).c_str(), to_string((ControlState)result->control_state).c_str());
   control_state = (ControlState)result->control_state;
   progress = result->progress;
   angular_deviation = result->angular_deviation;
