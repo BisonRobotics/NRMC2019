@@ -26,7 +26,7 @@ DigController::DigController(iVescAccess *central_drive,   iVescAccess *backhoe_
   last_bucket_state_change = ros::Time::now();
 
   internally_allocated = false;
-  this->floor_test = floor_test;
+  this->floor_test = config->floorTest();
 
   backhoe_stuck_count = 0;
   bucket_state = BucketState::down;

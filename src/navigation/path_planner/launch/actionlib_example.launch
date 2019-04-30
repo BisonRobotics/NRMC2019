@@ -1,5 +1,0 @@
-<launch>
-  <node name="map_server" pkg="occupancy_grid" type="map_server" />
-  <node name="path_planner_node" pkg="path_planner" type="path_planner_node" />
-  <node name="action_server_example" pkg="path_planner" type="action_server_example" />
-</launch>

@@ -6,7 +6,6 @@
 #include <waypoint_control/Waypoint.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <interactive_markers/interactive_marker_server.h>
-#include <occupancy_grid/bezier.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
 

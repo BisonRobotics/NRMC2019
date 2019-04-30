@@ -17,6 +17,8 @@ namespace tracker
     double max_scan_velocity;
     double max_velocity;
     double k;
+    double tag_switch_x;
+    double tag_switch_y;
     int stepper_controller_id;
     int stepper_client_id;
     int brightness;

@@ -1,3 +1,0 @@
-std_msgs/Header header
-float64 path_error
-float64 angle_error

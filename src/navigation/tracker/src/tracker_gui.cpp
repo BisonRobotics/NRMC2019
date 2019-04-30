@@ -1,4 +1,4 @@
-#include <tracker_gui/tracker_gui.h>
+#include <tracker/tracker_gui.h>
 #include <ui_tracker_gui.h>
 #include <tracker/GetUInt.h>
 #include <tracker/SetUIntAction.h>

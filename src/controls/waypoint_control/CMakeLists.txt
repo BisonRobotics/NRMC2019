@@ -15,7 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   nav_msgs
   navigation_msgs
-  occupancy_grid
   actionlib
   actionlib_msgs
   navigation_msgs
@@ -76,9 +75,9 @@ add_executable(waypoint_control_server src/waypoint_control/waypoint_control_ser
 add_dependencies(waypoint_control_server ${waypoint_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
 target_link_libraries(waypoint_control_server waypoint_control_config waypoint_controller teleop_interface ${catkin_LIBRARIES})
 
-add_executable(waypoint_control_client_node src/waypoint_control/waypoint_control_client_node.cpp)
-add_dependencies(waypoint_control_client_node ${waypoint_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(waypoint_control_client_node waypoint_control_config waypoint_control_client ${catkin_LIBRARIES})
+#add_executable(waypoint_control_client_node src/waypoint_control/waypoint_control_client_node.cpp)
+#add_dependencies(waypoint_control_client_node ${waypoint_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
+#target_link_libraries(waypoint_control_client_node waypoint_control_config waypoint_control_client ${catkin_LIBRARIES})
 
 
 if(DEFINED ENV{ON_ROBOT})

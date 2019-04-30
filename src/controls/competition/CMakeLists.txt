@@ -21,8 +21,6 @@ find_package(catkin REQUIRED COMPONENTS
   interactive_markers
   dig_control
   waypoint_control
-  path_planner
-  occupancy_grid
   utilities
 )
 
@@ -59,10 +57,6 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
-
-add_library(bezier_visuals src/bezier_visuals.cpp)
-add_dependencies(bezier_visuals ${visualization_msgs_EXPORTED_TARGETS})
-target_link_libraries(bezier_visuals ${catkin_LIBRARIES})
 
 add_library(waypoint_visuals src/waypoint_visuals.cpp)
 add_dependencies(waypoint_visuals ${waypoint_control_EXPORTED_TARGETS} ${visualization_msgs_EXPORTED_TARGETS})

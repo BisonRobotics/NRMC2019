@@ -1,7 +1,0 @@
-std_msgs/Header header
-float64 left_wheel_planned
-float64 right_wheel_planned
-float64 left_wheel_actual
-float64 right_wheel_actual
-float64 left_wheel_command
-float64 right_wheel_command

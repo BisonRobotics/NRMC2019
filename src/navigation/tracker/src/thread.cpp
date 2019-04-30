@@ -96,15 +96,15 @@ Thread::Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, Camer
 
 void Thread::thread()
 {
-  ROS_INFO("Initializing stepper for %s", config.name.c_str());
+  ROS_INFO("Starting %s", camera->getName().c_str());
+  camera->start();
+  ros::Time stamp;
+
+  ROS_INFO("[%s]: Initializing stepper for %s", camera->getName().c_str(), config.name.c_str());
   stepper = new Stepper("tracker_can", (uint)config.stepper_controller_id, (uint)config.stepper_client_id);
   stepper->setMode(Mode::Initialize, (float)config.max_initialization_velocity);
   ros::Duration(5.0).sleep();
   stepper->setMode(Mode::Velocity, 0.0);
-
-  ROS_INFO("Starting %s", camera->getName().c_str());
-  camera->start();
-  ros::Time stamp;
 
   // Main loop
   boost::timer::cpu_timer total;
@@ -121,27 +121,28 @@ void Thread::thread()
       try
       {
         camera->getFrame(detector->getBuffer());
-        // TODO request stepper position
         break;
       }
       catch (std::runtime_error &e)
       {
-        ROS_WARN("%s", e.what());
-        ros::Duration(0.1).sleep();
-        if (i++ >= 10)
+        ROS_WARN("[%s]: %s", camera->getName().c_str(), e.what());
+        camera->stop();
+        ros::Duration(0.5).sleep();
+        camera->start();
+        if (i++ >= 4)
         {
           i = 0;
           try
           {
-            ROS_INFO("Attempting to reboot...");
+            ROS_INFO("[%s]: Attempting to reboot...", camera->getName().c_str());
             camera->reboot();
             ros::Duration(1.0).sleep();
-            ROS_INFO("Attempting to start...");
+            ROS_INFO("[%s]: Attempting to start...", camera->getName().c_str());
             camera->start();
           }
           catch (std::runtime_error &e)
           {
-            ROS_WARN("%s", e.what());
+            ROS_WARN("[%s]: %s", camera->getName().c_str(), e.what());
             ros::Duration(0.1).sleep();
           }
         }
@@ -157,13 +158,20 @@ void Thread::thread()
     {
       ROS_WARN("%s",ex.what());
     }
-    if (transform.getOrigin().x() < 2.5)
+    if (transform.getOrigin().y() < config.tag_switch_y)
     {
-      active_id = 2;
+      if (transform.getOrigin().x() > config.tag_switch_x)
+      {
+        active_id = 4; // Medium tag
+      }
+      else
+      {
+        active_id = 8; // Small tag
+      }
     }
     else
     {
-      active_id = 1;
+      active_id = 1; // Big tag
     }
 
       // Detect tags

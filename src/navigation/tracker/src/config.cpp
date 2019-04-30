@@ -5,6 +5,8 @@ using namespace tracker;
 Config::Config(ros::NodeHandle *base_nh, ros::NodeHandle *nh, std::string name) :
   utilities::Config("tracker"), name(name)
 {
+  loadParam(base_nh, "tag_switch_x", tag_switch_x, 2.50);
+  loadParam(base_nh, "tag_switch_y", tag_switch_y, 1.75);
   loadParam(base_nh, "max_initialization_velocity", max_initialization_velocity, 0.3);
   loadParam(base_nh, "max_scan_velocity", max_scan_velocity, 0.1);
   loadParam(base_nh, "max_velocity", max_velocity, 0.2);
