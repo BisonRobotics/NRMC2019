@@ -3,7 +3,7 @@
 
 using namespace competition;
 
-Controller::Controller(ros::NodeHandle *nh, Config *config) :
+Controller::Controller(ros::NodeHandle *nh, Config config) :
   nh(nh), config(config), tf_listener(tf_buffer), visuals(nh), state(ControlState::manual)
 {
   joy_subscriber = nh->subscribe("/joy", 1, &Controller::joyCallback, this);
@@ -65,8 +65,8 @@ void Controller::update()
                to_string(state).c_str(),
                to_string(ControlState::navigate_to_dig_zone_1).c_str());
       state = ControlState::navigate_to_dig_zone_1;
-      visuals.updateWaypoints(config->dig_path_1);
-      waypoint_client.setControlState(WaypointControlState::new_goal, config->dig_path_1);
+      visuals.updateWaypoints(config.digPath1());
+      waypoint_client.setControlState(WaypointControlState::new_goal, config.digPath1());
       break;
     }
     case ControlState::navigate_to_dig_zone_1:
@@ -83,7 +83,7 @@ void Controller::update()
     }
     case ControlState::dig_1:
     {
-      if (ros::Time::now() - start_time >= config->finish_dig_1_time)
+      if (ros::Time::now() - start_time >= config.finishDig1Time())
       {
         ROS_INFO("[Controller::update]: %s to %s",
                  to_string(state).c_str(),
@@ -101,8 +101,8 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::navigate_to_hopper_1).c_str());
         state = ControlState::navigate_to_hopper_1;
-        visuals.updateWaypoints(config->hopper_path_1);
-        waypoint_client.setControlState(WaypointControlState::new_goal, config->hopper_path_1);
+        visuals.updateWaypoints(config.hopperPath1());
+        waypoint_client.setControlState(WaypointControlState::new_goal, config.hopperPath1());
       }
       break;
     }
@@ -126,8 +126,8 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::navigate_to_dig_zone_2).c_str());
         state = ControlState::navigate_to_dig_zone_2;
-        visuals.updateWaypoints(config->dig_path_2);
-        waypoint_client.setControlState(WaypointControlState::new_goal, config->dig_path_2);
+        visuals.updateWaypoints(config.digPath2());
+        waypoint_client.setControlState(WaypointControlState::new_goal, config.digPath2());
       }
       break;
     }
@@ -145,7 +145,7 @@ void Controller::update()
     }
     case ControlState::dig_2:
     {
-      if (ros::Time::now() - start_time >= config->finish_dig_2_time)
+      if (ros::Time::now() - start_time >= config.finishDig2Time())
       {
         ROS_INFO("[Controller::update]: %s to %s",
                  to_string(state).c_str(),
@@ -163,8 +163,8 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::navigate_to_hopper_2).c_str());
         state = ControlState::navigate_to_hopper_2;
-        visuals.updateWaypoints(config->hopper_path_2);
-        waypoint_client.setControlState(WaypointControlState::new_goal, config->hopper_path_2);
+        visuals.updateWaypoints(config.hopperPath2());
+        waypoint_client.setControlState(WaypointControlState::new_goal, config.hopperPath2());
       }
       break;
     }
@@ -188,8 +188,8 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::finished).c_str());
         state = ControlState::finished;
-        visuals.updateWaypoints(config->final_position);
-        waypoint_client.setControlState(WaypointControlState::new_goal, config->final_position);
+        visuals.updateWaypoints(config.finalPosition());
+        waypoint_client.setControlState(WaypointControlState::new_goal, config.finalPosition());
       }
       break;
     }

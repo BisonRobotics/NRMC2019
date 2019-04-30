@@ -8,9 +8,9 @@ Config::Config(ros::NodeHandle *nh) : utilities::Config("dig_control")
   loadParam(nh, "floor_test",                   floor_test_,                   true);
   loadParam(nh, "full_autonomy",                full_autonomy_,               false);
   loadParam(nh, "voltage_compensation",         voltage_compensation_,        false);
-  loadParam(nh, "min_voltage",                  min_voltage_,                  1.00);
-  loadParam(nh, "start_voltage",                start_voltage_,                0.00);
-  loadParam(nh, "max_compensated_duty",         max_compensated_duty_,         0.90);
+  loadParam(nh, "min_voltage",                  min_voltage_,                  30.0);
+  loadParam(nh, "full_voltage",                 full_voltage_,                 42.0);
+  loadParam(nh, "max_compensated_duty",         max_compensated_duty_,         0.50);
   loadParam(nh, "battery_filter_k",             battery_filter_k_,             0.03);
   loadParam(nh, "central_drive_angle_filter_k", central_drive_angle_filter_k_, 0.10);
   loadParam(nh, "current_filter_k",             current_filter_k_,             0.04);
@@ -64,7 +64,7 @@ const double &Config::minVoltage()
 
 const double &Config::startVoltage()
 {
-  return start_voltage_;
+  return full_voltage_;
 }
 
 const double &Config::maxCompensatedDuty()
@@ -79,7 +79,7 @@ const double &Config::batteryFilterK()
 
 const double &Config::centralDriveAngleFilterK()
 {
-  return centralDriveAngleFilterK();
+  return central_drive_angle_filter_k_;
 }
 
 const double &Config::currentFilterK()

@@ -141,7 +141,7 @@ namespace dig_control
     BucketDuty bucket_duty_;
     bool voltage_compensation_;
     double min_voltage_;
-    double start_voltage_;
+    double full_voltage_;
     double max_compensated_duty_;
     double battery_filter_k_;
     double central_drive_angle_filter_k_;

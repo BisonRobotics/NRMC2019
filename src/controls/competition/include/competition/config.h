@@ -40,10 +40,24 @@ namespace competition
   public:
     Config(ros::NodeHandle *nh);
 
-    ros::Rate rate;
-    double dt;
-    ros::Duration finish_dig_1_time, finish_dig_2_time, finish;
-    Waypoints dig_path_1, dig_path_2, hopper_path_1, hopper_path_2, final_position;
+    const ros::Rate &rate();
+    const double &dt();
+    const bool &fullAutonomy();
+    const ros::Duration &finishDig1Time();
+    const ros::Duration &finishDig2Time();
+    const ros::Duration &finishTime();
+    const Waypoints &digPath1();
+    const Waypoints &digPath2();
+    const Waypoints &hopperPath1();
+    const Waypoints &hopperPath2();
+    const Waypoints &finalPosition();
+
+  private:
+    ros::Rate rate_;
+    double dt_;
+    bool full_autonomy_;
+    ros::Duration finish_dig_1_time_, finish_dig_2_time_, finish_time_;
+    Waypoints dig_path_1_, dig_path_2_, hopper_path_1_, hopper_path_2_, final_position_;
 
 
   };

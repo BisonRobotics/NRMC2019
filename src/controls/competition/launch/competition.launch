@@ -1,5 +1,7 @@
 <launch>
     <node pkg="competition" name="competition_controller" type="competition_node" output="screen" >
         <rosparam file="$(find competition)/config/mechatronics_config.yaml" />
+        <param name="rate"              type="double" value="50.0"  />
+        <param name="full_autonomy"     type="bool"   value="false" />
     </node>
 </launch>

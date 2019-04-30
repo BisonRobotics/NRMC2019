@@ -50,7 +50,7 @@ tracker::Camera* initializeOCam(CameraInfo info, uint brightness, uint exposure)
 }
 
 Thread::Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, CameraInfo camera_info) :
-  name(config.name), base_nh(base_nh), nh(nh), config(config), it(nh), tf_listener(tf_buffer), active_id(1),
+  base_nh(base_nh), nh(nh), config(config), it(nh), tf_listener(tf_buffer), active_id(1),
   set_brightness_server(nh, "set_brightness", boost::bind(&Thread::setBrightnessCallback, this, _1), false),
   set_exposure_server(nh, "set_exposure", boost::bind(&Thread::setExposureCallback, this, _1), false)
 {
@@ -58,10 +58,10 @@ Thread::Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, Camer
   tags = Tag::getTags();
   Tag::setTransformCaches(&tags, camera_info.name);
 
-  camera = initializeOCam(camera_info, (uint)config.brightness, (uint)config.exposure);
+  camera = initializeOCam(camera_info, (uint)config.brightness(), (uint)config.exposure());
   if (camera == nullptr)
   {
-    ROS_WARN("Camera %s handle invalid, shutting down", name.c_str());
+    ROS_WARN("Camera %s handle invalid, shutting down", config.name().c_str());
     return;
   }
 
@@ -75,7 +75,7 @@ Thread::Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, Camer
   debug_pub = nh.advertise<tracker::Debug>("debug", 1);
   pub = it.advertise("image", 1);
 
-  image_msg.header.frame_id = name;
+  image_msg.header.frame_id = config.name();
   image_msg.header.seq = 0;
   image_msg.header.stamp = ros::Time::now();
   image_msg.height = camera->getHeight();
@@ -90,7 +90,7 @@ Thread::Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, Camer
   set_brightness_server.start();
   set_exposure_server.start();
 
-  ROS_INFO("Starting thread for %s", name.c_str());
+  ROS_INFO("Starting thread for %s", config.name().c_str());
   thread_handle = new boost::thread(boost::bind(&Thread::thread, this));
 }
 
@@ -100,9 +100,9 @@ void Thread::thread()
   camera->start();
   ros::Time stamp;
 
-  ROS_INFO("[%s]: Initializing stepper for %s", camera->getName().c_str(), config.name.c_str());
-  stepper = new Stepper("tracker_can", (uint)config.stepper_controller_id, (uint)config.stepper_client_id);
-  stepper->setMode(Mode::Initialize, (float)config.max_initialization_velocity);
+  ROS_INFO("[%s]: Initializing stepper for %s", camera->getName().c_str(), config.name().c_str());
+  stepper = new Stepper("tracker_can", (uint)config.stepperControllerID(), (uint)config.stepperClientID());
+  stepper->setMode(Mode::Initialize, (float)config.maxInitializationVelocity());
   ros::Duration(5.0).sleep();
   stepper->setMode(Mode::Velocity, 0.0);
 
@@ -158,9 +158,9 @@ void Thread::thread()
     {
       ROS_WARN("%s",ex.what());
     }
-    if (transform.getOrigin().y() < config.tag_switch_y)
+    if (transform.getOrigin().y() < config.tagSwitchY())
     {
-      if (transform.getOrigin().x() > config.tag_switch_x)
+      if (transform.getOrigin().x() > config.tagSwitchX())
       {
         active_id = 4; // Medium tag
       }
@@ -221,7 +221,7 @@ void Thread::thread()
         geometry_msgs::TransformStamped transform_msg = tf2::toMsg(transform);
         transform_msg.header.seq = tags[i].getSeq();
         transform_msg.header.frame_id = camera->getName() + "_camera";
-        transform_msg.child_frame_id = "tag" + std::to_string(tags[i].getID()) + "_" + config.name + "_estimate";
+        transform_msg.child_frame_id = "tag" + std::to_string(tags[i].getID()) + "_" + config.name() + "_estimate";
         tf_pub.sendTransform(transform_msg);
 
       }
@@ -254,7 +254,7 @@ void Thread::thread()
           debug_msg.angle_error = error;
           if (std::abs(error) < 0.002) error = 0.0;
           //ROS_INFO("Error: %f", error);
-          float setpoint = (float)clamp(config.k*error, -config.max_velocity, config.max_velocity);
+          float setpoint = (float)clamp(config.k()*error, -config.maxVelocity(), config.maxVelocity());
           if (tags[i].relativeTransformUpdated())
           {
             drop_count = 0;
@@ -279,7 +279,7 @@ void Thread::thread()
     }
     if (drop_count++ > 50)
     {
-      stepper->setMode(Mode::Scan, (float)config.max_scan_velocity);
+      stepper->setMode(Mode::Scan, (float)config.maxScanVelocity());
     }
 
 

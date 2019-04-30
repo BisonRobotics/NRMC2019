@@ -1,4 +1,0 @@
-<launch>
-    <node pkg="dig_control" type="dig_control_server" name="dig_control_server" />
-    <node pkg="dig_control" type="dig_control_client_example" name="dig_control_client_exampleS" />
-</launch>

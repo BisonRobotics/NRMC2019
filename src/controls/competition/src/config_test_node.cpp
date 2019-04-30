@@ -1,4 +1,4 @@
-#include <competition/competition_config.h>
+#include <competition/config.h>
 
 #include <ros/ros.h>
 #include <competition/competition_controller.h>

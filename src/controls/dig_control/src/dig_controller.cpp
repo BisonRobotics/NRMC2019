@@ -21,6 +21,18 @@ DigController::DigController(Config config, iVescAccess *central_drive,   iVescA
   this->bucket = bucket_actuator;
   this->vibrator = vibrator;
 
+  ROS_INFO("[DigController::DigController]: Waiting for VESCs to come online");
+  while (ros::ok())
+  {
+    if (central_drive->isAlive() && backhoe->isAlive() && bucket->isAlive() && vibrator->isAlive())
+    {
+      break;
+    }
+    ROS_WARN("[DigController::DigController]: VESCs not online");
+    ros::Duration(1.0).sleep();
+  }
+  ROS_INFO("[DigController::DigController]: VESCs online");
+
   central_current = 0.0f;
   backhoe_current = 0.0f;
   bucket_current = 0.0f;
@@ -899,6 +911,12 @@ double DigController::getVibratorCurrent() const
 {
   return vibrator_current;
 }
+
+double DigController::getBatteryVoltage() const
+{
+  return battery_voltage;
+}
+
 
 int DigController::getCentralDrivePosition() const
 {

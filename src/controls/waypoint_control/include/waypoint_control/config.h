@@ -57,9 +57,10 @@ namespace waypoint_control
     const double &inPlaceK();
     const double &drivingKx();
     const double &drivingKy();
+    const bool   &fullAutonomy();
     const bool   &voltageCompensation();
     const double &minVoltage();
-    const double &startVoltage();
+    const double &fullVoltage();
     const double &maxCompensatedDuty();
     const double &batteryFilterK();
 
@@ -77,9 +78,10 @@ namespace waypoint_control
     double in_place_k_;
     double driving_kx_;
     double driving_ky_;
+    bool full_autonomy_;
     bool voltage_compensation_;
     double min_voltage_;
-    double start_voltage_;
+    double full_voltage_;
     double max_compensated_duty_;
     double battery_filter_k_;
   };

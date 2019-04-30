@@ -93,7 +93,7 @@ void WaypointControlServer::update()
   {
     transform_msg = tf_buffer.lookupTransform("map", "base_link", ros::Time(0));
     pose = utilities::toPose2D(transform_msg);
-    controller.update(pose, manual_safety, autonomy_safety, teleop_left, teleop_right);
+    controller.update(pose, manual_safety, autonomy_safety || config->fullAutonomy(), teleop_left, teleop_right);
     ControlState state = controller.getControlState();
 
     switch (state)

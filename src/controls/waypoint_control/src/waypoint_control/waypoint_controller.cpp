@@ -28,6 +28,17 @@ WaypointController::WaypointController(Config config, iVescAccess *front_left, i
     state(ControlState::manual), waypoint_state(WaypointState::ready), last_left(0.0), last_right(0.0)
 {
   dt = 1.0/config.rate();
+  ROS_INFO("[WaypointController::WaypointController]: Waiting for VESCs to come online");
+  while (ros::ok())
+  {
+    if (fl->isAlive() && fr->isAlive() && br->isAlive() && bl->isAlive())
+    {
+      break;
+    }
+    ROS_WARN("[WaypointController::WaypointController]: VESCs not online");
+    ros::Duration(1.0).sleep();
+  }
+  ROS_INFO("[WaypointController::WaypointController]: VESCs online");
 }
 
 void WaypointController::setControlState(ControlState state)
@@ -298,9 +309,9 @@ void WaypointController::setPoint(double left, double right, bool reverse)
   updateBatteryVoltage();
   if (config.voltageCompensation())
   {
-      left = clamp(left * config.startVoltage() / battery_voltage,
+      left = clamp(left * config.fullVoltage() / battery_voltage,
                    -config.maxCompensatedDuty(), config.maxCompensatedDuty());
-      right = clamp(right * config.startVoltage() / battery_voltage,
+      right = clamp(right * config.fullVoltage() / battery_voltage,
                     -config.maxCompensatedDuty(), config.maxCompensatedDuty());
   }
 

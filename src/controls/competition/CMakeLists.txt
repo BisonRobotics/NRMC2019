@@ -62,7 +62,7 @@ add_library(waypoint_visuals src/waypoint_visuals.cpp)
 add_dependencies(waypoint_visuals ${waypoint_control_EXPORTED_TARGETS} ${visualization_msgs_EXPORTED_TARGETS})
 target_link_libraries(waypoint_visuals ${catkin_LIBRARIES})
 
-add_library(competition_config src/competition_config.cpp)
+add_library(competition_config src/config.cpp)
 add_dependencies(competition_config ${waypoint_control_EXPORTED_TARGETS} ${visualization_msgs_EXPORTED_TARGETS})
 target_link_libraries(competition_config ${catkin_LIBRARIES})
 

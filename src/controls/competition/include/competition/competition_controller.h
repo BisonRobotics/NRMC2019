@@ -6,7 +6,7 @@
 #include <competition/waypoint_visuals.h>
 #include <waypoint_control/waypoint_control_client.h>
 #include <dig_control/dig_control_client.h>
-#include <competition/competition_config.h>
+#include <competition/config.h>
 #include <competition/Debug.h>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -27,7 +27,7 @@ namespace competition
   class Controller
   {
   public:
-    Controller(ros::NodeHandle *nh, Config *config);
+    Controller(ros::NodeHandle *nh, Config config);
 
     void update();
     void joyCallback(const sensor_msgs::Joy::ConstPtr &joy);
@@ -42,7 +42,7 @@ namespace competition
     Debug debug;
 
     ros::NodeHandle *nh;
-    Config *config;
+    Config config;
     ros::Time start_time;
 
     ros::Subscriber joy_subscriber;

@@ -2,6 +2,7 @@
     <include file="$(find description)/launch/load_robot_and_arena.launch" />
     <include file="$(find tracker)/launch/tracker.launch" />
     <include file="$(find waypoint_control)/launch/waypoint_control.launch" />
+    <include file="$(find dig_control)/launch/dig_control.launch" />
+    <include file="$(find competition)/launch/competition.launch" />
     <node name="localization_node" pkg="localization" type="ultra_localizer_node" output="screen" />
-    <node name="dig_control_server" pkg="dig_control" type="dig_control_server" output="screen" />
 </launch>

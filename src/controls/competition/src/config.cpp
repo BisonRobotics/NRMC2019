@@ -1,4 +1,4 @@
-#include <competition/competition_config.h>
+#include <competition/config.h>
 
 using namespace competition;
 
@@ -40,13 +40,14 @@ void parseTimer(const std::string &timer_name, XmlRpc::XmlRpcValue &xml_timers, 
 }
 
 // Based on: https://answers.ros.org/question/189299/getting-hierarchy-level-of-yaml-parameter/
-Config::Config(ros::NodeHandle *nh) : utilities::Config("competition"), rate(50.0)
+Config::Config(ros::NodeHandle *nh) : utilities::Config("competition"), rate_(50.0)
 {
   // Load launch file parameters
   double rate_float;
   loadParam(nh, "rate", rate_float, 50.0);
-  rate = ros::Rate(rate_float);
-  dt = rate.expectedCycleTime().toSec();
+  rate_ = ros::Rate(rate_float);
+  dt_ = rate_.expectedCycleTime().toSec();
+  loadParam(nh, "full_autonomy", full_autonomy_, false);
 
   // Load yaml parameters
   if(nh->hasParam("paths"))
@@ -54,11 +55,11 @@ Config::Config(ros::NodeHandle *nh) : utilities::Config("competition"), rate(50.
     ROS_INFO("Found paths parameter, attempting to load paths");
     XmlRpc::XmlRpcValue paths;
     nh->getParam("paths", paths);
-    parsePath("dig_1", paths, &dig_path_1);
-    parsePath("dig_2", paths, &dig_path_2);
-    parsePath("hopper_1", paths, &hopper_path_1);
-    parsePath("hopper_2", paths, &hopper_path_2);
-    parsePath("final_position", paths, &final_position);
+    parsePath("dig_1", paths, &dig_path_1_);
+    parsePath("dig_2", paths, &dig_path_2_);
+    parsePath("hopper_1", paths, &hopper_path_1_);
+    parsePath("hopper_2", paths, &hopper_path_2_);
+    parsePath("final_position", paths, &final_position_);
   }
   else
   {
@@ -71,15 +72,70 @@ Config::Config(ros::NodeHandle *nh) : utilities::Config("competition"), rate(50.
 
     XmlRpc::XmlRpcValue timers;
     nh->getParam("timers", timers);
-    parseTimer("finish_dig_1", timers, &finish_dig_1_time);
-    parseTimer("finish_dig_2", timers, &finish_dig_2_time);
+    parseTimer("finish_dig_1", timers, &finish_dig_1_time_);
+    parseTimer("finish_dig_2", timers, &finish_dig_2_time_);
   }
   else
   {
     ROS_WARN("Couldn't find timers parameter");
   }
 
-  finish = ros::Duration(60.0*10.0);
+  finish_time_ = ros::Duration(60.0*10.0);
+}
+
+const ros::Rate &Config::rate()
+{
+  return rate_;
+}
+
+const double &Config::dt()
+{
+  return dt_;
+}
+
+const bool &Config::fullAutonomy()
+{
+  return full_autonomy_;
+}
+
+const ros::Duration &Config::finishDig1Time()
+{
+  return finish_dig_1_time_;
+}
+
+const ros::Duration &Config::finishDig2Time()
+{
+  return finish_dig_2_time_;
+}
+
+const ros::Duration &Config::finishTime()
+{
+  return finish_time_;
+}
+
+const Waypoints &Config::digPath1()
+{
+  return dig_path_1_;
+}
+
+const Waypoints &Config::digPath2()
+{
+  return dig_path_2_;
+}
+
+const Waypoints &Config::hopperPath1()
+{
+  return hopper_path_1_;
+}
+
+const Waypoints &Config::hopperPath2()
+{
+  return hopper_path_2_;
+}
+
+const Waypoints &Config::finalPosition()
+{
+  return final_position_;
 }
 
 std::string competition::to_string(competition::ControlState state)

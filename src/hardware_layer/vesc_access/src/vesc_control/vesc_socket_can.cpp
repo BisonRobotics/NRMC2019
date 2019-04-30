@@ -8,54 +8,50 @@ Vesc::Vesc(char *interface, uint8_t controllerID, std::string name) : Vesc(inter
   // _controllerID = controllerID;
 }
 
-Vesc::Vesc(char *interface, uint8_t controllerID, uint32_t quirks, std::string name)
+Vesc::Vesc(char *interface, uint8_t controllerID, uint32_t quirks, std::string name) :
+  rpm_(0), current_(0.0f), duty_cycle_(0.0f), position_(0.0f), tachometer_(0), watt_hours_(0.0f),
+  in_current_(0.0f), vin_(0.0f), motor_temp_(0.0f), pcb_temp_(0.0f), encoder_index_(false),
+  adc_(0), flimit_(false), rlimit_(false), fault_code_(mc_fault_code::FAULT_CODE_NONE),
+  state_(mc_state::MC_STATE_OFF)
 {
-  //ros::NodeHandle n;
   this->name = name;
-  //this->js_command_pub = n.advertise<sensor_msgs::JointState>("vesc_command",100);
-  //this->float32_pub = n.advertise<std_msgs::Float32>(name + "/current", 30);
-  //this->js_pub = n.advertise<sensor_msgs::JointState>("/joint_states", 20);
-  this->_flimit=false;
-  this->_rlimit=false;
-  //js_message.name.push_back(name);
-  //js_message.position.push_back(0);
-  //js_message.velocity.push_back(0);
-  //js_message.effort.push_back(0);
+  this->flimit_=false;
+  this->rlimit_=false;
   //first_time = true;
   init_socketCAN(interface);
-  _controllerID = controllerID;
-  _quirks = quirks;
-  gettimeofday(&_prevmsgtime, NULL);  // initialize _prevmsgtime with something
-  _prevmsgtime.tv_sec -= 1;           // make it in the past to avoid false positives
+  controller_id_ = controllerID;
+  quirks_ = quirks;
+  gettimeofday(&previous_message_time_, NULL);  // initialize _prevmsgtime with something
+  previous_message_time_.tv_sec -= 1;           // make it in the past to avoid false positives
 }
 
 void Vesc::init_socketCAN(char *ifname)
 {
-  s = socket(PF_CAN, SOCK_RAW | SOCK_NONBLOCK, CAN_RAW);  // create nonblocking raw can socket
-  if (s == -1)
+  s_ = socket(PF_CAN, SOCK_RAW | SOCK_NONBLOCK, CAN_RAW);  // create nonblocking raw can socket
+  if (s_ == -1)
   {
     throw VescException(this->name + " Unable to create raw CAN socket");
   }
-  strcpy(ifr.ifr_name, ifname);
-  if (ioctl(s, SIOCGIFINDEX, &ifr))
+  strcpy(ifr_.ifr_name, ifname);
+  if (ioctl(s_, SIOCGIFINDEX, &ifr_))
   {
     throw VescException(this->name + " Error creating interface");
   }
-  addr.can_family = AF_CAN;
-  addr.can_ifindex = ifr.ifr_ifindex;
+  addr_.can_family = AF_CAN;
+  addr_.can_ifindex = ifr_.ifr_ifindex;
 
-  int ret = bind(s, (struct sockaddr *)&addr, sizeof(addr));
+  int ret = bind(s_, (struct sockaddr *)&addr_, sizeof(addr_));
   if (ret == -1)
   {
     throw VescException(this->name + " Unable to bind raw CAN socket");
   }
 
-  sbcm = socket(PF_CAN, SOCK_DGRAM, CAN_BCM);
-  if (sbcm == -1)
+  sbcm_ = socket(PF_CAN, SOCK_DGRAM, CAN_BCM);
+  if (sbcm_ == -1)
   {
     throw VescException(this->name + " Unable to create bcm socket");
   }
-  ret = connect(sbcm, (struct sockaddr *)&addr, sizeof(addr));
+  ret = connect(sbcm_, (struct sockaddr *)&addr_, sizeof(addr_));
 
   if (ret == -1)
   {
@@ -73,7 +69,7 @@ struct can_msg
 } msg;
 void Vesc::setPoint(mc_control_mode mode, float setpoint, uint index)
 {
-  if (_enable)
+  if (enable_)
   {
     custom_control set;
     set.setpointf = setpoint;
@@ -93,7 +89,7 @@ void Vesc::setPoint(mc_control_mode mode, float setpoint, uint index)
     // write(s, &frame, sizeof(struct can_frame));
 
     msg.msg_head.opcode = TX_SETUP;
-    msg.msg_head.can_id = CAN_PACKET_CONTROL << 8 | _controllerID | 0x80000000;
+    msg.msg_head.can_id = CAN_PACKET_CONTROL << 8 | controller_id_ | 0x80000000;
     msg.msg_head.flags = SETTIMER | STARTTIMER | TX_CP_CAN_ID;
     msg.msg_head.nframes = 1;
     msg.msg_head.count = 0;
@@ -104,7 +100,7 @@ void Vesc::setPoint(mc_control_mode mode, float setpoint, uint index)
     // msg.frame[0].can_id    = 0x42; /* obsolete when using TX_CP_CAN_ID */
     msg.frame[0].can_dlc = sizeof(custom_control);
     memcpy(msg.frame[0].data, &set, 8);
-    write(sbcm, &msg, sizeof(msg));
+    write(sbcm_, &msg, sizeof(msg));
   }
 }
 
@@ -114,10 +110,6 @@ void Vesc::setDuty(float dutyCycle)
 }
 void Vesc::setCurrent(float current)
 {
-  /*sensor_msgs::JointState msg;
-  msg.name.push_back(this->name+"command");
-  msg.effort.push_back(current);
-  js_command_pub.publish (msg);*/
   setPoint(CONTROL_MODE_CURRENT, current);
 }
 void Vesc::setCurrentBrake(float current)
@@ -126,10 +118,6 @@ void Vesc::setCurrentBrake(float current)
 }
 void Vesc::setRpm(float rpm)
 {
-  /*sensor_msgs::JointState msg;
-  msg.name.push_back(this->name+"command");
-  msg.velocity.push_back(rpm);
-  js_command_pub.publish (msg);*/
   setPoint(CONTROL_MODE_SPEED, rpm);
 }
 void Vesc::setPos(float pos)
@@ -148,83 +136,66 @@ void Vesc::setCustom(float setpoint)
 
 void Vesc::enable()
 {
-  _enable = 1;
+  enable_ = 1;
 }
 void Vesc::disable()
 {
   setCurrent(0);
-  _enable = 0;
+  enable_ = 0;
 }
 
 void Vesc::processMessages()
 {
-  /*if (first_time)
-  {
-    last_time = ros::Time::now();
-    first_time = false;
-  }
-  else if ((ros::Time::now() - last_time).toSec() > publish_period)
-  {
-    //js_message.header.stamp = ros::Time::now();
-    //float32_pub.publish(f32_message);
-    //js_pub.publish(js_message);
-    last_time = ros::Time::now();
-  }*/
   struct can_frame msg;
   while (ros::ok())
   {
-    int a = read(s, &msg, sizeof(msg));
+    int a = read(s_, &msg, sizeof(msg));
     if (a == -1)
       break;
-    if ((msg.can_id & ~0x80000000 & 0xFF) == _controllerID)
+    if ((msg.can_id & ~0x80000000 & 0xFF) == controller_id_)
     {
       // std::cout << "canid " << std::hex << (msg.can_id & ~0x80000000 & 0xFF) << std::dec << std::endl;
       // std::cout << "canid " << std::hex << (msg.can_id) << std::dec << std::endl;
 
-      switch ((msg.can_id & ~0x80000000 & ~_controllerID) >> 8)
+      switch ((msg.can_id & ~0x80000000 & ~controller_id_) >> 8)
       {
         case CAN_PACKET_STATUS:  // default status message, probably going to be unused but we can handle it if it does
                                  // appear
           // received data is big endian
           //_rpm = __bswap_32((*(VESC_status*) msg.data).rpm); // pointer casting!
           //_current = ((int16_t) __bswap_16((*(VESC_status*) msg.data).current)) / 10.0;
-          _duty_cycle = ((int16_t)__bswap_16((*(VESC_status *)msg.data).duty_cycle)) / 1000.0;
-          gettimeofday(&_prevmsgtime, NULL);
+          duty_cycle_ = ((int16_t)__bswap_16((*(VESC_status *)msg.data).duty_cycle)) / 1000.0f;
+          gettimeofday(&previous_message_time_, NULL);
           break;
         case CAN_PACKET_STATUS1:  // custom status message
 
-            _rpm = (*(VESC_status1 *)msg.data).rpm;
+            rpm_ = (*(VESC_status1 *)msg.data).rpm;
 
 
-          _current = (*(VESC_status1 *)msg.data).motorCurrent / 10.0;
-          _position = (*(VESC_status1 *)msg.data).position / 1000.0;
-          //js_message.effort[0] = _current;
-          //js_message.velocity[0] = _rpm;
-          //f32_message.data = _current;
-          gettimeofday(&_prevmsgtime, NULL);
+          current_ = (*(VESC_status1 *)msg.data).motorCurrent / 10.0f;
+          position_ = (*(VESC_status1 *)msg.data).position / 1000.0f;
+          gettimeofday(&previous_message_time_, NULL);
           break;
         case CAN_PACKET_STATUS2:
-          _tachometer = (*(VESC_status2 *)msg.data).tachometer;
-          _adc = (*(VESC_status2 *)msg.data).adc;
-          _flimit = (*(VESC_status2 *)msg.data).flimit;
-          _rlimit = (*(VESC_status2 *)msg.data).rlimit;
-          gettimeofday(&_prevmsgtime, NULL);
-          // js_message.velocity[0] =_tachometer;
+          tachometer_ = (*(VESC_status2 *)msg.data).tachometer;
+          adc_ = (*(VESC_status2 *)msg.data).adc;
+          flimit_ = (bool)(*(VESC_status2 *)msg.data).flimit;
+          rlimit_ = (bool)(*(VESC_status2 *)msg.data).rlimit;
+          gettimeofday(&previous_message_time_, NULL);
           break;
         case CAN_PACKET_STATUS3:
-          _wattHours = (*(VESC_status3 *)msg.data).wattHours;
-          _inCurrent = (*(VESC_status3 *)msg.data).inCurrent / 100.0;
-          _vin = (*(VESC_status3 *)msg.data).voltage;
-          gettimeofday(&_prevmsgtime, NULL);
+          watt_hours_ = (*(VESC_status3 *)msg.data).wattHours;
+          in_current_ = (*(VESC_status3 *)msg.data).inCurrent / 100.0f;
+          vin_ = (*(VESC_status3 *)msg.data).voltage;
+          gettimeofday(&previous_message_time_, NULL);
           break;
         case CAN_PACKET_STATUS4:
-          _tempMotor = (*(VESC_status4 *)msg.data).tempMotor;
-          _tempPCB = (*(VESC_status4 *)msg.data).tempPCB;
-          _fault_code = (mc_fault_code)(*(VESC_status4 *)msg.data).faultCode;
-          _state = (mc_state)(*(VESC_status4 *)msg.data).state;
-          _encoderIndex = (*(VESC_status4 *)msg.data).encoderIndex;
-          gettimeofday(&_prevmsgtime, NULL);
-          //js_message.position[0] = _encoderIndex;
+          motor_temp_ = (*(VESC_status4 *)msg.data).tempMotor;
+          pcb_temp_ = (*(VESC_status4 *)msg.data).tempPCB;
+          fault_code_ = (mc_fault_code)(*(VESC_status4 *)msg.data).faultCode;
+          state_ = (mc_state)(*(VESC_status4 *)msg.data).state;
+          encoder_index_ = (bool)(*(VESC_status4 *)msg.data).encoderIndex;
+          gettimeofday(&previous_message_time_, NULL);
           break;
         default:
           break;
@@ -236,39 +207,39 @@ void Vesc::processMessages()
 int Vesc::getRpm()
 {
   processMessages();
-  return _rpm;
+  return rpm_;
 }
 
 float Vesc::getCurrent()
 {
   processMessages();
-  return _current;
+  return current_;
 }
 
 float Vesc::getDutyCycle()
 {
   processMessages();
-  return _duty_cycle;
+  return duty_cycle_;
 }
 float Vesc::getPosition()
 {
   processMessages();
-  return _position;
+  return position_;
 }
 int Vesc::getTachometer()
 {
   processMessages();
-  return _tachometer;
+  return tachometer_;
 }
 float Vesc::getWattHours()
 {
   processMessages();
-  return _wattHours;
+  return watt_hours_;
 }
 float Vesc::getInCurrent()
 {
   processMessages();
-  return _inCurrent;
+  return in_current_;
 }
 #define VIN_R1 39000.0
 #define VIN_R2 2200.0
@@ -277,7 +248,7 @@ float Vesc::getInCurrent()
 float Vesc::getVin()
 {
   processMessages();
-  return GET_INPUT_VOLTAGE(_vin);
+  return GET_INPUT_VOLTAGE(vin_);
 }
 #define NTC_RES_GND(adc_val) (10000.0 * adc_val / 4095.0) / (1 - adc_val / 4095.0)
 #define NTC_RES(adc_val) ((4095.0 * 10000.0) / adc_val - 10000.0)
@@ -291,24 +262,24 @@ float Vesc::getVin()
 float Vesc::getTempMotor()
 {
   processMessages();
-  return NTC_TEMP_GND(_tempMotor);
+  return NTC_TEMP_GND(motor_temp_);
 }
 float Vesc::getTempPCB()
 {
   processMessages();
-  if (_quirks == 1)
-    return NTC_TEMP_1k_THERM(_tempPCB);
-  return NTC_TEMP(_tempPCB);
+  if (quirks_ == 1)
+    return NTC_TEMP_1k_THERM(pcb_temp_);
+  return NTC_TEMP(pcb_temp_);
 }
 Vesc::mc_fault_code Vesc::getFaultCode()
 {
   processMessages();
-  return _fault_code;
+  return fault_code_;
 }
 Vesc::mc_state Vesc::getState()
 {
   processMessages();
-  return _state;
+  return state_;
 }
 
 void Vesc::resetWattHours()
@@ -317,16 +288,16 @@ void Vesc::resetWattHours()
   config.config_enum = RESET_WATT_HOURS;
 
   struct can_frame frame;
-  frame.can_id = CAN_PACKET_CONFIG << 8 | _controllerID | 0x80000000;
+  frame.can_id = CAN_PACKET_CONFIG << 8 | controller_id_ | 0x80000000;
   frame.can_dlc = sizeof(custom_config_data);
   memcpy(frame.data, &config, sizeof(custom_config_data));
 
-  write(s, &frame, sizeof(struct can_frame));
+  write(s_, &frame, sizeof(struct can_frame));
 }
 bool Vesc::encoderIndexFound()
 {
   processMessages();
-  return _encoderIndex;
+  return encoder_index_;
 }
 int timediffms(struct timeval tv, struct timeval last_tv)
 {
@@ -343,25 +314,26 @@ int timediffms(struct timeval tv, struct timeval last_tv)
 
 bool Vesc::isAlive()
 {
+  processMessages();
   struct timeval now;
   gettimeofday(&now, NULL);
-  return timediffms(now, _prevmsgtime) < 100;  // must have received a message in the last 100 ms
+  return timediffms(now, previous_message_time_) < 100;  // must have received a message in the last 100 ms
 }
 
 bool Vesc::getForLimit()
 {
   processMessages();
-  return _flimit;
+  return flimit_;
 }
 
 bool Vesc::getRevLimit()
 {
   processMessages();
-  return _rlimit;
+  return rlimit_;
 }
 
 int Vesc::getADC()
 {
   processMessages();
-  return _adc;
+  return adc_;
 }

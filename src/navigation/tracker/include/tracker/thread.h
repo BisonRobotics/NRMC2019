@@ -33,7 +33,6 @@ namespace tracker
 
   private:
     int drops, drop_count;
-    std::string name;
     sensor_msgs::Image image_msg;
     Camera *camera;
     stepper::Stepper *stepper;

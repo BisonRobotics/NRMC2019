@@ -8,8 +8,8 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "competition_controller");
   ros::NodeHandle nh("~");
   Config config(&nh);
-  ros::Rate rate(config.rate);
-  Controller controller(&nh, &config);
+  ros::Rate rate(config.rate());
+  Controller controller(&nh, config);
 
   while(ros::ok())
   {

@@ -12,17 +12,30 @@ namespace tracker
   public:
     Config(ros::NodeHandle *base_nh, ros::NodeHandle *nh, std::string name);
 
-    std::string name;
-    double max_initialization_velocity;
-    double max_scan_velocity;
-    double max_velocity;
-    double k;
-    double tag_switch_x;
-    double tag_switch_y;
-    int stepper_controller_id;
-    int stepper_client_id;
-    int brightness;
-    int exposure;
+    const std::string &name();
+    const double &maxInitializationVelocity();
+    const double &maxScanVelocity();
+    const double &maxVelocity();
+    const double &k();
+    const double &tagSwitchX();
+    const double &tagSwitchY();
+    const int &stepperControllerID();
+    const int &stepperClientID();
+    const int &brightness();
+    const int &exposure();
+
+  private:
+    std::string name_;
+    double max_initialization_velocity_;
+    double max_scan_velocity_;
+    double max_velocity_;
+    double k_;
+    double tag_switch_x_;
+    double tag_switch_y_;
+    int stepper_controller_id_;
+    int stepper_client_id_;
+    int brightness_;
+    int exposure_;
   };
 }
 

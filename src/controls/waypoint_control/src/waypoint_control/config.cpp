@@ -5,23 +5,23 @@ using namespace waypoint_control;
 Config::Config(ros::NodeHandle *nh) : utilities::Config("waypoint_control")
 {
   loadParam(nh, "rate",                 rate_,                  50.00);
-  loadParam(nh, "max_acceleration",     max_acceleration_,       0.01);
+  loadParam(nh, "max_acceleration",     max_acceleration_,       1.00);
   loadParam(nh, "max_duty",             max_duty_,               0.30);
-  loadParam(nh, "max_in_place_duty",    max_in_place_duty_,      0.20);
-  loadParam(nh, "min_in_place_duty",    min_in_place_duty_,      0.10);
-  loadParam(nh, "max_driving_duty",     max_driving_duty_,       0.40);
-  loadParam(nh, "min_driving_duty",     min_driving_duty_,       0.20);
-  loadParam(nh, "max_manual_duty",      max_manual_duty_,        0.20);
+  loadParam(nh, "max_in_place_duty",    max_in_place_duty_,      0.30);
+  loadParam(nh, "min_in_place_duty",    min_in_place_duty_,      0.05);
+  loadParam(nh, "max_driving_duty",     max_driving_duty_,       0.30);
+  loadParam(nh, "min_driving_duty",     min_driving_duty_,       0.10);
+  loadParam(nh, "max_manual_duty",      max_manual_duty_,        0.30);
   loadParam(nh, "min_manual_duty",      min_manual_duty_,        0.05);
-  loadParam(nh, "in_place_k",           in_place_k_,             1.00);
-  loadParam(nh, "driving_kx",           driving_kx_,             1.00);
-  loadParam(nh, "driving_ky",           driving_ky_,             1.00);
+  loadParam(nh, "in_place_k",           in_place_k_,             0.40);
+  loadParam(nh, "driving_kx",           driving_kx_,             5.00);
+  loadParam(nh, "driving_ky",           driving_ky_,             5.00);
+  loadParam(nh, "full_autonomy",        full_autonomy_,         false);
   loadParam(nh, "voltage_compensation", voltage_compensation_,  false);
-  loadParam(nh, "min_voltage",          min_voltage_,            1.00);
-  loadParam(nh, "start_voltage",        start_voltage_,          0.00);
-  loadParam(nh, "max_compensated_duty", max_compensated_duty_,   0.90);
+  loadParam(nh, "min_voltage",          min_voltage_,            30.0);
+  loadParam(nh, "full_voltage",         full_voltage_,           42.0);
+  loadParam(nh, "max_compensated_duty", max_compensated_duty_,   0.50);
   loadParam(nh, "battery_filter_k",     battery_filter_k_,       0.03);
-
   dt_ = 1.0/rate();
 }
 
@@ -90,6 +90,11 @@ const double &Config::drivingKy()
   return driving_ky_;
 }
 
+const bool &Config::fullAutonomy()
+{
+  return full_autonomy_;
+}
+
 const bool &Config::voltageCompensation()
 {
   return voltage_compensation_;
@@ -100,14 +105,14 @@ const double &Config::minVoltage()
   return min_voltage_;
 }
 
-const double &Config::startVoltage()
+const double &Config::fullVoltage()
 {
-  return start_voltage_;
+  return full_voltage_;
 }
 
 const double &Config::maxCompensatedDuty()
 {
-  return maxCompensatedDuty();
+  return max_compensated_duty_;
 }
 
 const double &Config::batteryFilterK()

@@ -44,6 +44,7 @@ namespace dig_control
     double getBackhoeCurrent() const;
     double getBucketCurrent() const;
     double getVibratorCurrent() const;
+    double getBatteryVoltage() const;
     int getCentralDrivePosition() const;
     int getBackhoePosition() const;
     double getBucketPosition() const;

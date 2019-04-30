@@ -42,43 +42,33 @@ public:
   } mc_fault_code;
 
 private:
-  //ros::Publisher float32_pub;
-  //ros::Publisher js_pub;
-  //ros::Publisher js_command_pub;
-  //sensor_msgs::JointState js_message;
-  //std_msgs::Float32 f32_message;
-  //ros::Time last_time;
-  //static constexpr double publish_period = 0.1;
-  //bool first_time;
-  struct ifreq ifr;
-  struct sockaddr_can addr;
-  int s;
-  int sbcm;
+  struct ifreq ifr_;
+  struct sockaddr_can addr_;
+  int s_;
+  int sbcm_;
 
-  uint32_t _quirks = 0;
+  uint32_t quirks_ = 0;
+  uint8_t enable_ = 1;
+  uint8_t controller_id_;
 
-  uint8_t _enable = 1;
+  int32_t rpm_;
+  float current_;
+  float duty_cycle_;
+  float position_;
+  int32_t tachometer_;
+  float watt_hours_;
+  float in_current_;
+  float vin_;
+  float motor_temp_;
+  float pcb_temp_;
+  bool encoder_index_;
+  int32_t adc_;
+  bool flimit_;
+  bool rlimit_;
+  mc_fault_code fault_code_;
+  mc_state state_;
 
-  uint8_t _controllerID;
-
-  int32_t _rpm;
-  float _current;
-  float _duty_cycle;
-  float _position;
-  int32_t _tachometer;
-  float _wattHours;
-  float _inCurrent;
-  float _vin;
-  float _tempMotor;
-  float _tempPCB;
-  bool _encoderIndex;
-  int32_t _adc;
-  bool _flimit;
-  bool _rlimit;
-  mc_fault_code _fault_code;
-  mc_state _state;
-
-  struct timeval _prevmsgtime;
+  struct timeval previous_message_time_;
 
   typedef struct VESC_set
   {
