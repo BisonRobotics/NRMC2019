@@ -158,6 +158,10 @@ void Thread::thread()
     {
       ROS_WARN("%s",ex.what());
     }
+    if (transform.getOrigin().y() < 0.1 && transform.getOrigin().x() < 0.1) // Don't know where we are
+    {
+      active_id = -1;
+    }
     if (transform.getOrigin().y() < config.tagSwitchY())
     {
       if (transform.getOrigin().x() > config.tagSwitchX())
@@ -232,10 +236,11 @@ void Thread::thread()
     {
       if (tags[i].relativeTransformUpdated() && tags[i].stepperTransformUpdated())
       {
-        if (tags[i].getID() == active_id)
+        if (tags[i].getID() == active_id || tags[i].getID() == -1)
         {
           geometry_msgs::PoseStamped pose_estimate = tags[i].estimatePose();
           pose_pub.publish(pose_estimate);
+          break;
         }
       }
     }
@@ -279,7 +284,14 @@ void Thread::thread()
     }
     if (drop_count++ > 50)
     {
-      stepper->setMode(Mode::Scan, (float)config.maxScanVelocity());
+      if (active_id == -1)
+      {
+        stepper->setMode(Mode::Scan, (float)config.initialScanVelocity());
+      }
+      else
+      {
+        stepper->setMode(Mode::Scan, (float)config.maxScanVelocity());
+      }
     }
 
 

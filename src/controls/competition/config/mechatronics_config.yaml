@@ -16,7 +16,7 @@ timers:
 paths:
   dig_1:
     -
-      x: 3.10
+      x: 2.75
       y: 2.85
       theta: 0.0
       reverse: false
@@ -46,14 +46,14 @@ paths:
       match_orientation: false
       drive_profile: 0
     -
-      x: 3.10
+      x: 2.75
       y: 2.85
       theta: 0.0
       reverse: true
       match_orientation: false
       drive_profile: 0
     -
-      x: 3.10
+      x: 2.75
       y: 1.5
       theta: 0.0
       reverse: true
@@ -62,7 +62,7 @@ paths:
 
   dig_2:
     -
-      x: 3.10
+      x: 2.75
       y: 2.85
       theta: 0.0
       reverse: false
@@ -92,14 +92,14 @@ paths:
       match_orientation: false
       drive_profile: 0
     -
-      x: 3.10
+      x: 2.75
       y: 2.85
       theta: 0.0
       reverse: true
       match_orientation: false
       drive_profile: 0
     -
-      x: 3.10
+      x: 2.75
       y: 1.5
       theta: 0.0
       reverse: true
@@ -108,7 +108,7 @@ paths:
 
   final_position:
     -
-      x: 3.10
+      x: 2.75
       y: 2.00
       theta: 0.0
       reverse: false
