@@ -25,7 +25,8 @@ using utilities::simpleLowPassFilter;
 WaypointController::WaypointController(Config config, iVescAccess *front_left, iVescAccess *front_right,
     iVescAccess *back_right, iVescAccess *back_left) :
     fl(front_left), fr(front_right), br(back_right), bl(back_left), config(config),
-    state(ControlState::manual), waypoint_state(WaypointState::ready), last_left(0.0), last_right(0.0)
+    state(ControlState::manual), waypoint_state(WaypointState::ready), last_left(0.0), last_right(0.0),
+    battery_voltage(0.0)
 {
   dt = 1.0/config.rate();
   ROS_INFO("[WaypointController::WaypointController]: Waiting for VESCs to come online");
@@ -316,39 +317,10 @@ void WaypointController::setPoint(double left, double right, bool reverse)
   }
 
   // Set duty
-  if (state == ControlState::manual)
-  {
-    if (std::abs(left) > 1.0e-3)
-    {
-      fl->setDuty((float)left);
-      bl->setDuty((float)left);
-    }
-    else
-    {
-      left = 0.0;
-      fl->setTorque(0.0f);
-      bl->setTorque(0.0f);
-    }
-    if (std::abs(right) > 1.0e-3)
-    {
-      fr->setDuty((float)right);
-      br->setDuty((float)right);
-    }
-    else
-    {
-      right = 0.0;
-      fl->setTorque(0.0f);
-      bl->setTorque(0.0f);
-    }
-  }
-  else
-  {
-    fl->setDuty((float)left);
-    bl->setDuty((float)left);
-    fr->setDuty((float)right);
-    br->setDuty((float)right);
-
-  }
+  fl->setDuty((float)left);
+  bl->setDuty((float)left);
+  fr->setDuty((float)right);
+  br->setDuty((float)right);
 
   last_left = left;
   last_right = right;

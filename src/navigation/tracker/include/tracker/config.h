@@ -13,6 +13,7 @@ namespace tracker
     Config(ros::NodeHandle *base_nh, ros::NodeHandle *nh, std::string name);
 
     const std::string &name();
+    const double &initialScanVelocity();
     const double &maxInitializationVelocity();
     const double &maxScanVelocity();
     const double &maxVelocity();
@@ -27,6 +28,7 @@ namespace tracker
   private:
     std::string name_;
     double max_initialization_velocity_;
+    double initial_scan_velocity_;
     double max_scan_velocity_;
     double max_velocity_;
     double k_;

@@ -14,7 +14,7 @@ using utilities::simpleLowPassFilter;
 
 DigController::DigController(Config config, iVescAccess *central_drive,   iVescAccess *backhoe_actuator,
                              iVescAccess *bucket_actuator, iVescAccess *vibrator) : 
-  config(config)
+  config(config), battery_voltage(0.0)
 {
   this->central_drive = central_drive;
   this->backhoe = backhoe_actuator;
