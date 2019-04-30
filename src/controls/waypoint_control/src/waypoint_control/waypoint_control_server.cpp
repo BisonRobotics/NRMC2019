@@ -1,21 +1,21 @@
 #include <waypoint_control/waypoint_control_server.h>
 #include <wheel_params/wheel_params.h>
 #include <utilities/joy.h>
+#include <utilities/utilities.h>
 #include <vector>
 #include <iterator>
 #include <algorithm>
 #include <waypoint_control/Debug.h>
 
-
 using namespace waypoint_control;
 
 
-WaypointControlServer::WaypointControlServer(ros::NodeHandle *nh,
-    iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl, Config *config, double dt) :
+WaypointControlServer::WaypointControlServer(ros::NodeHandle *nh, Config *config,
+    iVescAccess *fl, iVescAccess *fr, iVescAccess *br, iVescAccess *bl) :
   nh(nh), tf_listener(tf_buffer), fl(fl), fr(fr), bl(bl), br(br), server(*nh, "action", false),
-  controller(fl, fr, br, bl, config), config(config),
+  config(config), controller(*config, fl, fr, br, bl),
   debug(true), manual_safety(false), autonomy_safety(false),
-  dt(dt), teleop_left(0.0), teleop_right(0.0), seq(0)
+  dt(config->dt()), teleop_left(0.0), teleop_right(0.0), seq(0)
 {
   joint_angles.header.stamp = ros::Time::now();
   joint_angles.header.seq = seq;
@@ -73,8 +73,8 @@ void WaypointControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_ms
   autonomy_safety = joy.get(Joy::AUTONOMY_SAFETY);
   if (manual_safety)
   {
-    teleop_left  = config->max_manual_duty * joy.get(Joy::TELEOP_LEFT);
-    teleop_right = config->max_manual_duty * joy.get(Joy::TELEOP_RIGHT);
+    teleop_left  = config->maxManualDuty() * joy.get(Joy::TELEOP_LEFT);
+    teleop_right = config->maxManualDuty() * joy.get(Joy::TELEOP_RIGHT);
   }
   else
   {
@@ -85,14 +85,15 @@ void WaypointControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_ms
 
 void WaypointControlServer::update()
 {
+
   // Update controller
   geometry_msgs::TransformStamped transform_msg;
-  tf2::Stamped<tf2::Transform> transform;
+  Pose2D pose;
   try
   {
     transform_msg = tf_buffer.lookupTransform("map", "base_link", ros::Time(0));
-    tf2::fromMsg(transform_msg, transform);
-    controller.update(manual_safety, autonomy_safety, transform, teleop_left, teleop_right);
+    pose = utilities::toPose2D(transform_msg);
+    controller.update(pose, manual_safety, autonomy_safety, teleop_left, teleop_right);
     ControlState state = controller.getControlState();
 
     switch (state)
@@ -159,18 +160,15 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "waypoint_control_server");
   ros::NodeHandle nh("~");
-  ros::Rate rate(50);
-
-  double max_velocity;
-  double dt = rate.expectedCycleTime().toSec();
+  Config config(&nh);
+  ros::Rate rate(config.rate());
 
   iVescAccess *fl, *fr, *br, *bl;
   fl = new VescAccess(front_left_param);
   fr = new VescAccess(front_right_param);
   br = new VescAccess(back_right_param);
   bl = new VescAccess(back_left_param);
-  Config config(&nh);
-  WaypointControlServer server(&nh, fl, fr, br, bl, &config, dt);
+  WaypointControlServer server(&nh, &config, fl, fr, br, bl);
 
   while (ros::ok())
   {

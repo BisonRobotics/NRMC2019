@@ -52,25 +52,101 @@ namespace dig_control
     const float normal = 0.2f;
   };
 
+  enum class ControlState
+  {
+    error = 0,
+    ready,
+    manual,
+    initialize,
+    dig,
+    finish_dig,
+    dump,
+    finish_dump
+  };
+
+  enum class DigState
+  {
+    dig_transition = 0,
+    digging,
+    closing_backhoe,
+    dump_transition,
+    moving_flaps_up,
+    stow
+  };
+
+  enum class CentralDriveState
+  {
+    at_bottom_limit = 0,
+    digging,
+    near_digging,
+    flap_transition_down,
+    near_dump_point,
+    at_dump_point,
+    flap_transition_up,
+    at_top_limit
+  };
+
+  enum class BackhoeState
+  {
+    open = 0,
+    closed,
+    traveling,
+    stuck,
+  };
+
+  enum class BucketState
+  {
+    up = 0,
+    down,
+    traveling,
+    stuck,
+  };
+
+  std::string to_string(ControlState state);
+  std::string to_string(DigState state);
+  std::string to_string(CentralDriveState state);
+  std::string to_string(BackhoeState state);
+  std::string to_string(BucketState state);
+
   class Config : public utilities::Config
   {
   public:
-    Config(ros::NodeHandle *nh);
+    explicit Config(ros::NodeHandle *nh);
 
-    bool floorTest();
     const CentralDriveAngles& centralDriveAngles();
     const CentralDriveDuty& centralDriveDuty();
     const BackhoeDuty& backhoeDuty();
     const VibratorDuty& vibratorDuty();
     const BucketDuty& bucketDuty();
+    const bool &debug();
+    const bool &floorTest();
+    const bool &fullAutonomy();
+    const bool   &voltageCompensation();
+    const double &minVoltage();
+    const double &startVoltage();
+    const double &maxCompensatedDuty();
+    const double &batteryFilterK();
+    const double &centralDriveAngleFilterK();
+    const double &currentFilterK();
+    const double &bucketFilterK();
 
   private:
-    bool floor_test;
-    CentralDriveAngles central_drive_angles;
-    CentralDriveDuty central_drive_duty;
-    BackhoeDuty backhoe_duty;
-    VibratorDuty vibrator_duty;
-    BucketDuty bucket_duty;
+    bool debug_;
+    bool floor_test_;
+    bool full_autonomy_;
+    CentralDriveAngles central_drive_angles_;
+    CentralDriveDuty central_drive_duty_;
+    BackhoeDuty backhoe_duty_;
+    VibratorDuty vibrator_duty_;
+    BucketDuty bucket_duty_;
+    bool voltage_compensation_;
+    double min_voltage_;
+    double start_voltage_;
+    double max_compensated_duty_;
+    double battery_filter_k_;
+    double central_drive_angle_filter_k_;
+    double current_filter_k_;
+    double bucket_filter_k_;
   };
 }
 

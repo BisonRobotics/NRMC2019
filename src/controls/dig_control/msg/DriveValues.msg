@@ -1,4 +1,4 @@
-float32 central
-float32 backhoe
-float32 vibrator
-float32 bucket
+float64 central
+float64 backhoe
+float64 vibrator
+float64 bucket

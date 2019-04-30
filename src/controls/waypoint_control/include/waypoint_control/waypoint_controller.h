@@ -6,7 +6,7 @@
 #include <string>
 
 #include <utilities/filter.h>
-#include <waypoint_control/waypoint_control_config.h>
+#include <waypoint_control/config.h>
 #include <tf2/LinearMath/Transform.h>
 #include <eigen3/Eigen/Geometry>
 #include <waypoint_control/feedback.h>
@@ -16,18 +16,19 @@
 namespace waypoint_control
 {
   using Rotation2D = Eigen::Rotation2D<double>;
+  using Pose2D = geometry_msgs::Pose2D;
 
   double clampAcceleration(double value, double last_value, double limit, double dt);
 
   class WaypointController
   {
   public:
-    WaypointController(iVescAccess *front_left,   iVescAccess *front_right,
-                       iVescAccess *back_right, iVescAccess *back_left, Config *config);
+    WaypointController(Config config, iVescAccess *front_left,   iVescAccess *front_right,
+                       iVescAccess *back_right, iVescAccess *back_left);
 
-    void update(bool manual_safety, bool autonomy_safety,
-                tf2::Transform transform, double left, double right);
-    void updateControls(const tf2::Transform &transform);
+    void update(const Pose2D& pose, bool manual_safety, bool autonomy_safety, double left, double right);
+    void updateControls(const Pose2D& pose);
+    void updateBatteryVoltage();
     void setPoint(double left, double right, bool reverse = false);
     void setControlState(ControlState goal);
     void setControlState(ControlState goal, const Waypoints &waypoint);
@@ -36,16 +37,18 @@ namespace waypoint_control
     ControlState getControlState() const;
     Debug getDebugInfo() const;
 
+
+
   private:
-    double last_left, last_right, dt;
-    Config *config;
+    double last_left, last_right, dt, battery_voltage, last_battery_voltage;
+    Pose2D last_pose;
+    Config config;
     Debug debug_info;
     iVescAccess *fl, *fr, *br, *bl;
     ControlState state;
     WaypointState waypoint_state;
     Waypoints waypoints;
     Feedback feedback, last_feedback;
-    tf2::Transform last_transform;
 
   };
 

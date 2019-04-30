@@ -3,4 +3,5 @@ string waypoint_state
 FeedbackInfo feedback
 Command command
 Waypoint waypoint
-geometry_msgs/Transform transform
+geometry_msgs/Pose2D pose
+float64 battery_voltage

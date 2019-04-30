@@ -12,7 +12,7 @@ namespace dig_control
   class DigControlServer
   {
   public:
-    explicit DigControlServer(ros::NodeHandle *nh, DigController *controller, Config *config);
+    explicit DigControlServer(ros::NodeHandle *nh, Config config);
 
     void goalCallback();
     void preemptCallback();
@@ -25,6 +25,7 @@ namespace dig_control
     double getFlapsAngle() const;
     double getBucketAngle() const;
     static double polyFit(const std::vector<double> &p, double x);
+    void stop();
 
     static DigControlResult toResult(ControlState state);
     static ControlState toControlState(DigControlGoal goal);
@@ -34,9 +35,8 @@ namespace dig_control
     // Dump angle 2.12 // Austin has it at 1.3
     // Maximum 2.35
     bool manual_safety, autonomy_safety;
-    float backhoe_duty, bucket_duty, central_duty, vibrator_duty;
+    double backhoe_duty, bucket_duty, central_duty, vibrator_duty;
     uint32_t seq;
-    bool debug;
     std::vector<double> monoboom_params, flap_params, backhoe_params;
     double central_drive_angle;
 
@@ -47,8 +47,8 @@ namespace dig_control
     actionlib::SimpleActionServer<dig_control::DigControlAction> server;
     sensor_msgs::JointState joint_angles;
 
-    Config *config;
-    DigController *controller;
+    Config config;
+    DigController controller;
   };
 }
 

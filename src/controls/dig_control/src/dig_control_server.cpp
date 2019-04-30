@@ -1,18 +1,18 @@
 #include <dig_control/dig_control_server.h>
 #include <dig_control/Debug.h>
 #include <utilities/joy.h>
-
+#include <utilities/filter.h>
 
 using namespace dig_control;
+using utilities::simpleLowPassFilter;
 
-
-DigControlServer::DigControlServer(ros::NodeHandle *nh, DigController *controller, Config *config) :
+DigControlServer::DigControlServer(ros::NodeHandle *nh, Config config) :
   manual_safety(false), autonomy_safety(false),
   backhoe_duty(0.0f), bucket_duty(0.0f), central_duty(0.0f), vibrator_duty(0.0f), central_drive_angle(0.0f),
   monoboom_params{-.0808, -0.0073,  0.0462,  0.9498,  -0.0029},
   flap_params{85.0010, -376.8576, 620.7329, -453.8172, 126.0475},
   backhoe_params{12.852515, -29.737412, 26.138260, -9.193020, 0.699974, 2.190548, 0.004798},
-  nh(nh), controller(controller), config(config), debug(true), seq(0),
+  nh(nh), config(config), controller(config), seq(0),
   server(*nh, "action", false)
 {
   joint_angles.header.stamp = ros::Time::now();
@@ -33,7 +33,7 @@ DigControlServer::DigControlServer(ros::NodeHandle *nh, DigController *controlle
   joy_subscriber = nh->subscribe("/joy", 1, &DigControlServer::joyCallback, this);
   joint_publisher = nh->advertise<sensor_msgs::JointState>("/joint_states", 1);
   debug_publisher = nh->advertise<dig_control::Debug>("debug", 10);
-  controller->setControlState(ControlState::manual);
+  controller.setControlState(ControlState::manual);
   server.registerGoalCallback(boost::bind(&DigControlServer::goalCallback, this));
   server.registerPreemptCallback(boost::bind(&DigControlServer::preemptCallback, this));
   server.start();
@@ -43,7 +43,7 @@ void DigControlServer::goalCallback()
 {
   auto goal = server.acceptNewGoal();
   ControlState request = toControlState(*goal);
-  ControlState current_state = controller->getControlState();
+  ControlState current_state = controller.getControlState();
 
   ROS_INFO("[DigControlServer::goalCallback] Request for %s to %s",
             to_string(current_state).c_str(), to_string(request).c_str());
@@ -52,8 +52,8 @@ void DigControlServer::goalCallback()
     case ControlState::manual:
     {
       // Set to manual regardless of current state
-      controller->setControlState(request);
-      controller->stop();
+      controller.setControlState(request);
+      controller.stop();
       server.setSucceeded(toResult(request));
       break;
     }
@@ -63,13 +63,13 @@ void DigControlServer::goalCallback()
       // Make sure controller is ready for new command
       if (current_state == ControlState::ready || current_state == ControlState::manual)
       {
-        controller->setControlState(request);
+        controller.setControlState(request);
       }
       else
       {
         server.setAborted(toResult(current_state));
-        controller->setControlState(ControlState::error);
-        controller->stop();
+        controller.setControlState(ControlState::error);
+        controller.stop();
         ROS_ERROR("[DigControlServer::goalCallback] Unable to set control state from %s to %s",
                   to_string(current_state).c_str(), to_string(request).c_str());
       }
@@ -79,13 +79,13 @@ void DigControlServer::goalCallback()
     {
       if (current_state == ControlState::dig)
       {
-        controller->setControlState(request);
+        controller.setControlState(request);
       }
       else
       {
         server.setAborted(toResult(current_state));
-        controller->setControlState(ControlState::error);
-        controller->stop();
+        controller.setControlState(ControlState::error);
+        controller.stop();
         ROS_ERROR("[DigControlServer::goalCallback] Unable to set control state from %s to %s",
                   to_string(current_state).c_str(), to_string(request).c_str());
       }
@@ -95,13 +95,13 @@ void DigControlServer::goalCallback()
     {
       if (current_state == ControlState::dump)
       {
-        controller->setControlState(request);
+        controller.setControlState(request);
       }
       else
       {
         server.setAborted(toResult(current_state));
-        controller->setControlState(ControlState::error);
-        controller->stop();
+        controller.setControlState(ControlState::error);
+        controller.stop();
         ROS_ERROR("[DigControlServer::goalCallback] Unable to set control state from %s to %s",
                   to_string(current_state).c_str(), to_string(request).c_str());
       }
@@ -110,8 +110,8 @@ void DigControlServer::goalCallback()
     default:
     {
       server.setAborted(toResult(current_state));
-      controller->setControlState(ControlState::error);
-      controller->stop();
+      controller.setControlState(ControlState::error);
+      controller.stop();
       ROS_ERROR("[DigControlServer::goalCallback] Unable to set control state from %s to %s",
                 to_string(current_state).c_str(), to_string(request).c_str());
     }
@@ -120,7 +120,7 @@ void DigControlServer::goalCallback()
 
 void DigControlServer::preemptCallback()
 {
-  ControlState current_state = controller->getControlState();
+  ControlState current_state = controller.getControlState();
   server.setPreempted(toResult(current_state));
   ROS_INFO("[DigControlServer::preemptCallback] Preempting from %s", to_string(current_state).c_str());
 }
@@ -141,11 +141,11 @@ void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     }
     else if (joy.get(Joy::BUCKET_DOWN))
     {
-      bucket_duty = -config->bucketDuty().fast;
+      bucket_duty = -config.bucketDuty().fast;
     }
     else if (joy.get(Joy::BUCKET_UP))
     {
-      bucket_duty = config->bucketDuty().fast;
+      bucket_duty = config.bucketDuty().fast;
     }
 
     // Update backhoe (Maintain state)
@@ -156,11 +156,11 @@ void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     }
     else if (joy.get(Joy::LINEAR_IN))
     {
-      backhoe_duty = -config->backhoeDuty().normal;
+      backhoe_duty = -config.backhoeDuty().normal;
     }
     else if (joy.get(Joy::LINEAR_OUT))
     {
-      backhoe_duty = config->backhoeDuty().fast;
+      backhoe_duty = config.backhoeDuty().fast;
     }
 
     // Update central drive
@@ -171,11 +171,11 @@ void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     }
     else if (joy.get(Joy::CENTRAL_DRIVE_UP))
     {
-      central_duty = config->centralDriveDuty().fast;
+      central_duty = config.centralDriveDuty().fast;
     }
     else if (joy.get(Joy::CENTRAL_DRIVE_DOWN))
     {
-      central_duty = -config->centralDriveDuty().normal;
+      central_duty = -config.centralDriveDuty().normal;
     }
     else
     {
@@ -221,7 +221,7 @@ ControlState DigControlServer::toControlState(DigControlGoal goal)
 void DigControlServer::update()
 {
   // Update
-  controller->update();
+  controller.update();
   updateCentralDriveAngle();
   seq++;
 
@@ -229,67 +229,59 @@ void DigControlServer::update()
   if (server.isActive())
   {
     DigControlFeedback feedback;
-    feedback.control_state       = (DigControlFeedback::_control_state_type)       controller->getControlState();
-    feedback.dig_state           = (DigControlFeedback::_dig_state_type)           controller->getDigState();
-    feedback.backhoe_state       = (DigControlFeedback::_backhoe_state_type)       controller->getBackhoeState();
-    feedback.central_drive_state = (DigControlFeedback::_central_drive_state_type) controller->getCentralDriveState();
-    feedback.bucket_state        = (DigControlFeedback::_bucket_state_type)        controller->getBucketState();
+    feedback.control_state       = (DigControlFeedback::_control_state_type)       controller.getControlState();
+    feedback.dig_state           = (DigControlFeedback::_dig_state_type)           controller.getDigState();
+    feedback.backhoe_state       = (DigControlFeedback::_backhoe_state_type)       controller.getBackhoeState();
+    feedback.central_drive_state = (DigControlFeedback::_central_drive_state_type) controller.getCentralDriveState();
+    feedback.bucket_state        = (DigControlFeedback::_bucket_state_type)        controller.getBucketState();
     server.publishFeedback(feedback);
   }
 
   // Safety check and teleop
-  ControlState dig_state = controller->getControlState();
+  ControlState dig_state = controller.getControlState();
   if (manual_safety)
   {
     if (dig_state == ControlState::manual)
     {
-      controller->setCentralDriveDuty(central_duty);
-      controller->setBackhoeDuty(backhoe_duty);
-      controller->setVibratorDuty(vibrator_duty);
-      controller->setBucketDuty(bucket_duty);
+      controller.setCentralDriveDuty(central_duty);
+      controller.setBackhoeDuty(backhoe_duty);
+      controller.setVibratorDuty(vibrator_duty);
+      controller.setBucketDuty(bucket_duty);
     }
   }
-  else if (autonomy_safety)
+  else if (!(autonomy_safety || config.fullAutonomy()))
   {
-    if (dig_state == ControlState::error)
-    {
-      ROS_ERROR("Dig controller is in an error state");
-      controller->stop();
-    }
-  }
-  else
-  {
-    controller->setControlState(ControlState::manual);
-    controller->stop();
+    controller.setControlState(ControlState::manual);
+    controller.stop();
   }
 
   // Info
-  if (debug)
+  if (config.debug())
   {
     Debug message;
     message.header.stamp = ros::Time::now();
     message.header.seq = seq;
-    message.position.central = controller->getCentralDrivePosition();
-    message.position.backhoe = controller->getBackhoePosition();
-    message.position.bucket = controller->getBucketPosition();
-    message.duty.backhoe = controller->getBackhoeDuty();
-    message.duty.vibrator = controller->getVibratorDuty();
-    message.duty.bucket = controller->getBucketDuty();
-    message.duty.central = controller->getCentralDriveDuty();
-    message.current.backhoe = controller->getBackhoeCurrent();
-    message.current.vibrator = controller->getVibratorCurrent();
-    message.current.bucket = controller->getBucketCurrent();
-    message.current.central = controller->getCentralDriveCurrent();
-    message.state.control = controller->getControlStateString();
-    message.state.central = controller->getCentralDriveStateString();
-    message.state.backhoe = controller->getBackhoeStateString();
-    message.state.bucket = controller->getBucketStateString();
-    message.state.dig = controller->getDigStateString();
-    message.state_i.control = (uint8_t)controller->getControlState();
-    message.state_i.central = (uint8_t)controller->getCentralDriveState();
-    message.state_i.dig = (uint8_t)controller->getDigState();
-    message.state_i.backhoe = (uint8_t)controller->getBackhoeState();
-    message.state_i.bucket = (uint8_t)controller->getBucketState();
+    message.position.central = controller.getCentralDrivePosition();
+    message.position.backhoe = controller.getBackhoePosition();
+    message.position.bucket = controller.getBucketPosition();
+    message.duty.backhoe = controller.getBackhoeDuty();
+    message.duty.vibrator = controller.getVibratorDuty();
+    message.duty.bucket = controller.getBucketDuty();
+    message.duty.central = controller.getCentralDriveDuty();
+    message.current.backhoe = controller.getBackhoeCurrent();
+    message.current.vibrator = controller.getVibratorCurrent();
+    message.current.bucket = controller.getBucketCurrent();
+    message.current.central = controller.getCentralDriveCurrent();
+    message.state.control = controller.getControlStateString();
+    message.state.central = controller.getCentralDriveStateString();
+    message.state.backhoe = controller.getBackhoeStateString();
+    message.state.bucket = controller.getBucketStateString();
+    message.state.dig = controller.getDigStateString();
+    message.state_i.control = (uint8_t)controller.getControlState();
+    message.state_i.central = (uint8_t)controller.getCentralDriveState();
+    message.state_i.dig = (uint8_t)controller.getDigState();
+    message.state_i.backhoe = (uint8_t)controller.getBackhoeState();
+    message.state_i.bucket = (uint8_t)controller.getBucketState();
     debug_publisher.publish(message);
   }
 
@@ -318,7 +310,8 @@ double DigControlServer::polyFit(const std::vector<double> &p, double x)
 
 void DigControlServer::updateCentralDriveAngle()
 {
-  lowPassFilter<double>(central_drive_angle, 9.1473E-4 * controller->getCentralDrivePosition() - 1.04, 0.1);
+  simpleLowPassFilter<double>(central_drive_angle,
+      9.1473E-4 * controller.getCentralDrivePosition() - 1.04, config.centralDriveAngleFilterK());
 }
 
 double DigControlServer::getCentralDriveAngle() const
@@ -351,13 +344,18 @@ double DigControlServer::getFlapsAngle() const
 
 double DigControlServer::getBackhoeAngle() const
 {
-  return -polyFit(backhoe_params, controller->getBackhoePosition() / 10500.0 * 0.85 + 0.15);
+  return -polyFit(backhoe_params, controller.getBackhoePosition() / 10500.0 * 0.85 + 0.15);
 }
 
 double DigControlServer::getBucketAngle() const
 {
   // arccos((5^2 + 12^2 - x^2)/(2*5*12)) - arccos((5^2 + 12^2 - 10^2)/(2*5*12))
-  return std::acos((169.0 - std::pow(controller->getBucketPosition(), 2.0)) / 120.0) - 0.958192;
+  return std::acos((169.0 - std::pow(controller.getBucketPosition(), 2.0)) / 120.0) - 0.958192;
+}
+
+void DigControlServer::stop()
+{
+  controller.stop();
 }
 
 int main(int argc, char* argv[])
@@ -365,8 +363,7 @@ int main(int argc, char* argv[])
   ros::init(argc, argv, "dig_control_server");
   ros::NodeHandle nh("~");
   Config config(&nh);
-  DigController controller(&config);
-  DigControlServer server(&nh, &controller, &config);
+  DigControlServer server(&nh, config);
   ros::Rate rate(50);
   while (ros::ok())
   {
@@ -374,7 +371,7 @@ int main(int argc, char* argv[])
     ros::spinOnce();
     rate.sleep();
   }
-  controller.stop();
+  server.stop();
 }
 
 

@@ -20,30 +20,20 @@ using namespace waypoint_control;
 Feedback::Feedback() : x_(0.0), y_(0.0), r_(0.0), theta_(0.0)
 {}
 
-Feedback::Feedback(tf2::Transform R, Waypoint W)
+Feedback::Feedback(const geometry_msgs::Pose2D &P, const Waypoint &W)
 {
-  // Make sure that the robot rotation is valid
-  auto Q1 = R.getRotation();
-  double Q1m = Q1.x()*Q1.x() + Q1.y()*Q1.y() + Q1.z()*Q1.z() + Q1.w()*Q1.w();
-  if (std::abs(Q1m - 1.0) > 1.0e-6)
-  {
-    throw std::runtime_error("[Feedback::Feedback]: Robot orientation isn't normalized");
-  }
-
   // Get feedback
-  double dy = W.pose.y - R.getOrigin().y();
-  double dx = W.pose.x - R.getOrigin().x();
+  double dy = W.pose.y - P.y;
+  double dx = W.pose.x - P.x;
   r_ = sqrt(dx*dx + dy*dy);
 
-  double roll, pitch, yaw;
-  tf2::Matrix3x3(R.getRotation()).getRPY(roll, pitch, yaw);
   if (W.reverse)
   {
-    theta_ = (Rotation2D(pi) * Rotation2D(std::atan2(dy, dx)) * Rotation2D(-yaw)).smallestAngle();
+    theta_ = (Rotation2D(pi) * Rotation2D(std::atan2(dy, dx)) * Rotation2D(-P.theta)).smallestAngle();
   }
   else
   {
-    theta_ = (Rotation2D(std::atan2(dy, dx)) * Rotation2D(-yaw)).smallestAngle();
+    theta_ = (Rotation2D(std::atan2(dy, dx)) * Rotation2D(-P.theta)).smallestAngle();
   }
 
   x_ = r_ * cos(theta_);

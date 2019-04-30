@@ -19,14 +19,15 @@ using boost::algorithm::clamp;
 using boost::math::double_constants::pi;
 using std::signbit;
 using std::abs;
+using utilities::simpleLowPassFilter;
 
 
-WaypointController::WaypointController(iVescAccess *front_left, iVescAccess *front_right,
-    iVescAccess *back_right, iVescAccess *back_left, Config *config) :
+WaypointController::WaypointController(Config config, iVescAccess *front_left, iVescAccess *front_right,
+    iVescAccess *back_right, iVescAccess *back_left) :
     fl(front_left), fr(front_right), br(back_right), bl(back_left), config(config),
     state(ControlState::manual), waypoint_state(WaypointState::ready), last_left(0.0), last_right(0.0)
 {
-  dt = 1.0/config->rate;
+  dt = 1.0/config.rate();
 }
 
 void WaypointController::setControlState(ControlState state)
@@ -102,8 +103,7 @@ void WaypointController::setControlState(ControlState state, const Waypoints &wa
 }
 
 
-void WaypointController::update(bool manual_safety, bool autonomy_safety,
-    tf2::Transform transform, double left, double right)
+void WaypointController::update(const Pose2D &pose, bool manual_safety, bool autonomy_safety, double left, double right)
 {
   debug_info.waypoint = Waypoint();
   switch (state)
@@ -120,7 +120,7 @@ void WaypointController::update(bool manual_safety, bool autonomy_safety,
         else
         {
           debug_info.waypoint = waypoints.back();
-          updateControls(transform);
+          updateControls(pose);
         }
       }
       else
@@ -151,6 +151,7 @@ void WaypointController::update(bool manual_safety, bool autonomy_safety,
       break;
     }
   }
+  this->last_pose = pose;
 
   // Update debug info
   debug_info.command_state = to_string(state);
@@ -160,11 +161,11 @@ void WaypointController::update(bool manual_safety, bool autonomy_safety,
   debug_info.feedback.dr = feedback.r();
   debug_info.feedback.tr = feedback.theta();
   debug_info.feedback.td = feedback.theta()/pi*180.0;
-  debug_info.transform = tf2::toMsg(transform);
-  this->last_transform = transform;
+  debug_info.battery_voltage = battery_voltage;
+  debug_info.pose = pose;
 }
 
-void WaypointController::updateControls(const tf2::Transform &transform)
+void WaypointController::updateControls(const geometry_msgs::Pose2D& pose)
 {
   if (waypoints.empty())
   {
@@ -174,7 +175,7 @@ void WaypointController::updateControls(const tf2::Transform &transform)
 
   Waypoint waypoint = waypoints.back();
   last_feedback = feedback;
-  feedback = Feedback(transform, waypoint);
+  feedback = Feedback(pose, waypoint);
 
   switch (waypoint_state)
   {
@@ -207,8 +208,8 @@ void WaypointController::updateControls(const tf2::Transform &transform)
       }
       else
       {
-        double duty = clamp(config->in_place_k * abs(feedback.theta()),
-            config->min_in_place_duty, config->max_in_place_duty);
+        double duty = clamp(config.inPlaceK() * abs(feedback.theta()),
+            config.minInPlaceDuty(), config.maxInPlaceDuty());
         //ROS_INFO("Duty %f", duty);
         if (feedback.theta() > 0.0)
         {
@@ -233,10 +234,10 @@ void WaypointController::updateControls(const tf2::Transform &transform)
       }
       else
       {
-        double kx  = config->driving_kx;
-        double ky  = config->driving_ky;
-        double min = config->min_driving_duty;
-        double max = config->max_driving_duty;
+        double kx  = config.drivingKx();
+        double ky  = config.drivingKy();
+        double min = config.minDrivingDuty();
+        double max = config.maxDrivingDuty();
         double p = clamp(kx * abs(feedback.x()), 0.0, 1.0);
         double high = clamp(p*max, min, max);
         double low = clamp(p*max*(1 - ky * abs(feedback.y())), min, max);
@@ -273,60 +274,75 @@ void WaypointController::updateControls(const tf2::Transform &transform)
   }
 }
 
-
-
+void WaypointController::updateBatteryVoltage()
+{
+  double sample = (fl->getVin() + fr->getVin() + br->getVin() + bl->getVin()) / 4.0;
+  simpleLowPassFilter<double>(battery_voltage, sample, config.batteryFilterK());
+  if (battery_voltage < config.minVoltage())
+  {
+    ROS_WARN("[WaypointController::setPoint]: Vin = %f < %f", battery_voltage, config.minVoltage());
+    battery_voltage = config.minVoltage();
+  }
+}
 
 void WaypointController::setPoint(double left, double right, bool reverse)
 {
+  // Clamp duty
   double tmp_left, tmp_right;
-  tmp_left  = clamp((reverse ? -right : left),  -config->max_duty, config->max_duty);
-  tmp_right = clamp((reverse ?  -left : right), -config->max_duty, config->max_duty);
-  left  = clampAcceleration(tmp_left,  last_left, config->max_acceleration, dt);
-  right = clampAcceleration(tmp_right, last_right, config->max_acceleration, dt);
+  tmp_left  = clamp((reverse ? -right : left),  -config.maxDuty(), config.maxDuty());
+  tmp_right = clamp((reverse ?  -left : right), -config.maxDuty(), config.maxDuty());
+  left  = clampAcceleration(tmp_left,  last_left, config.maxAcceleration(), dt);
+  right = clampAcceleration(tmp_right, last_right, config.maxAcceleration(), dt);
 
+  // Compensate for change in battery voltage
+  updateBatteryVoltage();
+  if (config.voltageCompensation())
+  {
+      left = clamp(left * config.startVoltage() / battery_voltage,
+                   -config.maxCompensatedDuty(), config.maxCompensatedDuty());
+      right = clamp(right * config.startVoltage() / battery_voltage,
+                    -config.maxCompensatedDuty(), config.maxCompensatedDuty());
+  }
+
+  // Set duty
   if (state == ControlState::manual)
   {
     if (std::abs(left) > 1.0e-3)
     {
-      left  = clamp(left, -config->max_manual_duty, config->max_manual_duty);
       fl->setDuty((float)left);
       bl->setDuty((float)left);
-      debug_info.command.left = left;
     }
     else
     {
       left = 0.0;
       fl->setTorque(0.0f);
       bl->setTorque(0.0f);
-      debug_info.command.left = 0.0;
     }
     if (std::abs(right) > 1.0e-3)
     {
-      right  = clamp(right, -config->max_manual_duty, config->max_manual_duty);
       fr->setDuty((float)right);
       br->setDuty((float)right);
-      debug_info.command.right = right;
     }
     else
     {
       right = 0.0;
-      fr->setTorque(0.0f);
-      br->setTorque(0.0f);
-      debug_info.command.right = 0.0;
+      fl->setTorque(0.0f);
+      bl->setTorque(0.0f);
     }
   }
   else
   {
-    // Adjust sign and clamp
     fl->setDuty((float)left);
     bl->setDuty((float)left);
     fr->setDuty((float)right);
     br->setDuty((float)right);
-    debug_info.command.left = left;
-    debug_info.command.right = right;
+
   }
+
   last_left = left;
   last_right = right;
+  debug_info.command.left = left;
+  debug_info.command.right = right;
 }
 
 void WaypointController::stop()

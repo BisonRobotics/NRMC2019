@@ -56,7 +56,7 @@ include_directories(${Eigen3_INCLUDE_DIRS})
 add_library(teleop_interface src/teleop_interface/teleop_interface.cpp)
 target_link_libraries(teleop_interface ${catkin_LIBRARIES})
 
-add_library(waypoint_control_config src/waypoint_control/waypoint_control_config.cpp)
+add_library(waypoint_control_config src/waypoint_control/config.cpp)
 add_dependencies(waypoint_control_config ${waypoint_control_EXPORTED_TARGETS})
 target_link_libraries(waypoint_control_config ${catkin_LIBRARIES})
 
@@ -73,7 +73,7 @@ target_link_libraries(teleop teleop_interface ${catkin_LIBRARIES})
 
 add_executable(waypoint_control_server src/waypoint_control/waypoint_control_server.cpp)
 add_dependencies(waypoint_control_server ${waypoint_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})
-target_link_libraries(waypoint_control_server waypoint_control_config waypoint_controller teleop_interface ${catkin_LIBRARIES})
+target_link_libraries(waypoint_control_server waypoint_control_config waypoint_controller ${catkin_LIBRARIES})
 
 #add_executable(waypoint_control_client_node src/waypoint_control/waypoint_control_client_node.cpp)
 #add_dependencies(waypoint_control_client_node ${waypoint_controller_EXPORTED_TARGETS} ${navigation_msgs_EXPORTED_TARGETS})

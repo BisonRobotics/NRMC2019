@@ -1,7 +1,7 @@
 #ifndef WAYPOINT_CONTROL_FEEDBACK_H
 #define WAYPOINT_CONTROL_FEEDBACK_H
 
-#include <waypoint_control/waypoint_control_config.h>
+#include <waypoint_control/config.h>
 #include <tf2/LinearMath/Transform.h>
 #include <eigen3/Eigen/Geometry>
 
@@ -13,7 +13,7 @@ namespace waypoint_control
   {
   public:
     Feedback();
-    Feedback(tf2::Transform robot, Waypoint W);
+    Feedback(const geometry_msgs::Pose2D &pose, const Waypoint &W);
 
     double x();
     double y();
