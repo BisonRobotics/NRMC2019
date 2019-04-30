@@ -305,15 +305,17 @@ void WaypointController::setPoint(double left, double right, bool reverse)
   tmp_right = clamp((reverse ?  -left : right), -config.maxDuty(), config.maxDuty());
   left  = clampAcceleration(tmp_left,  last_left, config.maxAcceleration(), dt);
   right = clampAcceleration(tmp_right, last_right, config.maxAcceleration(), dt);
+  last_left = left;
+  last_right = right;
 
   // Compensate for change in battery voltage
   updateBatteryVoltage();
   if (config.voltageCompensation())
   {
       left = clamp(left * config.fullVoltage() / battery_voltage,
-                   -config.maxCompensatedDuty(), config.maxCompensatedDuty());
+          -1.0*config.maxCompensatedDuty(), config.maxCompensatedDuty());
       right = clamp(right * config.fullVoltage() / battery_voltage,
-                    -config.maxCompensatedDuty(), config.maxCompensatedDuty());
+          -1.0*config.maxCompensatedDuty(), config.maxCompensatedDuty());
   }
 
   // Set duty
@@ -322,8 +324,6 @@ void WaypointController::setPoint(double left, double right, bool reverse)
   fr->setDuty((float)right);
   br->setDuty((float)right);
 
-  last_left = left;
-  last_right = right;
   debug_info.command.left = left;
   debug_info.command.right = right;
 }

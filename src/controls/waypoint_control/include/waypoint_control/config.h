@@ -39,6 +39,11 @@ namespace waypoint_control
   std::string to_string(ControlState state);
   std::string to_string(WaypointState state);
 
+  /*class DriveProfile
+  {
+  public:
+  };*/
+
   class Config : public utilities::Config
   {
   public:
@@ -67,14 +72,14 @@ namespace waypoint_control
   private:
     double dt_;
     double rate_;
-    double max_acceleration_;
     double max_duty_;
+    double max_manual_duty_;
+    double min_manual_duty_;
+    double max_acceleration_;
     double max_in_place_duty_;
     double min_in_place_duty_;
     double max_driving_duty_;
     double min_driving_duty_;
-    double max_manual_duty_;
-    double min_manual_duty_;
     double in_place_k_;
     double driving_kx_;
     double driving_ky_;

@@ -1,7 +1,7 @@
 # Arena locations
 # - Collector bin   = [0.00 0.25 0.48 1.90]
-# - Starting Zone B = [0.48 0.00 2.13 1.90]
-# - Starting Zone A = [2.13 0.00 3.78 1.90]
+# - Starting Zone B = [0.48 0.00 2.13 1.90] Center = [1.305 0.95]
+# - Starting Zone A = [2.13 0.00 3.78 1.90] Center = [2.955 0.95]
 # - Obstacle Zone   = [0.00 1.90 3.78 4.64]
 # - Mining Zone     = [0.00 4.64 3.78 7.38]
 
@@ -16,21 +16,14 @@ timers:
 paths:
   dig_1:
     -
-      x: 2.75
-      y: 2.85
+      x: 2.955
+      y: 1.75
       theta: 0.0
       reverse: false
       match_orientation: false
       drive_profile: 0
     -
-      x: 1.5
-      y: 2.85
-      theta: 0.0
-      reverse: false
-      match_orientation: false
-      drive_profile: 0
-    -
-      x: 1.5
+      x: 2.955
       y: 5.5
       theta: 0.0
       reverse: false
@@ -39,22 +32,15 @@ paths:
 
   hopper_1:
     -
-      x: 1.5
-      y: 2.85
+      x: 2.955
+      y: 0.95
       theta: 0.0
       reverse: true
       match_orientation: false
       drive_profile: 0
     -
-      x: 2.75
-      y: 2.85
-      theta: 0.0
-      reverse: true
-      match_orientation: false
-      drive_profile: 0
-    -
-      x: 2.75
-      y: 1.5
+      x: 1.305
+      y: 0.95
       theta: 0.0
       reverse: true
       match_orientation: false
@@ -62,21 +48,14 @@ paths:
 
   dig_2:
     -
-      x: 2.75
-      y: 2.85
+      x: 2.955
+      y: 1.75
       theta: 0.0
       reverse: false
       match_orientation: false
       drive_profile: 0
     -
-      x: 1.5
-      y: 2.85
-      theta: 0.0
-      reverse: false
-      match_orientation: false
-      drive_profile: 0
-    -
-      x: 1.5
+      x: 2.955
       y: 5.5
       theta: 0.0
       reverse: false
@@ -85,22 +64,15 @@ paths:
 
   hopper_2:
     -
-      x: 1.5
-      y: 2.85
+      x: 2.955
+      y: 0.95
       theta: 0.0
       reverse: true
       match_orientation: false
       drive_profile: 0
     -
-      x: 2.75
-      y: 2.85
-      theta: 0.0
-      reverse: true
-      match_orientation: false
-      drive_profile: 0
-    -
-      x: 2.75
-      y: 1.5
+      x: 1.305
+      y: 0.95
       theta: 0.0
       reverse: true
       match_orientation: false
@@ -108,8 +80,8 @@ paths:
 
   final_position:
     -
-      x: 2.75
-      y: 2.00
+      x: 2.955
+      y: 0.95
       theta: 0.0
       reverse: false
       match_orientation: false

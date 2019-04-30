@@ -40,7 +40,7 @@ namespace tracker
     boost::thread *thread_handle;
     std::vector<Tag> tags;
     Config config;
-    uint active_id;
+    int active_id;
 
     ros::NodeHandle base_nh, nh;
     ros::Publisher pose_pub, pose_pub1, debug_pub;

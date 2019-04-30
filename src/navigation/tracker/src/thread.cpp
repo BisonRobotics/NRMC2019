@@ -65,6 +65,8 @@ Thread::Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, Camer
     return;
   }
 
+  transform.setOrigin(tf2::Vector3(0.0, 0.0, 0.0));
+
   drops = 0;
   drop_count = 0;
   nh.setCallbackQueue(&callback_queue);
@@ -162,7 +164,7 @@ void Thread::thread()
     {
       active_id = -1;
     }
-    if (transform.getOrigin().y() < config.tagSwitchY())
+    else if (transform.getOrigin().y() < config.tagSwitchY())
     {
       if (transform.getOrigin().x() > config.tagSwitchX())
       {
@@ -236,12 +238,9 @@ void Thread::thread()
     {
       if (tags[i].relativeTransformUpdated() && tags[i].stepperTransformUpdated())
       {
-        if (tags[i].getID() == active_id || tags[i].getID() == -1)
-        {
-          geometry_msgs::PoseStamped pose_estimate = tags[i].estimatePose();
-          pose_pub.publish(pose_estimate);
-          break;
-        }
+        geometry_msgs::PoseStamped pose_estimate = tags[i].estimatePose();
+        pose_pub.publish(pose_estimate);
+        break;
       }
     }
 
