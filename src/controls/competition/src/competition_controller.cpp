@@ -228,9 +228,12 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
 {
   this->joy = joy_msg;
   
-  if (joy.get(Joy::AUTONOMY_SAFETY))
+  if (joy.get(Joy::AUTONOMY_SAFETY) || config.fullAutonomy())
   {
-    ROS_INFO("[Controller::joyCallback::AUTONOMY_SAFETY]");
+    if (joy.get(Joy::AUTONOMY_SAFETY))
+    {
+      ROS_INFO("[Controller::joyCallback::AUTONOMY_SAFETY]");
+    }
     if (joy.get(Joy::START_COMPETITION))
     {
       ROS_INFO("[Controller::joyCallback]: %s to %s",

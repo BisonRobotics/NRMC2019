@@ -39,12 +39,19 @@ paths:
       match_orientation: false
       drive_profile: 0
     -
-      x: 1.305
+      x: 2.13
       y: 0.95
       theta: 0.0
       reverse: true
       match_orientation: false
-      drive_profile: 0
+      drive_profile: 1
+    -
+      x: 1.75
+      y: 0.95
+      theta: 0.0
+      reverse: true
+      match_orientation: false
+      drive_profile: 1
 
   dig_2:
     -
@@ -71,12 +78,19 @@ paths:
       match_orientation: false
       drive_profile: 0
     -
-      x: 1.305
+      x: 2.13
       y: 0.95
       theta: 0.0
       reverse: true
       match_orientation: false
-      drive_profile: 0
+      drive_profile: 1
+    -
+      x: 1.75
+      y: 0.95
+      theta: 0.0
+      reverse: true
+      match_orientation: false
+      drive_profile: 1
 
   final_position:
     -

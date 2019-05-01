@@ -4,18 +4,12 @@ using namespace waypoint_control;
 
 Config::Config(ros::NodeHandle *nh) : utilities::Config("waypoint_control")
 {
+  // Load launch params
   loadParam(nh, "rate",                 rate_,                  50.00);
   loadParam(nh, "max_acceleration",     max_acceleration_,       1.00);
   loadParam(nh, "max_duty",             max_duty_,               0.30);
-  loadParam(nh, "max_in_place_duty",    max_in_place_duty_,      0.30);
-  loadParam(nh, "min_in_place_duty",    min_in_place_duty_,      0.05);
-  loadParam(nh, "max_driving_duty",     max_driving_duty_,       0.30);
-  loadParam(nh, "min_driving_duty",     min_driving_duty_,       0.10);
   loadParam(nh, "max_manual_duty",      max_manual_duty_,        0.30);
   loadParam(nh, "min_manual_duty",      min_manual_duty_,        0.05);
-  loadParam(nh, "in_place_k",           in_place_k_,             0.40);
-  loadParam(nh, "driving_kx",           driving_kx_,             5.00);
-  loadParam(nh, "driving_ky",           driving_ky_,             5.00);
   loadParam(nh, "full_autonomy",        full_autonomy_,         false);
   loadParam(nh, "voltage_compensation", voltage_compensation_,  false);
   loadParam(nh, "min_voltage",          min_voltage_,            30.0);
@@ -23,6 +17,27 @@ Config::Config(ros::NodeHandle *nh) : utilities::Config("waypoint_control")
   loadParam(nh, "max_compensated_duty", max_compensated_duty_,   0.50);
   loadParam(nh, "battery_filter_k",     battery_filter_k_,       0.03);
   dt_ = 1.0/rate();
+
+  // Load yaml params
+  if (nh->hasParam("drive_profiles"))
+  {
+    ROS_INFO("Found drive_profiles parameter, attempting to load profiles");
+    XmlRpc::XmlRpcValue xml_drive_profiles;
+    nh->getParam("drive_profiles", xml_drive_profiles);
+    ROS_ASSERT(xml_drive_profiles.getType() == XmlRpc::XmlRpcValue::TypeArray);
+    for (int i = 0; i < xml_drive_profiles.size(); i++)
+    {
+      drive_profiles_.emplace_back(xml_drive_profiles[i]["max_in_place_duty"], xml_drive_profiles[i]["min_in_place_duty"],
+                                   xml_drive_profiles[i]["max_driving_duty"],  xml_drive_profiles[i]["min_driving_duty"],
+                                   xml_drive_profiles[i]["in_place_k"],        xml_drive_profiles[i]["driving_kx"],
+                                   xml_drive_profiles[i]["driving_ky"]);
+    }
+  }
+  else
+  {
+    ROS_ERROR("Unable to find drive_profiles");
+    throw std::runtime_error("drive_profiles param not found");
+  }
 }
 
 const double &Config::dt()
@@ -45,26 +60,6 @@ const double &Config::maxDuty()
   return max_duty_;
 }
 
-const double &Config::maxInPlaceDuty()
-{
-  return max_in_place_duty_;
-}
-
-const double &Config::minInPlaceDuty()
-{
-  return min_in_place_duty_;
-}
-
-const double &Config::maxDrivingDuty()
-{
-  return max_driving_duty_;
-}
-
-const double &Config::minDrivingDuty()
-{
-  return min_driving_duty_;
-}
-
 const double &Config::maxManualDuty()
 {
   return max_manual_duty_;
@@ -73,21 +68,6 @@ const double &Config::maxManualDuty()
 const double &Config::minManualDuty()
 {
   return min_manual_duty_;
-}
-
-const double &Config::inPlaceK()
-{
-  return in_place_k_;
-}
-
-const double &Config::drivingKx()
-{
-  return driving_kx_;
-}
-
-const double &Config::drivingKy()
-{
-  return driving_ky_;
 }
 
 const bool &Config::fullAutonomy()
@@ -118,6 +98,57 @@ const double &Config::maxCompensatedDuty()
 const double &Config::batteryFilterK()
 {
   return battery_filter_k_;
+}
+
+const DriveProfile &Config::driveProfile(int i)
+{
+  return drive_profiles_[i];
+}
+
+DriveProfile::DriveProfile(double max_in_place_duty, double min_in_place_duty, double max_driving_duty,
+                           double min_driving_duty, double in_place_k, double driving_kx, double driving_ky) :
+                           max_in_place_duty_(max_in_place_duty), min_in_place_duty_(min_in_place_duty),
+                           max_driving_duty_(max_driving_duty), min_driving_duty_(min_driving_duty),
+                           in_place_k_(in_place_k), driving_kx_(driving_kx), driving_ky_(driving_ky)
+{
+  ROS_INFO("[DriveProfile::DriveProfile]: %f, %f, %f, %f, %f, %f, %f", max_in_place_duty_, min_in_place_duty_,
+      max_driving_duty_, min_driving_duty_, in_place_k_, driving_kx_, driving_ky_);
+}
+
+
+const double &DriveProfile::maxInPlaceDuty() const
+{
+  return max_in_place_duty_;
+}
+
+const double &DriveProfile::minInPlaceDuty() const
+{
+  return min_in_place_duty_;
+}
+
+const double &DriveProfile::maxDrivingDuty() const
+{
+  return max_driving_duty_;
+}
+
+const double &DriveProfile::minDrivingDuty() const
+{
+  return min_driving_duty_;
+}
+
+const double &DriveProfile::inPlaceK() const
+{
+  return in_place_k_;
+}
+
+const double &DriveProfile::drivingKx() const
+{
+  return driving_kx_;
+}
+
+const double &DriveProfile::drivingKy() const
+{
+  return driving_ky_;
 }
 
 std::string waypoint_control::to_string(ControlState state)

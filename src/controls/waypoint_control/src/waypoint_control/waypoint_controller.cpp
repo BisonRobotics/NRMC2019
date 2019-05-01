@@ -220,8 +220,9 @@ void WaypointController::updateControls(const geometry_msgs::Pose2D& pose)
       }
       else
       {
-        double duty = clamp(config.inPlaceK() * abs(feedback.theta()),
-            config.minInPlaceDuty(), config.maxInPlaceDuty());
+        int i = waypoint.drive_profile;
+        double duty = clamp(config.driveProfile(i).inPlaceK() * abs(feedback.theta()),
+            config.driveProfile(i).minInPlaceDuty(), config.driveProfile(i).maxInPlaceDuty());
         //ROS_INFO("Duty %f", duty);
         if (feedback.theta() > 0.0)
         {
@@ -246,10 +247,11 @@ void WaypointController::updateControls(const geometry_msgs::Pose2D& pose)
       }
       else
       {
-        double kx  = config.drivingKx();
-        double ky  = config.drivingKy();
-        double min = config.minDrivingDuty();
-        double max = config.maxDrivingDuty();
+        int i = waypoint.drive_profile;
+        double kx  = config.driveProfile(i).drivingKx();
+        double ky  = config.driveProfile(i).drivingKy();
+        double min = config.driveProfile(i).minDrivingDuty();
+        double max = config.driveProfile(i).maxDrivingDuty();
         double p = clamp(kx * abs(feedback.x()), 0.0, 1.0);
         double high = clamp(p*max, min, max);
         double low = clamp(p*max*(1 - ky * abs(feedback.y())), min, max);

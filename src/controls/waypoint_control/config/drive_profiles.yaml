@@ -1,0 +1,17 @@
+drive_profiles:
+  - # Profile 0
+    max_in_place_duty: 0.30
+    min_in_place_duty: 0.05
+    max_driving_duty:  0.30
+    min_driving_duty:  0.10
+    in_place_k:        0.40
+    driving_kx:        5.00
+    driving_ky:        5.00
+  - # Profile 1
+    max_in_place_duty: 0.10
+    min_in_place_duty: 0.05
+    max_driving_duty:  0.10
+    min_driving_duty:  0.10
+    in_place_k:        0.40
+    driving_kx:        5.00
+    driving_ky:        5.00
