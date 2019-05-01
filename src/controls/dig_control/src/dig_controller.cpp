@@ -99,7 +99,7 @@ void DigController::updateCentralDriveState()
   double current = central_drive->getCurrent();
   if (std::abs(current) < 100.0f)
   {
-    simpleLowPassFilter<double>(central_current, current, config.currentFilterK());
+    simpleLowPassFilter<double>(central_current, current, config.centralDriveCurrentFilterK());
   }
 
   if (top_limit || central_drive_position >= config.centralDriveAngles().top_limit)
@@ -420,15 +420,18 @@ void DigController::update()
             case CentralDriveState::at_bottom_limit:
             {
               ROS_DEBUG("[dig][digging][near_bottom_limit] Moving to closing_backhoe state");
+              setCentralDriveDuty(0.0);
               dig_state = DigState::closing_backhoe;
               break;
             }
             case CentralDriveState::digging:
             {
+              setCentralDriveDuty(-config.centralDriveDuty().normal);
               dig_state = DigState::closing_backhoe;
-              ROS_WARN("[dig][digging][digging] Not fully implemented");
-              // TODO implement this functionality
-              // Dig until stalled for X seconds
+              if (central_current > config.centralDriveDigCurrentThreshold())
+              {
+                dig_state = DigState::closing_backhoe;
+              }
               break;
             }
             case CentralDriveState::near_digging:

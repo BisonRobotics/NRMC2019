@@ -41,8 +41,8 @@ namespace dig_control
   class VibratorDuty
   {
   public:
-    //static constexpr float normal = 0.4f;
-    const float normal = 0.0f;
+    const float normal = 0.4f;
+    //const float normal = 0.0f;
   };
 
   class BucketDuty
@@ -127,6 +127,8 @@ namespace dig_control
     const double &maxCompensatedDuty();
     const double &batteryFilterK();
     const double &centralDriveAngleFilterK();
+    const double &centralDriveCurrentFilterK();
+    const double &centralDriveDigCurrentThreshold();
     const double &currentFilterK();
     const double &bucketFilterK();
 
@@ -146,6 +148,8 @@ namespace dig_control
     double battery_filter_k_;
     double central_drive_angle_filter_k_;
     double current_filter_k_;
+    double central_drive_dig_current_threshold_;
+    double central_drive_current_filter_k_;
     double bucket_filter_k_;
   };
 }
