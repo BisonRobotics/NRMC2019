@@ -135,6 +135,8 @@ std::string dig_control::to_string(DigState state)
 {
   switch (state)
   {
+    case DigState::initialize:
+      return "initialize";
     case DigState::dig_transition:
       return "dig_transition";
     case DigState::digging:

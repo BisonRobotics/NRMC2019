@@ -1,15 +1,16 @@
 <launch>
   <arg name="full_autonomy" default="false" />
   <arg name="voltage_compensation" default="false" />
+  <arg name="floor_test" default="true" />
   <node name="dig_control_server" pkg="dig_control" type="dig_control_server" output="screen">
     <param name="debug"                               type="bool"   value="true" />
-    <param name="floor_test"                          type="bool"   value="true" />
+    <param name="floor_test"                          type="bool"   value="$(arg floor_test)" />
     <param name="min_voltage"                         type="double" value="30.0" />
     <param name="full_voltage"                        type="double" value="42.0" />
     <param name="max_compensated_duty"                type="double" value="0.50" />
     <param name="battery_filter_k"                    type="double" value="0.03" />
     <param name="central_drive_current_filter_k"      type="double" value="0.03" />
-    <param name="central_drive_dig_current_threshold" type="double" value="8.00" />
+    <param name="central_drive_dig_current_threshold" type="double" value="3.00" /> <!-- 5 is pretty good -->
     <param name="central_drive_angle_filter_k"        type="double" value="0.10" />
     <param name="current_filter_k"                    type="double" value="0.04" />
     <param name="bucket_filter_k"                     type="double" value="0.03" />

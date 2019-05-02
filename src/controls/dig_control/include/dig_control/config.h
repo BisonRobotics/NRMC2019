@@ -25,7 +25,9 @@ namespace dig_control
   class CentralDriveDuty
   {
   public:
+    const float ultra_slow = 0.05f;
     const float slow = 0.1f;
+    const float slowish = 0.2f;
     const float normal = 0.3f;
     const float fast = 0.5f;
   };
@@ -41,7 +43,7 @@ namespace dig_control
   class VibratorDuty
   {
   public:
-    const float normal = 0.4f;
+    const float normal = 0.8f;
     //const float normal = 0.0f;
   };
 
@@ -66,7 +68,8 @@ namespace dig_control
 
   enum class DigState
   {
-    dig_transition = 0,
+    initialize = 0,
+    dig_transition,
     digging,
     closing_backhoe,
     dump_transition,

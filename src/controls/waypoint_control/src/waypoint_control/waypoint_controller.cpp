@@ -209,6 +209,11 @@ void WaypointController::updateControls(const geometry_msgs::Pose2D& pose)
     {
       //ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: angle = %f",
       //         feedback.theta()/pi*180.0);
+      if (waypoint.drive_profile == 3)
+      {
+        setPoint(0.0, 0.0, waypoint.reverse);
+        waypoint_state = WaypointState::driving;
+      }
       if (signbit(feedback.theta()) != signbit(last_feedback.theta()))
       {
         ROS_INFO("[WaypointController::updateControls::initial_angle_correction]: %s to %s, angle = %f",

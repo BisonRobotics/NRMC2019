@@ -1,17 +1,37 @@
 drive_profiles:
   - # Profile 0
+    #  Normal drive profile
     max_in_place_duty: 0.30
-    min_in_place_duty: 0.05
+    min_in_place_duty: 0.15
     max_driving_duty:  0.30
     min_driving_duty:  0.10
     in_place_k:        0.40
     driving_kx:        5.00
     driving_ky:        5.00
   - # Profile 1
-    max_in_place_duty: 0.10
-    min_in_place_duty: 0.05
-    max_driving_duty:  0.10
+    max_in_place_duty: 0.15
+    min_in_place_duty: 0.10
+    max_driving_duty:  0.15
     min_driving_duty:  0.10
+    in_place_k:        0.40
+    driving_kx:        5.00
+    driving_ky:        5.00
+  - # Profile 2: Backing up to hopper
+    #   Emphasis placed on arriving at hopper straight
+    #   at the cost of less accuracy along the y-axis
+    max_in_place_duty: 0.15
+    min_in_place_duty: 0.10
+    max_driving_duty:  0.10
+    min_driving_duty:  0.05
+    in_place_k:        0.40
+    driving_kx:        5.00
+    driving_ky:        5.00
+  - # Profile 3: Driving away from hopper
+    #   Skip turn in place and drive straight forward
+    max_in_place_duty: 0.15
+    min_in_place_duty: 0.10
+    max_driving_duty:  0.10
+    min_driving_duty:  0.05
     in_place_k:        0.40
     driving_kx:        5.00
     driving_ky:        5.00

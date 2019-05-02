@@ -78,6 +78,11 @@ void Controller::update()
                  to_string(ControlState::dig_1).c_str());
         state = ControlState::dig_1;
         dig_client.setControlState(DigControlState::dig);
+        // TMP
+        /*state = ControlState::navigate_to_hopper_1;
+        visuals.updateWaypoints(config.hopperPath1());
+        waypoint_client.setControlState(WaypointControlState::new_goal, config.hopperPath1());*/
+        // TMP
       }
       break;
     }
@@ -227,8 +232,24 @@ void Controller::update()
 void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
 {
   this->joy = joy_msg;
-  
-  if (joy.get(Joy::AUTONOMY_SAFETY) || config.fullAutonomy())
+  if (joy.get(Joy::MANUAL_SAFETY))
+  {
+    if (dig_client.getControlState() != DigControlState::manual)
+    {
+      ROS_INFO("[Controller::joyCallback]: Dig client %s to %s",
+               to_string(dig_client.getControlState()).c_str(),
+               to_string(DigControlState::manual).c_str());
+      dig_client.setControlState(DigControlState::manual);
+    }
+    if (waypoint_client.getControlState() != WaypointControlState::manual)
+    {
+      ROS_INFO("[Controller::joyCallback]: Waypoint client %s to %s",
+               to_string(waypoint_client.getControlState()).c_str(),
+               to_string(WaypointControlState::manual).c_str());
+      waypoint_client.setControlState(WaypointControlState::manual);
+    }
+  }
+  else if (joy.get(Joy::AUTONOMY_SAFETY) || config.fullAutonomy())
   {
     if (joy.get(Joy::AUTONOMY_SAFETY))
     {
@@ -324,23 +345,6 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     {
       ROS_INFO("[Controller::joyCallback]: Setting direction of travel to reverse");
       visuals.setReverse(true);
-    }
-  }
-  else
-  {
-    if (dig_client.getControlState() != DigControlState::manual)
-    {
-      ROS_INFO("[Controller::joyCallback]: Dig client %s to %s",
-               to_string(dig_client.getControlState()).c_str(),
-               to_string(DigControlState::manual).c_str());
-       dig_client.setControlState(DigControlState::manual);
-    }
-    if (waypoint_client.getControlState() != WaypointControlState::manual)
-    {
-      ROS_INFO("[Controller::joyCallback]: Waypoint client %s to %s",
-               to_string(waypoint_client.getControlState()).c_str(),
-               to_string(WaypointControlState::manual).c_str());
-      waypoint_client.setControlState(WaypointControlState::manual);
     }
   }
 }

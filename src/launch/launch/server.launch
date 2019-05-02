@@ -10,6 +10,7 @@
     <include file="$(find dig_control)/launch/dig_control.launch">
         <arg name="full_autonomy" value="$(arg full_autonomy)" />
         <arg name="voltage_compensation" value="$(arg voltage_compensation)" />
+        <arg name="floor_test" value="false" />
     </include>
     <include file="$(find competition)/launch/competition.launch">
         <arg name="full_autonomy" value="$(arg full_autonomy)" />

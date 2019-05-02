@@ -17,7 +17,7 @@
 
 #define MAX_CENTRAL_DRIVE_VELOCITY 0.9425f  // in rad/s
 #define MAX_CENTRAL_DRIVE_TORQUE 10.0f     // in Nm -> the real number is 675 but we should never approach that
-#define MAX_CENTRAL_DRIVE_DUTY 0.4f
+#define MAX_CENTRAL_DRIVE_DUTY 0.9f
 #define CENTRAL_DRIVE_GEAR_RATIO -1.0f
 #define CENTRAL_DRIVE_OUTPUT_RATIO 1.0f  //  purely rotational
 #define CENTRAL_DRIVE_POLE_PAIRS 5
@@ -25,7 +25,7 @@
 
 #define MAX_BACKHOE_VELOCITY .05f  // this should be change
 #define MAX_BACKHOE_TORQUE 4.0f
-#define MAX_BACKHOE_DUTY 0.4f
+#define MAX_BACKHOE_DUTY 0.9f
 #define BACKHOE_GEAR_RATIO 1
 #define BACKHOE_OUTPUT_RATIO ((float)(1.0/(5.206E6)))  // this should be the pitch of the screw in m/s
 #define BACKHOE_POLE_PAIRS 1
@@ -33,7 +33,7 @@
 
 #define MAX_VIBRATOR_VELOCITY 6000.0f   // in erpm
 #define MAX_VIBRATOR_TORQUE 11.0f    // in Amps
-#define MAX_VIBRATOR_DUTY .5f
+#define MAX_VIBRATOR_DUTY 0.9f
 #define VIBRATOR_GEAR_RATIO 1.0f
 #define VIBRATOR_OUTPUT_RATIO 1.0f
 #define VIBRATOR_POLE_PAIRS 1
@@ -41,7 +41,7 @@
 
 #define MAX_BUCKET_VELOCITY 10.0f
 #define MAX_BUCKET_TORQUE 10.0f
-#define MAX_BUCKET_DUTY .4f
+#define MAX_BUCKET_DUTY 0.9f
 #define BUCKET_GEAR_RATIO 1.0f
 #define BUCKET_OUTPUT_RATIO 1.0f
 #define BUCKET_POLE_PAIRS 1

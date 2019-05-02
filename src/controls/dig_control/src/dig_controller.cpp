@@ -85,7 +85,7 @@ void DigController::setControlState(ControlState goal)
   }
   else if (goal == ControlState::dig)
   {
-    dig_state = DigState::dig_transition;
+    dig_state = DigState::initialize;
   }
   this->goal_state = goal;
 }
@@ -165,15 +165,6 @@ void DigController::updateBackhoeState()
   {
     backhoe_state = BackhoeState::open;
     backhoe_stuck_count = 0;
-  }
-  else if (std::abs(velocity) > 0.001) // TODO figure out a good number for this
-  {
-    backhoe_state = BackhoeState::traveling;
-    backhoe_stuck_count = 0;
-  }
-  else if (++backhoe_stuck_count >= 5) // TODO might be a cleaner way to do this
-  {
-    backhoe_state = BackhoeState::stuck;
   }
   else
   {
@@ -312,13 +303,13 @@ void DigController::update()
       // This system should never be on while digging
       if (abs(getBucketDuty()) > 0.0f) setBucketDuty(0.0f);
 
+      // Keep on entire time
+      setVibratorDuty(config.vibratorDuty().normal);
+
       switch(dig_state)
       {
         case DigState::stow:
         {
-          // This system should not be on in this state
-          if (abs(getVibratorDuty()) > 0.0f) setVibratorDuty(0.0f);
-
           switch (central_drive_state)
           {
 
@@ -361,10 +352,20 @@ void DigController::update()
           }
           break;
         }
+        case DigState::initialize:
+        {
+          if (backhoe_state != BackhoeState::open)
+          {
+            setBackhoeDuty(-config.backhoeDuty().normal);
+          }
+          else
+          {
+            dig_state = DigState::dig_transition;
+          }
+          break;
+        }
         case DigState::dig_transition:
         {
-          // This system should not be on in this state
-          if (abs(getVibratorDuty()) > 0.0f) setVibratorDuty(0.0f);
 
           // Only valid state here is if the backhoe is open
           if (backhoe_state != BackhoeState::open)
@@ -396,7 +397,6 @@ void DigController::update()
               setCentralDriveDuty(-config.centralDriveDuty().fast);
               setBackhoeDuty(0.0f);
               setBucketDuty(0.0f);
-              setVibratorDuty(0.0f);
               break;
             }
           }
@@ -404,9 +404,6 @@ void DigController::update()
         }
         case DigState::digging:
         {
-          // This system should not be on in this state
-          if (abs(getVibratorDuty()) > 0.0f) setVibratorDuty(0.0f);
-
           if (backhoe_state != BackhoeState::open)
           {
             ROS_ERROR("[dig][digging] Backhoe must be open while digging");
@@ -427,7 +424,6 @@ void DigController::update()
             case CentralDriveState::digging:
             {
               setCentralDriveDuty(-config.centralDriveDuty().normal);
-              dig_state = DigState::closing_backhoe;
               if (central_current > config.centralDriveDigCurrentThreshold())
               {
                 dig_state = DigState::closing_backhoe;
@@ -455,14 +451,13 @@ void DigController::update()
         }
         case DigState::closing_backhoe:
         {
-          // Neither of these systems should be on in this state
-          if (abs(getVibratorDuty()) > 0.0f) setVibratorDuty(0.0f);
-
           switch (central_drive_state)
           {
             case CentralDriveState::at_bottom_limit:
             case CentralDriveState::digging:
+            case CentralDriveState::near_digging:
             {
+              setCentralDriveDuty(config.centralDriveDuty().ultra_slow);
               switch (backhoe_state)
               {
                 case BackhoeState::stuck:
@@ -487,7 +482,6 @@ void DigController::update()
               }
               break;
             }
-            case CentralDriveState::near_digging:
             case CentralDriveState::flap_transition_down:
             case CentralDriveState::near_dump_point:
             case CentralDriveState::at_dump_point:
@@ -509,8 +503,6 @@ void DigController::update()
             case CentralDriveState::at_bottom_limit:
             case CentralDriveState::digging:
             {
-              if (abs(getVibratorDuty()) > 0.0f) setVibratorDuty(0.0f);
-
               switch (backhoe_state)
               {
                 case BackhoeState::closed:
@@ -535,8 +527,6 @@ void DigController::update()
             }
             case CentralDriveState::near_digging:
             {
-              if (abs(getVibratorDuty()) > 0.0f) setVibratorDuty(0.0f);
-
               // Only keep moving if backhoe is closed
               switch (backhoe_state)
               {
@@ -568,8 +558,6 @@ void DigController::update()
             }
             case CentralDriveState::flap_transition_down: // TODO can move faster for this portion
             {
-              // Get vibrator started
-              setVibratorDuty(config.vibratorDuty().normal);
 
               switch (backhoe_state)
               {
@@ -595,8 +583,6 @@ void DigController::update()
             }
             case CentralDriveState::near_dump_point:
             {
-              // Get vibrator started
-              setVibratorDuty(config.vibratorDuty().normal);
 
               switch (backhoe_state)
               {
@@ -627,8 +613,6 @@ void DigController::update()
             }
             case CentralDriveState::at_dump_point:
             {
-              // Run vibrator
-              setVibratorDuty(config.vibratorDuty().normal);
 
               switch (backhoe_state)
               {
@@ -670,8 +654,6 @@ void DigController::update()
         }
         case DigState::moving_flaps_up:
         {
-          // Run vibrator
-          setVibratorDuty(config.vibratorDuty().normal);
 
           // Make sure backhoe is open
           if (backhoe_state != BackhoeState::open)
@@ -695,7 +677,9 @@ void DigController::update()
             }
             case CentralDriveState::at_top_limit:
             {
-              stop();
+              setCentralDriveDuty(config.centralDriveDuty().normal);
+              setBackhoeDuty(0.0f);
+              ros::Duration(2.0).sleep(); // Dirty, but should work
               if (goal_state == ControlState::dig)
               {
                 ROS_DEBUG("[dig][moving_flaps_up][flaps_up] Starting another dig");

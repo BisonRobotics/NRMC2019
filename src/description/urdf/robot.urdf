@@ -236,7 +236,7 @@
         </link>
 
         <joint name="${side}_tracker_fixed" type="fixed">
-            <origin xyz="-0.035 ${-direction*0.32} 0.04" rpy="0 0 0" />
+            <origin xyz="${-0.035+3.3/39.37} ${-direction*0.32} 0.04" rpy="0 0 0" />
             <parent link= "frame" />
             <child link = "${side}_tracker_mount" />
         </joint>

@@ -156,11 +156,13 @@ void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     }
     else if (joy.get(Joy::LINEAR_IN))
     {
-      backhoe_duty = -config.backhoeDuty().normal;
+      //backhoe_duty = -config.backhoeDuty().normal;
+      backhoe_duty = -config.backhoeDuty().slow;
     }
     else if (joy.get(Joy::LINEAR_OUT))
     {
-      backhoe_duty = config.backhoeDuty().fast;
+      //backhoe_duty = config.backhoeDuty().fast;
+      backhoe_duty = config.backhoeDuty().slow;
     }
 
     // Update central drive

@@ -23,21 +23,39 @@ Feedback::Feedback() : x_(0.0), y_(0.0), r_(0.0), theta_(0.0)
 Feedback::Feedback(const geometry_msgs::Pose2D &P, const Waypoint &W)
 {
   // Get feedback
-  double dy = W.pose.y - P.y;
-  double dx = W.pose.x - P.x;
-  r_ = sqrt(dx*dx + dy*dy);
-
-  if (W.reverse)
+  if (W.drive_profile == 2)
   {
-    theta_ = (Rotation2D(pi) * Rotation2D(std::atan2(dy, dx)) * Rotation2D(-P.theta)).smallestAngle();
+    double dx = W.pose.x - P.x;
+    if (W.reverse)
+    {
+      theta_ = Rotation2D(-P.theta).smallestAngle();
+    }
+    else
+    {
+      theta_ = (Rotation2D(pi) * Rotation2D(-P.theta)).smallestAngle();
+    }
+    r_ = std::abs(dx);
+    x_ = (dx >= 0.0 ? 1.0 : -1.0) * r_ * cos(theta_);
+    y_ = (dx >= 0.0 ? -1.0 : 1.0) * r_ * sin(theta_);
   }
   else
   {
-    theta_ = (Rotation2D(std::atan2(dy, dx)) * Rotation2D(-P.theta)).smallestAngle();
-  }
+    double dy = W.pose.y - P.y;
+    double dx = W.pose.x - P.x;
+    r_ = sqrt(dx*dx + dy*dy);
 
-  x_ = r_ * cos(theta_);
-  y_ = r_ * sin(theta_);
+    if (W.reverse)
+    {
+      theta_ = (Rotation2D(pi) * Rotation2D(std::atan2(dy, dx)) * Rotation2D(-P.theta)).smallestAngle();
+    }
+    else
+    {
+      theta_ = (Rotation2D(std::atan2(dy, dx)) * Rotation2D(-P.theta)).smallestAngle();
+    }
+
+    x_ = r_ * cos(theta_);
+    y_ = r_ * sin(theta_);
+  }
 }
 
 double Feedback::x()
