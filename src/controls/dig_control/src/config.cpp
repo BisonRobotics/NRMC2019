@@ -114,6 +114,8 @@ std::string dig_control::to_string(ControlState state)
 {
   switch (state)
   {
+    case ControlState::initialize:
+      return "initialize";
     case ControlState::dig:
       return "dig";
     case ControlState::manual:
@@ -129,6 +131,7 @@ std::string dig_control::to_string(ControlState state)
     case ControlState::dump:
       return "dump";
   }
+  return "Not defined";
 }
 
 std::string dig_control::to_string(DigState state)
@@ -150,6 +153,7 @@ std::string dig_control::to_string(DigState state)
     case DigState::stow:
       return "stow";
   }
+  return "Not defined";
 }
 
 std::string dig_control::to_string(CentralDriveState state)
@@ -173,6 +177,7 @@ std::string dig_control::to_string(CentralDriveState state)
     case CentralDriveState::at_top_limit:
       return "at_top_limit";
   }
+  return "Not defined";
 }
 
 std::string dig_control::to_string(BackhoeState state)
@@ -188,6 +193,7 @@ std::string dig_control::to_string(BackhoeState state)
     case BackhoeState::stuck:
       return "stuck";
   }
+  return "Not defined";
 }
 
 std::string dig_control::to_string(BucketState state)
@@ -203,4 +209,5 @@ std::string dig_control::to_string(BucketState state)
     case BucketState::up:
       return "up";
   }
+  return "Not defined";
 }
