@@ -37,7 +37,6 @@ namespace competition
     dig_control::DigControlClient dig_client;
     Joy joy;
     ControlState state;
-    WaypointVisuals visuals;
     Waypoints active_waypoints;
     Debug debug;
 

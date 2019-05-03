@@ -4,7 +4,7 @@
 using namespace competition;
 
 Controller::Controller(ros::NodeHandle *nh, Config config) :
-  nh(nh), config(config), tf_listener(tf_buffer), visuals(nh), state(ControlState::manual)
+  nh(nh), config(config), tf_listener(tf_buffer), state(ControlState::manual)
 {
   joy_subscriber = nh->subscribe("/joy", 1, &Controller::joyCallback, this);
   debug_publisher = nh->advertise<Debug>("debug", 1);
@@ -19,7 +19,6 @@ void Controller::update()
   try
   {
     tf2::fromMsg(tf_buffer.lookupTransform("map", "base_link", ros::Time(0)), transform);
-    visuals.update(transform);
   }
   catch (tf2::TransformException &ex)
   {
@@ -45,7 +44,6 @@ void Controller::update()
     {
       // Make sure systems are in starting positions
       start_time = ros::Time::now();
-      visuals.clearWaypoints();
       state = ControlState::check_for_apriltag;
       break;
     }
@@ -65,7 +63,6 @@ void Controller::update()
                to_string(state).c_str(),
                to_string(ControlState::navigate_to_dig_zone_1).c_str());
       state = ControlState::navigate_to_dig_zone_1;
-      visuals.updateWaypoints(config.digPath1());
       waypoint_client.setControlState(WaypointControlState::new_goal, config.digPath1());
       break;
     }
@@ -80,7 +77,6 @@ void Controller::update()
         dig_client.setControlState(DigControlState::dig);
         // TMP
         /*state = ControlState::navigate_to_hopper_1;
-        visuals.updateWaypoints(config.hopperPath1());
         waypoint_client.setControlState(WaypointControlState::new_goal, config.hopperPath1());*/
         // TMP
       }
@@ -106,7 +102,6 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::navigate_to_hopper_1).c_str());
         state = ControlState::navigate_to_hopper_1;
-        visuals.updateWaypoints(config.hopperPath1());
         waypoint_client.setControlState(WaypointControlState::new_goal, config.hopperPath1());
       }
       break;
@@ -131,7 +126,6 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::navigate_to_dig_zone_2).c_str());
         state = ControlState::navigate_to_dig_zone_2;
-        visuals.updateWaypoints(config.digPath2());
         waypoint_client.setControlState(WaypointControlState::new_goal, config.digPath2());
       }
       break;
@@ -168,7 +162,6 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::navigate_to_hopper_2).c_str());
         state = ControlState::navigate_to_hopper_2;
-        visuals.updateWaypoints(config.hopperPath2());
         waypoint_client.setControlState(WaypointControlState::new_goal, config.hopperPath2());
       }
       break;
@@ -193,7 +186,6 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::finished).c_str());
         state = ControlState::finished;
-        visuals.updateWaypoints(config.finalPosition());
         waypoint_client.setControlState(WaypointControlState::new_goal, config.finalPosition());
       }
       break;
@@ -314,9 +306,7 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
       ROS_INFO("[Controller::joyCallback]: %s to %s",
                to_string(waypoint_client.getControlState()).c_str(),
                to_string(WaypointControlState::new_goal).c_str());
-      active_waypoints = visuals.getWaypoints();
       waypoint_client.setControlState(WaypointControlState::new_goal, active_waypoints);
-      visuals.followRobot(false);
     }
     else if (joy.get(Joy::CLEAR_WAYPOINTS))
     {
@@ -324,27 +314,22 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
                to_string(dig_client.getControlState()).c_str(),
                to_string(WaypointControlState::cancel).c_str());
       waypoint_client.setControlState(WaypointControlState::cancel);
-      visuals.clearWaypoints();
     }
     else if (joy.get(Joy::FOLLOW_ROBOT))
     {
       ROS_INFO("[Controller::joyCallback]: Enabling follow_robot visual");
-      visuals.followRobot(true);
     }
     else if (joy.get(Joy::UNFOLLOW_ROBOT))
     {
       ROS_INFO("[Controller::joyCallback]: Disabling follow_robot visual");
-      visuals.followRobot(false);
     }
     else if (joy.get(Joy::FORWARD))
     {
       ROS_INFO("[Controller::joyCallback]: Setting direction of travel to forward");
-      visuals.setReverse(false);
     }
     else if (joy.get(Joy::REVERSE))
     {
       ROS_INFO("[Controller::joyCallback]: Setting direction of travel to reverse");
-      visuals.setReverse(true);
     }
   }
 }
