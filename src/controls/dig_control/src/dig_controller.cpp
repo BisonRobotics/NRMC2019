@@ -508,7 +508,7 @@ void DigController::update()
                 case BackhoeState::closed:
                 {
                   ROS_DEBUG("[dig][dump_transition][digging][closed] Moving to dump_transition");
-                  setBackhoeDuty(0.0f);
+                  setBackhoeDuty(config.backhoeDuty().normal);
                   setCentralDriveDuty(config.centralDriveDuty().fast);
                   break;
                 }
@@ -533,7 +533,7 @@ void DigController::update()
                 case BackhoeState::closed:
                 {
                   ROS_DEBUG("[dig][dump_transition][digging][closed] Moving to dump_transition");
-                  setBackhoeDuty(0.0f);
+                  setBackhoeDuty(config.backhoeDuty().normal);
                   setCentralDriveDuty(config.centralDriveDuty().fast);
                   break;
                 }
@@ -564,7 +564,7 @@ void DigController::update()
                 case BackhoeState::closed:
                 {
                   ROS_DEBUG("[dig][dump_transition][near_dump_point][closed] Moving to dump slowly");
-                  setBackhoeDuty(0.0f);
+                  setBackhoeDuty(config.backhoeDuty().normal);
                   setCentralDriveDuty(config.centralDriveDuty().slow);
                   break;
                 }
@@ -712,7 +712,7 @@ void DigController::update()
     {
       setCentralDriveDuty(0.0f);
       setBackhoeDuty(0.0f);
-      setVibratorDuty(config.vibratorDuty().normal);
+      //setVibratorDuty(config.vibratorDuty().normal);
       switch (bucket_state)
       {
         case BucketState::up:
@@ -742,7 +742,7 @@ void DigController::update()
     {
       setCentralDriveDuty(0.0f);
       setBackhoeDuty(0.0f);
-      setVibratorDuty(config.vibratorDuty().normal);
+      //setVibratorDuty(config.vibratorDuty().normal);
       switch (bucket_state)
       {
         case BucketState::up:

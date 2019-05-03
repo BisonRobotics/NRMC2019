@@ -7,22 +7,22 @@
 
 timers:
   finish_dig_1:
-    m: 2.0
+    m: 4.0
     s: 0.0
   finish_dig_2:
-    m: 4.0
+    m: 8.0
     s: 0.0
 
 paths:
   dig_1:
     - x: 2.0 #1.5
-      y: 1.2
+      y: 1.4
       theta: 0.0
       reverse: false
       match_orientation: false
       drive_profile: 0
     -
-      x: 2.0 #1.5
+      x: 2.25 #2.0 #1.5
       y: 5.5
       theta: 0.0
       reverse: false
@@ -32,22 +32,22 @@ paths:
   hopper_1:
     -
       x: 2.5
-      y: 1.2
+      y: 1.4
       theta: 0.0
       reverse: true
       match_orientation: false
       drive_profile: 0
     -
       x: 1.0
-      y: 1.2
+      y: 1.4
       theta: 0.0
       reverse: true
       match_orientation: false
       drive_profile: 2
 
   dig_2:
-    - x: 2.0
-      y: 1.2
+    - x: 2.25
+      y: 1.4
       theta: 0.0
       reverse: false
       match_orientation: false
@@ -63,14 +63,14 @@ paths:
   hopper_2:
     -
       x: 2.5
-      y: 1.2
+      y: 1.4
       theta: 0.0
       reverse: true
       match_orientation: false
       drive_profile: 0
     -
       x: 1.0
-      y: 1.2
+      y: 1.4
       theta: 0.0
       reverse: true
       match_orientation: false
@@ -79,7 +79,7 @@ paths:
   final_position:
     -
       x: 2.0
-      y: 1.2
+      y: 1.4
       theta: 0.0
       reverse: false
       match_orientation: false

@@ -10,7 +10,7 @@
     <param name="max_compensated_duty"                type="double" value="0.50" />
     <param name="battery_filter_k"                    type="double" value="0.03" />
     <param name="central_drive_current_filter_k"      type="double" value="0.03" />
-    <param name="central_drive_dig_current_threshold" type="double" value="3.00" /> <!-- 5 is pretty good -->
+    <param name="central_drive_dig_current_threshold" type="double" value="5.00" /> <!-- 5 is pretty good -->
     <param name="central_drive_angle_filter_k"        type="double" value="0.10" />
     <param name="current_filter_k"                    type="double" value="0.04" />
     <param name="bucket_filter_k"                     type="double" value="0.03" />
