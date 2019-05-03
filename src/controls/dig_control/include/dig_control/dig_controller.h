@@ -25,7 +25,7 @@ namespace dig_control
 
     double voltageCompensation(double duty);
     void setControlState(ControlState goal);
-    void setCentralDriveDuty(double value);
+    void setCentralDriveDuty(double value, bool idle = false);
     void setBackhoeDuty(double value);
     void setBucketDuty(double value);
     void setVibratorDuty(double value);
@@ -65,10 +65,11 @@ namespace dig_control
     double battery_voltage;
     int central_drive_position;
     double bucket_position;
+    double idle_duty;
 
     int backhoe_stuck_count;
 
-    ros::Time last_bucket_state_change;
+    ros::Time last_bucket_state_change, last_idle_state_change;
 
     ControlState goal_state;
     CentralDriveState central_drive_state;

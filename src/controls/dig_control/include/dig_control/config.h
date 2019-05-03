@@ -25,6 +25,7 @@ namespace dig_control
   class CentralDriveDuty
   {
   public:
+    const float idle_duty = 0.05f;
     const float ultra_slow = 0.05f;
     const float slow = 0.1f;
     const float slowish = 0.2f;

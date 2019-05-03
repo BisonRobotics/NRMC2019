@@ -14,7 +14,7 @@ using utilities::simpleLowPassFilter;
 
 DigController::DigController(Config config, iVescAccess *central_drive,   iVescAccess *backhoe_actuator,
                              iVescAccess *bucket_actuator, iVescAccess *vibrator) : 
-  config(config), battery_voltage(0.0)
+  config(config), battery_voltage(0.0), idle_duty(0.0)
 {
   this->central_drive = central_drive;
   this->backhoe = backhoe_actuator;
@@ -252,7 +252,10 @@ void DigController::update()
     case ControlState::ready:
     {
       ROS_DEBUG("[ready] Ready for next goal");
-      stop();
+      setCentralDriveDuty(0.0f, true);
+      setBackhoeDuty(0.0f);
+      setBucketDuty(0.0f);
+      setVibratorDuty(0.0f);
       break;
     }
     case ControlState::error:
@@ -289,6 +292,7 @@ void DigController::update()
         case CentralDriveState::at_dump_point:
         case CentralDriveState::flap_transition_up:
         {
+          setCentralDriveDuty(0.0, true);
           // Do nothing
           break;
         }
@@ -308,52 +312,9 @@ void DigController::update()
 
       switch(dig_state)
       {
-        case DigState::stow:
-        {
-          switch (central_drive_state)
-          {
-
-            case CentralDriveState::at_bottom_limit:
-            case CentralDriveState::digging:
-            {
-              ROS_ERROR("[dig][stowed][digging] Should not be attempting to stow backhoe in digging position");
-              goal_state = ControlState::error;
-              stop();
-              break;
-            }
-            case CentralDriveState::near_digging:
-            case CentralDriveState::flap_transition_down:
-            case CentralDriveState::near_dump_point:
-            case CentralDriveState::at_dump_point:
-            case CentralDriveState::flap_transition_up:
-            case CentralDriveState::at_top_limit:
-            {
-              if (central_drive_position <= config.centralDriveAngles().stow_position)
-              {
-                setCentralDriveDuty(0.0f);
-                if (getBackhoePosition() > 100)
-                {
-                  goal_state = ControlState::ready;
-                  dig_state = DigState::dig_transition;
-
-                }
-                else
-                {
-                  setBackhoeDuty(config.backhoeDuty().slow);
-                }
-              }
-              else
-              {
-                setCentralDriveDuty(-config.centralDriveDuty().normal);
-              }
-              break;
-            }
-
-          }
-          break;
-        }
         case DigState::initialize:
         {
+          setCentralDriveDuty(0.0, true);
           if (backhoe_state != BackhoeState::open)
           {
             setBackhoeDuty(-config.backhoeDuty().normal);
@@ -705,12 +666,56 @@ void DigController::update()
           }
           break;
         }
+        case DigState::stow:
+        {
+          switch (central_drive_state)
+          {
+
+            case CentralDriveState::at_bottom_limit:
+            case CentralDriveState::digging:
+            {
+              ROS_ERROR("[dig][stowed][digging] Should not be attempting to stow backhoe in digging position");
+              goal_state = ControlState::error;
+              stop();
+              break;
+            }
+            case CentralDriveState::near_digging:
+            case CentralDriveState::flap_transition_down:
+            case CentralDriveState::near_dump_point:
+            case CentralDriveState::at_dump_point:
+            case CentralDriveState::flap_transition_up:
+            case CentralDriveState::at_top_limit:
+            {
+              if (central_drive_position <= config.centralDriveAngles().stow_position)
+              {
+                setCentralDriveDuty(0.0f);
+                if (getBackhoePosition() > 100)
+                {
+                  goal_state = ControlState::ready;
+                  dig_state = DigState::dig_transition;
+
+                }
+                else
+                {
+                  setBackhoeDuty(config.backhoeDuty().slow);
+                }
+              }
+              else
+              {
+                setCentralDriveDuty(-config.centralDriveDuty().normal);
+              }
+              break;
+            }
+
+          }
+          break;
+        }
       }
       break;
     }
     case ControlState::dump:
     {
-      setCentralDriveDuty(0.0f);
+      setCentralDriveDuty(0.0f, true);
       setBackhoeDuty(0.0f);
       //setVibratorDuty(config.vibratorDuty().normal);
       switch (bucket_state)
@@ -740,7 +745,7 @@ void DigController::update()
     }
     case ControlState::finish_dump:
     {
-      setCentralDriveDuty(0.0f);
+      setCentralDriveDuty(0.0f, true);
       setBackhoeDuty(0.0f);
       //setVibratorDuty(config.vibratorDuty().normal);
       switch (bucket_state)
@@ -818,7 +823,7 @@ double DigController::voltageCompensation(double duty)
   }
 }
 
-void DigController::setCentralDriveDuty(double value)
+void DigController::setCentralDriveDuty(double value, bool idle)
 {
   // Enforce limits
   if (central_drive_state == CentralDriveState::at_bottom_limit)
@@ -834,6 +839,37 @@ void DigController::setCentralDriveDuty(double value)
     central_drive_duty = clamp(value, -MAX_CENTRAL_DRIVE_DUTY, MAX_CENTRAL_DRIVE_DUTY);
   }
 
+  // Idle central drive up and down to prevent it from stalling
+  if (idle &&
+      std::abs(value) < 1.0e-3 &&
+      central_drive_position < config.centralDriveAngles().top_limit &&
+      central_drive_position > config.centralDriveAngles().zero_angle)
+  {
+    if (idle_duty > 0.0 && central_drive_position > config.centralDriveAngles().stow_position + 50)
+    {
+      idle_duty = -config.centralDriveDuty().idle_duty;
+      last_bucket_state_change = ros::Time::now();
+    }
+    else if (idle_duty < 0.0 && central_drive_position < config.centralDriveAngles().stow_position - 50)
+    {
+      idle_duty = config.centralDriveDuty().idle_duty;
+      last_idle_state_change = ros::Time::now();
+    }
+    else if (std::abs(idle_duty) < 1.0e-3)
+    {
+      idle_duty = config.centralDriveDuty().idle_duty;
+      last_idle_state_change = ros::Time::now();
+    }
+    else if (ros::Time::now() - last_idle_state_change > ros::Duration(30.0)) // Must be stalled, change direction
+    {
+      idle_duty  = -idle_duty;
+    }
+    central_drive_duty = idle_duty;
+  }
+  else
+  {
+    idle_duty = 0.0;
+  }
   central_drive_duty = voltageCompensation(central_drive_duty);
   central_drive->setCustom((float)central_drive_duty);
 }
