@@ -1,5 +1,6 @@
 #include <competition/competition_controller.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tracker/GetUInt.h>
 
 using namespace competition;
 
@@ -11,6 +12,26 @@ Controller::Controller(ros::NodeHandle *nh, Config config) :
   waypoint_client.setControlState(WaypointControlState::manual);
   dig_client.setControlState(DigControlState::manual);
   ROS_INFO("[Controller::Controller]: Online");
+
+  ROS_INFO("[Controller::Controller]: Checking tracker");
+  tracker::GetUInt request;
+  if (ros::service::call("/tracker/left/get_brightness", request))
+  {
+    ROS_INFO("Received response of %i", request.response.value);
+  }
+  else
+  {
+    ROS_INFO("Unable to retrieve brightness");
+  }
+  if (ros::service::call("/tracker/left/get_exposure", request))
+  {
+    ROS_INFO("Received response of %i", request.response.value);
+  }
+  else
+  {
+    ROS_INFO("Unable to retrieve exposure");
+  }
+
 }
 
 void Controller::update()
@@ -102,6 +123,7 @@ void Controller::update()
     {
       if (dig_client.getControlState() == DigControlState::ready)
       {
+        ros::Duration(5).sleep();
         ROS_INFO("[Controller::update]: %s to %s",
                  to_string(state).c_str(),
                  to_string(ControlState::navigate_to_hopper_1).c_str());
@@ -164,6 +186,7 @@ void Controller::update()
     {
       if (dig_client.getControlState() == DigControlState::ready)
       {
+        ros::Duration(5).sleep();
         ROS_INFO("[Controller::update]: %s to %s",
                  to_string(state).c_str(),
                  to_string(ControlState::navigate_to_hopper_2).c_str());

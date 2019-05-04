@@ -12,7 +12,7 @@ Config::Config(ros::NodeHandle *base_nh, ros::NodeHandle *nh, std::string name) 
   loadParam(base_nh, "max_scan_velocity",           max_scan_velocity_,           0.10);
   loadParam(base_nh, "max_velocity",                max_velocity_,                0.20);
   loadParam(base_nh, "k",                           k_,                           4.00);
-  loadParam(base_nh, "brightness",                  brightness_,                    54);
+  loadParam(base_nh, "brightness",                  brightness_,                   184);
   loadParam(base_nh, "exposure",                    exposure_,                      89);
   loadParam(nh,      "stepper_controller_id",       stepper_controller_id_,          1);
   loadParam(nh,      "stepper_client_id",           stepper_client_id_,              3);

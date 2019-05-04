@@ -8,7 +8,7 @@
         <param name="max_scan_velocity"           type="double" value="0.15" />
         <param name="max_velocity"                type="double" value="0.15" />
         <param name="k"                           type="double" value="3.0" />
-        <param name="brightness"                  type="int"    value="54" />
+        <param name="brightness"                  type="int"    value="184" /> <!-- Was 54, 184 -->
         <param name="exposure"                    type="int"    value="89" />
         <!-- left -->
         <param name="left/stepper_controller_id"  type="int"    value="1" />

@@ -12,14 +12,14 @@ namespace dig_control
     const int bottom_limit   =  300;
     const int digging_bottom =  300;
     const int digging_top    =  900;
-    const int floor_limit    = 1250;//1146;
+    const int floor_limit    = 1250; //1146;
     const int zero_angle     = 1330;
     const int stow_position  = 1650;
     const int flaps_bottom   = 2000;
     const int dump_bottom    = 2250;
     const int dump_point     = 2300;
     const int dump_top       = 2350;
-    const int top_limit      = 2550;
+    const int top_limit      = 2500; //2550;
   };
 
   class CentralDriveDuty
@@ -27,9 +27,10 @@ namespace dig_control
   public:
     const float ultra_slow = 0.05f;
     const float slow = 0.1f;
-    const float slowish = 0.2f;
+    const float slowish = 0.18f;
     const float normal = 0.3f;
     const float fast = 0.5f;
+    const float max = 0.5f;
   };
 
   class BackhoeDuty

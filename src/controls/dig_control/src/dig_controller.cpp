@@ -565,7 +565,7 @@ void DigController::update()
                 {
                   ROS_DEBUG("[dig][dump_transition][near_dump_point][closed] Moving to dump slowly");
                   setBackhoeDuty(config.backhoeDuty().normal);
-                  setCentralDriveDuty(config.centralDriveDuty().slow);
+                  setCentralDriveDuty(config.centralDriveDuty().slowish);
                   break;
                 }
                 case BackhoeState::traveling:
@@ -590,14 +590,14 @@ void DigController::update()
                 case BackhoeState::traveling:
                 {
                   ROS_DEBUG("[dig][dump_transition][near_dump_point][closed] Opening backhoe");
-                  setCentralDriveDuty(config.centralDriveDuty().slow);
+                  setCentralDriveDuty(config.centralDriveDuty().slowish);
                   setBackhoeDuty(-config.backhoeDuty().normal);
                   break;
                 }
                 case BackhoeState::stuck:
                 {
                   ROS_WARN("[dig][dump_transition][near_dump_point][stuck] Trying to open backhoe");
-                  setCentralDriveDuty(config.centralDriveDuty().slow);
+                  setCentralDriveDuty(config.centralDriveDuty().slowish);
                   setBackhoeDuty(-config.backhoeDuty().normal);
                   break;
                 }
@@ -666,6 +666,7 @@ void DigController::update()
 
           switch (central_drive_state)
           {
+            case CentralDriveState::near_digging:
             case CentralDriveState::near_dump_point:
             case CentralDriveState::at_dump_point:
             case CentralDriveState::flap_transition_up:
@@ -677,9 +678,9 @@ void DigController::update()
             }
             case CentralDriveState::at_top_limit:
             {
-              setCentralDriveDuty(config.centralDriveDuty().normal);
+              setCentralDriveDuty(0.0f);
               setBackhoeDuty(0.0f);
-              ros::Duration(2.0).sleep(); // Dirty, but should work
+              ros::Duration(2.0).sleep();
               if (goal_state == ControlState::dig)
               {
                 ROS_DEBUG("[dig][moving_flaps_up][flaps_up] Starting another dig");
@@ -692,7 +693,6 @@ void DigController::update()
               }
               break;
             }
-            case CentralDriveState::near_digging:
             case CentralDriveState::at_bottom_limit:
             case CentralDriveState::digging:
             case CentralDriveState::flap_transition_down:
@@ -820,22 +820,52 @@ double DigController::voltageCompensation(double duty)
 
 void DigController::setCentralDriveDuty(double value)
 {
-  // Enforce limits
-  if (central_drive_state == CentralDriveState::at_bottom_limit)
+  switch (central_drive_state)
   {
-    central_drive_duty = clamp(value, 0.0f, MAX_CENTRAL_DRIVE_DUTY);
-  }
-  else if (central_drive_state == CentralDriveState::at_top_limit)
-  {
-    central_drive_duty = clamp(value, -MAX_CENTRAL_DRIVE_DUTY, 0.0f);
-  }
-  else
-  {
-    central_drive_duty = clamp(value, -MAX_CENTRAL_DRIVE_DUTY, MAX_CENTRAL_DRIVE_DUTY);
+    case CentralDriveState::at_bottom_limit:
+    {
+      central_drive_duty = clamp(value, 0.0f, config.centralDriveDuty().max);
+      break;
+    }
+    case CentralDriveState::at_top_limit:
+    {
+      central_drive_duty = clamp(value, -config.centralDriveDuty().max, 0.0f);
+      break;
+    }
+    case CentralDriveState::digging:
+    {
+      central_drive_duty = clamp(value, -config.centralDriveDuty().max, config.centralDriveDuty().max);
+      break;
+    }
+    case CentralDriveState::near_digging:
+    {
+      central_drive_duty = clamp(value, -config.centralDriveDuty().max, config.centralDriveDuty().max);
+      break;
+    }
+    case CentralDriveState::flap_transition_down:
+    {
+      central_drive_duty = clamp(value, -config.centralDriveDuty().max, config.centralDriveDuty().slowish);
+      break;
+    }
+    case CentralDriveState::near_dump_point:
+    {
+      central_drive_duty = clamp(value, -config.centralDriveDuty().max, config.centralDriveDuty().slowish);
+      break;
+    }
+    case CentralDriveState::at_dump_point:
+    {
+      central_drive_duty = clamp(value, -config.centralDriveDuty().max, config.centralDriveDuty().slow);
+      break;
+    }
+    case CentralDriveState::flap_transition_up:
+    {
+      central_drive_duty = clamp(value, -config.centralDriveDuty().max, config.centralDriveDuty().slowish);
+      break;
+    }
   }
 
   central_drive_duty = voltageCompensation(central_drive_duty);
-  central_drive->setCustom((float)central_drive_duty);
+  central_drive->setDuty((float)central_drive_duty);
 }
 
 void DigController::setBackhoeDuty(double value)

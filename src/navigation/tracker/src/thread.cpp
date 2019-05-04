@@ -108,6 +108,13 @@ void Thread::thread()
   ros::Duration(5.0).sleep();
   stepper->setMode(Mode::Velocity, 0.0);
 
+  //ROS_INFO("Attempting to set brightness = %i", config.brightness());
+  //camera->setBrightness((uint)config.brightness());
+  //os::Duration(1.0).sleep();
+ // ROS_INFO("Brightness = %i", camera->getBrightness());
+  //ros::Duration(1.0).sleep();
+  //camera->setExposure(config.exposure());
+
   // Main loop
   boost::timer::cpu_timer total;
   boost::timer::cpu_timer actual;
@@ -150,6 +157,7 @@ void Thread::thread()
         }
       }
     }
+    //ROS_INFO("Brightness = %i", camera->getBrightness());
 
     // Get latest TF and select active tag
     try
