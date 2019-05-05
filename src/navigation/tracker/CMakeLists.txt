@@ -106,6 +106,11 @@ target_link_libraries(tracker_node
   camera_info)
 add_dependencies(tracker_node tracker_gencpp)
 
+# Hacky params node
+add_executable(params_node src/params_node.cpp)
+target_link_libraries(params_node ${catkin_LIBRARIES} ${OpenCV_LIBS} ${Boost_LIBRARIES})
+add_dependencies(params_node tracker_gencpp)
+
 catkin_add_gtest(tag_tests src/tag.cpp src/tests/tag_tests.cpp)
 if(TARGET tag_tests)
     target_link_libraries(tag_tests gmock_main ${catkin_LIBRARIES})
