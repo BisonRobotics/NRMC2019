@@ -6,6 +6,7 @@
 int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "params_node");
+  ros::NodeHandle nh("~");
   ros::Rate rate(10);
   using actionlib::SimpleClientGoalState;
   actionlib::SimpleActionClient<tracker::SetUIntAction> brightness_client0("/tracker/left/set_brightness", false);
@@ -24,7 +25,6 @@ int main(int argc, char *argv[])
     ros::Time current = ros::Time::now();
     if (current - start > ros::Duration(20.0))
     {
-      int value;
       SimpleClientGoalState state(SimpleClientGoalState::SUCCEEDED);
 
       // Brightness
@@ -32,9 +32,8 @@ int main(int argc, char *argv[])
       if (state != SimpleClientGoalState::PENDING && // TODO maybe check current brightness
           state != SimpleClientGoalState::ACTIVE)
       {
-        brightness = value;
         tracker::SetUIntActionGoal request;
-        request.goal.value = (uint)value;
+        request.goal.value = (uint)brightness;
         brightness_client0.sendGoal(request.goal);
       }
 
@@ -42,9 +41,8 @@ int main(int argc, char *argv[])
       if (state != SimpleClientGoalState::PENDING && // TODO maybe check current brightness
           state != SimpleClientGoalState::ACTIVE)
       {
-        brightness = value;
         tracker::SetUIntActionGoal request;
-        request.goal.value = (uint)value;
+        request.goal.value = (uint)brightness;
         brightness_client1.sendGoal(request.goal);
       }
 
@@ -53,18 +51,16 @@ int main(int argc, char *argv[])
       if (state != SimpleClientGoalState::PENDING && // TODO maybe check current exposure
           state != SimpleClientGoalState::ACTIVE)
       {
-        exposure = value;
         tracker::SetUIntActionGoal request;
-        request.goal.value = (uint)value;
+        request.goal.value = (uint)exposure;
         exposure_client0.sendGoal(request.goal);
       }
       state = exposure_client1.getState();
       if (state != SimpleClientGoalState::PENDING && // TODO maybe check current exposure
           state != SimpleClientGoalState::ACTIVE)
       {
-        exposure = value;
         tracker::SetUIntActionGoal request;
-        request.goal.value = (uint)value;
+        request.goal.value = (uint)exposure;
         exposure_client1.sendGoal(request.goal);
       }
     }

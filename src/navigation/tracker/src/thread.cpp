@@ -110,8 +110,8 @@ void Thread::thread()
 
   //ROS_INFO("Attempting to set brightness = %i", config.brightness());
   //camera->setBrightness((uint)config.brightness());
-  //os::Duration(1.0).sleep();
- // ROS_INFO("Brightness = %i", camera->getBrightness());
+  //ros::Duration(1.0).sleep();
+  //ROS_INFO("Brightness = %i", camera->getBrightness());
   //ros::Duration(1.0).sleep();
   //camera->setExposure(config.exposure());
 
