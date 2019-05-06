@@ -99,11 +99,6 @@ void Controller::update()
                  to_string(ControlState::dig_1).c_str());
         state = ControlState::dig_1;
         dig_client.setControlState(DigControlState::dig);
-        // TMP
-        /*state = ControlState::navigate_to_hopper_1;
-        visuals.updateWaypoints(config.hopperPath1());
-        waypoint_client.setControlState(WaypointControlState::new_goal, config.hopperPath1());*/
-        // TMP
       }
       break;
     }
@@ -216,11 +211,140 @@ void Controller::update()
                  to_string(state).c_str(),
                  to_string(ControlState::finished).c_str());
         state = ControlState::finished;
+        visuals.updateWaypoints(config.digPath3());
+        //waypoint_client.setControlState(WaypointControlState::new_goal, config.finalPosition());
+        waypoint_client.setControlState(WaypointControlState::new_goal, config.digPath3());
+      }
+      break;
+    }
+    // New
+    case ControlState::navigate_to_dig_zone_3:
+    {
+      if (waypoint_client.getControlState() == WaypointControlState::finished)
+      {
+        ROS_INFO("[Controller::update]: %s to %s",
+                 to_string(state).c_str(),
+                 to_string(ControlState::dig_3).c_str());
+        state = ControlState::dig_3;
+        dig_client.setControlState(DigControlState::dig);
+      }
+      break;
+    }
+    case ControlState::dig_3:
+    {
+      if (ros::Time::now() - start_time >= config.finishDig3Time())
+      {
+        ROS_INFO("[Controller::update]: %s to %s",
+                 to_string(state).c_str(),
+                 to_string(ControlState::finish_dig_3).c_str());
+        state = ControlState::finish_dig_3;
+        dig_client.setControlState(DigControlState::finish_dig);
+      }
+      break;
+    }
+    case ControlState::finish_dig_3:
+    {
+      if (dig_client.getControlState() == DigControlState::ready)
+      {
+        ros::Duration(5).sleep();
+        ROS_INFO("[Controller::update]: %s to %s",
+                 to_string(state).c_str(),
+                 to_string(ControlState::navigate_to_hopper_3).c_str());
+        state = ControlState::navigate_to_hopper_3;
+        visuals.updateWaypoints(config.hopperPath3());
+        waypoint_client.setControlState(WaypointControlState::new_goal, config.hopperPath3());
+      }
+      break;
+    }
+    case ControlState::navigate_to_hopper_3:
+    {
+      if (waypoint_client.getControlState() == WaypointControlState::finished)
+      {
+        ROS_INFO("[Controller::update]: %s to %s",
+                 to_string(state).c_str(),
+                 to_string(ControlState::dump_3).c_str());
+        state = ControlState::dump_3;
+        dig_client.setControlState(DigControlState::dump);
+      }
+      break;
+    }
+    case ControlState::dump_3:
+    {
+      if (dig_client.getControlState() == DigControlState::ready)
+      {
+        ROS_INFO("[Controller::update]: %s to %s",
+                 to_string(state).c_str(),
+                 to_string(ControlState::navigate_to_dig_zone_3).c_str());
+        state = ControlState::navigate_to_dig_zone_3;
+        visuals.updateWaypoints(config.digPath4());
+        waypoint_client.setControlState(WaypointControlState::new_goal, config.digPath4());
+      }
+      break;
+    }
+    case ControlState::navigate_to_dig_zone_4:
+    {
+      if (waypoint_client.getControlState() == WaypointControlState::finished)
+      {
+        ROS_INFO("[Controller::update]: %s to %s",
+                 to_string(state).c_str(),
+                 to_string(ControlState::dig_4).c_str());
+        state = ControlState::dig_4;
+        dig_client.setControlState(DigControlState::dig);
+      }
+      break;
+    }
+    case ControlState::dig_4:
+    {
+      if (ros::Time::now() - start_time >= config.finishDig4Time())
+      {
+        ROS_INFO("[Controller::update]: %s to %s",
+                 to_string(state).c_str(),
+                 to_string(ControlState::finish_dig_4).c_str());
+        state = ControlState::finish_dig_4;
+        dig_client.setControlState(DigControlState::finish_dig);
+      }
+      break;
+    }
+    case ControlState::finish_dig_4:
+    {
+      if (dig_client.getControlState() == DigControlState::ready)
+      {
+        ros::Duration(5).sleep();
+        ROS_INFO("[Controller::update]: %s to %s",
+                 to_string(state).c_str(),
+                 to_string(ControlState::navigate_to_hopper_4).c_str());
+        state = ControlState::navigate_to_hopper_4;
+        visuals.updateWaypoints(config.hopperPath4());
+        waypoint_client.setControlState(WaypointControlState::new_goal, config.hopperPath4());
+      }
+      break;
+    }
+    case ControlState::navigate_to_hopper_4:
+    {
+      if (waypoint_client.getControlState() == WaypointControlState::finished)
+      {
+        ROS_INFO("[Controller::update]: %s to %s",
+                 to_string(state).c_str(),
+                 to_string(ControlState::dump_4).c_str());
+        state = ControlState::dump_4;
+        dig_client.setControlState(DigControlState::dump);
+      }
+      break;
+    }
+    case ControlState::dump_4:
+    {
+      if (dig_client.getControlState() == DigControlState::ready)
+      {
+        ROS_INFO("[Controller::update]: %s to %s",
+                 to_string(state).c_str(),
+                 to_string(ControlState::navigate_to_final_position).c_str());
+        state = ControlState::navigate_to_final_position;
         visuals.updateWaypoints(config.finalPosition());
         waypoint_client.setControlState(WaypointControlState::new_goal, config.finalPosition());
       }
       break;
     }
+    // End new
     case ControlState::navigate_to_final_position:
     {
       if (waypoint_client.getControlState() == WaypointControlState::finished)
