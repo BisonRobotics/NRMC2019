@@ -680,7 +680,7 @@ void DigController::update()
             {
               setCentralDriveDuty(0.0f);
               setBackhoeDuty(0.0f);
-              ros::Duration(2.0).sleep();
+              ros::Duration(4.0).sleep();
               if (goal_state == ControlState::dig)
               {
                 ROS_DEBUG("[dig][moving_flaps_up][flaps_up] Starting another dig");
@@ -712,7 +712,7 @@ void DigController::update()
     {
       setCentralDriveDuty(0.0f);
       setBackhoeDuty(0.0f);
-      //setVibratorDuty(config.vibratorDuty().normal);
+      setVibratorDuty(config.vibratorDuty().normal);
       switch (bucket_state)
       {
         case BucketState::up:
@@ -720,6 +720,7 @@ void DigController::update()
           ROS_DEBUG("[dump][up] Transitioning to finish dump");
           goal_state = ControlState::finish_dump;
           stop();
+          ros::Duration(4.0).sleep();
           break;
         }
         case BucketState::down:
@@ -742,7 +743,7 @@ void DigController::update()
     {
       setCentralDriveDuty(0.0f);
       setBackhoeDuty(0.0f);
-      //setVibratorDuty(config.vibratorDuty().normal);
+      setVibratorDuty(0.0f);
       switch (bucket_state)
       {
         case BucketState::up:
