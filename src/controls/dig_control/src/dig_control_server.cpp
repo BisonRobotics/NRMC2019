@@ -196,7 +196,7 @@ void DigControlServer::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     }
     else if (joy.get(Joy::VIBRATOR_OFF))
     {
-      vibrator_duty = 0.4;
+      vibrator_duty = config.vibratorDuty().normal;
     }
   }
   else
