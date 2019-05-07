@@ -457,7 +457,7 @@ void DigController::update()
             case CentralDriveState::digging:
             case CentralDriveState::near_digging:
             {
-              setCentralDriveDuty(config.centralDriveDuty().ultra_slow);
+              setCentralDriveDuty(-config.centralDriveDuty().ultra_slow);
               switch (backhoe_state)
               {
                 case BackhoeState::stuck:

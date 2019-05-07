@@ -22,7 +22,7 @@ paths:
       match_orientation: false
       drive_profile: 0
     -
-      x: 2.25 #2.0 #1.5
+      x: 2.0 #2.0 #1.5
       y: 5.75
       theta: 0.0
       reverse: false
@@ -51,9 +51,9 @@ paths:
       theta: 0.0
       reverse: false
       match_orientation: false
-      drive_profile: 0
+      drive_profile: 3
     -
-      x: 2.25 #2.0 #1.5
+      x: 2.0 #2.0 #1.5
       y: 5.5
       theta: 0.0
       reverse: false
