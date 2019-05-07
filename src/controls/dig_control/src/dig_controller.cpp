@@ -317,8 +317,8 @@ void DigController::update()
             case CentralDriveState::digging:
             {
               ROS_ERROR("[dig][stowed][digging] Should not be attempting to stow backhoe in digging position");
-              goal_state = ControlState::error;
-              stop();
+              //goal_state = ControlState::error;
+              //stop();
               break;
             }
             case CentralDriveState::near_digging:
@@ -370,9 +370,9 @@ void DigController::update()
           // Only valid state here is if the backhoe is open
           if (backhoe_state != BackhoeState::open)
           {
-            goal_state = ControlState::error;
-            stop();
             ROS_ERROR("[dig][dig_transition] Backhoe must be open while traveling downward to dig");
+            //goal_state = ControlState::error;
+            //stop();
             break;
           }
 
@@ -407,8 +407,8 @@ void DigController::update()
           if (backhoe_state != BackhoeState::open)
           {
             ROS_ERROR("[dig][digging] Backhoe must be open while digging");
-            goal_state = ControlState::error;
-            stop();
+            //goal_state = ControlState::error;
+            //stop();
             break;
           }
 
@@ -442,8 +442,8 @@ void DigController::update()
             case CentralDriveState::at_top_limit:
             {
               ROS_ERROR("[dig][digging][default] Should not be in this state");
-              goal_state = ControlState::error;
-              stop();
+              //goal_state = ControlState::error;
+              //stop();
               break;
             }
           }
@@ -489,8 +489,8 @@ void DigController::update()
             case CentralDriveState::at_top_limit:
             {
               ROS_ERROR("[dig][closing_backhoe][default] Should not be in this central drive state");
-              goal_state = ControlState::error;
-              stop();
+              //goal_state = ControlState::error;
+              //stop();
               break;
             }
           }
@@ -537,20 +537,13 @@ void DigController::update()
                   setCentralDriveDuty(config.centralDriveDuty().fast);
                   break;
                 }
+                case BackhoeState::stuck:
                 case BackhoeState::traveling:
                 case BackhoeState::open:
                 {
                   ROS_WARN("[dig][dump_transition][normal][open] Trying to close backhoe while continuing");
                   setBackhoeDuty(config.backhoeDuty().fast); // TODO check current during this maneuver?
                   setCentralDriveDuty(config.centralDriveDuty().normal);
-                  break;
-                }
-                case BackhoeState::stuck:
-                {
-                  ROS_WARN("[dig][dump_transition][near_digging][stuck] "
-                           "Can't keep moving upward with the backhoe stuck");
-                  goal_state = ControlState::error;
-                  stop();
                   break;
                 }
               }
@@ -574,8 +567,8 @@ void DigController::update()
                 {
                   ROS_WARN("[dig][dump_transition][near_dump_point][open] "
                            "Can't keep moving upward with the backhoe open");
-                  goal_state = ControlState::error;
-                  stop();
+                  //goal_state = ControlState::error;
+                  //stop();
                   break;
                 }
               }
@@ -645,8 +638,8 @@ void DigController::update()
             case CentralDriveState::at_top_limit:
             {
               ROS_ERROR("[dig][dump_transition][flaps_up] Should not be in this state");
-              goal_state = ControlState::error;
-              stop();
+              //goal_state = ControlState::error;
+              //stop();
               break;
             }
           }
@@ -659,14 +652,15 @@ void DigController::update()
           if (backhoe_state != BackhoeState::open)
           {
             ROS_ERROR("[dig][moving_flaps_up] Backhoe should be open at this point");
-            goal_state = ControlState::error;
-            stop();
+            //goal_state = ControlState::error;
+            //stop();
             break;
           }
 
           switch (central_drive_state)
           {
             case CentralDriveState::near_digging:
+            case CentralDriveState::flap_transition_down:
             case CentralDriveState::near_dump_point:
             case CentralDriveState::at_dump_point:
             case CentralDriveState::flap_transition_up:
@@ -695,11 +689,10 @@ void DigController::update()
             }
             case CentralDriveState::at_bottom_limit:
             case CentralDriveState::digging:
-            case CentralDriveState::flap_transition_down:
             {
               ROS_ERROR("[dig][moving_flaps_up][near_dump_point] Should not be in this state");
-              stop();
-              goal_state = ControlState::error;
+              //stop();
+              //goal_state = ControlState::error;
               break;
             }
           }
