@@ -383,7 +383,7 @@ void DigController::update()
             {
               ROS_DEBUG("[dig][dig_transition] Start digging");
               dig_state = DigState::digging;
-              stop();
+              //stop();
               break;
             }
             case CentralDriveState::near_digging:
@@ -423,7 +423,7 @@ void DigController::update()
             }
             case CentralDriveState::digging:
             {
-              setCentralDriveDuty(-config.centralDriveDuty().normal);
+              setCentralDriveDuty(-config.centralDriveDuty().fast);
               if (central_current > config.centralDriveDigCurrentThreshold())
               {
                 dig_state = DigState::closing_backhoe;
@@ -457,7 +457,7 @@ void DigController::update()
             case CentralDriveState::digging:
             case CentralDriveState::near_digging:
             {
-              setCentralDriveDuty(-config.centralDriveDuty().ultra_slow);
+              setCentralDriveDuty(config.centralDriveDuty().ultra_slow);
               switch (backhoe_state)
               {
                 case BackhoeState::stuck:

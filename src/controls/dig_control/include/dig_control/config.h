@@ -9,8 +9,8 @@ namespace dig_control
   {
   public:
     const int variation      =   10;
-    const int bottom_limit   =  300; //Test pit 500; // Arena 300;
-    const int digging_bottom =  300;
+    const int bottom_limit   =  150; //Test pit 500; // Arena 300;
+    const int digging_bottom =  150;
     const int digging_top    =  900;
     const int floor_limit    = 1250; //1146;
     const int zero_angle     = 1330;
