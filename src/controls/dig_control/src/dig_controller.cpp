@@ -674,7 +674,7 @@ void DigController::update()
             {
               setCentralDriveDuty(0.0f);
               setBackhoeDuty(0.0f);
-              ros::Duration(4.0).sleep();
+              ros::Duration(3.0).sleep();
               if (goal_state == ControlState::dig)
               {
                 ROS_DEBUG("[dig][moving_flaps_up][flaps_up] Starting another dig");
