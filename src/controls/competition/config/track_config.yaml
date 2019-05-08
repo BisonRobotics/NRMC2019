@@ -38,7 +38,7 @@ paths:
       match_orientation: false
       drive_profile: 0
     -
-      x: 1.05 # 1.00
+      x: 1.04 # 1.00
       y: 1.4
       theta: 0.0
       reverse: true
@@ -69,7 +69,7 @@ paths:
       match_orientation: false
       drive_profile: 0
     -
-      x: 1.05
+      x: 1.04
       y: 1.4
       theta: 0.0
       reverse: true
