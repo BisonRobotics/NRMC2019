@@ -99,7 +99,15 @@ Thread::Thread(ros::NodeHandle base_nh, ros::NodeHandle nh, Config config, Camer
 void Thread::thread()
 {
   ROS_INFO("Starting %s", camera->getName().c_str());
-  camera->start();
+  try
+  {
+    camera->start();
+  }
+  catch (std::runtime_error &e)
+  {
+    ROS_WARN("[%s]: %s", camera->getName().c_str(), e.what());
+  }
+
   ros::Time stamp;
 
   ROS_INFO("[%s]: Initializing stepper for %s", camera->getName().c_str(), config.name().c_str());
@@ -135,9 +143,16 @@ void Thread::thread()
       catch (std::runtime_error &e)
       {
         ROS_WARN("[%s]: %s", camera->getName().c_str(), e.what());
-        camera->stop();
-        ros::Duration(0.5).sleep();
-        camera->start();
+        try
+        {
+          camera->stop();
+          ros::Duration(0.5).sleep();
+          camera->start();
+        }
+        catch (std::runtime_error &e)
+        {
+          ROS_WARN("[%s]: %s", camera->getName().c_str(), e.what());
+        }
         if (i++ >= 4)
         {
           i = 0;
