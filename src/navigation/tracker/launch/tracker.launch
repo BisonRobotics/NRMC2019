@@ -1,6 +1,5 @@
 <launch>
-    <node pkg="tracker" name="tracker" type="tracker_node" output="screen" >
-        <!-- both -->
+    <!--<node pkg="tracker" name="tracker" type="tracker_node" output="screen" >
         <param name="tag_switch_x"                type="double" value="2.0" />
         <param name="tag_switch_y"                type="double" value="1.60" />
         <param name="max_initialization_velocity" type="double" value="0.30" />
@@ -8,15 +7,29 @@
         <param name="max_scan_velocity"           type="double" value="0.15" />
         <param name="max_velocity"                type="double" value="0.15" />
         <param name="k"                           type="double" value="3.0" />
-        <param name="brightness"                  type="int"    value="184" /> <!-- Was 54, 184 -->
+        <param name="brightness"                  type="int"    value="184" />
         <param name="exposure"                    type="int"    value="89" />
-        <!-- left -->
         <param name="left/stepper_controller_id"  type="int"    value="1" />
         <param name="left/stepper_client_id"      type="int"    value="3" />
-        <!-- right -->
         <param name="right/stepper_controller_id" type="int"    value="2" />
         <param name="right/stepper_client_id"     type="int"    value="4" />
-    </node>
+    </node>-->
+    <param name="/tracker/tag_switch_x"                type="double" value="2.0" />
+    <param name="/tracker/tag_switch_y"                type="double" value="1.60" />
+    <param name="/tracker/max_initialization_velocity" type="double" value="0.30" />
+    <param name="/tracker/initial_scan_velocity"       type="double" value="0.15" />
+    <param name="/tracker/max_scan_velocity"           type="double" value="0.15" />
+    <param name="/tracker/max_velocity"                type="double" value="0.15" />
+    <param name="/tracker/k"                           type="double" value="3.0" />
+    <param name="/tracker/brightness"                  type="int"    value="184" />
+    <param name="/tracker/exposure"                    type="int"    value="89" />
+    <param name="/tracker/left/stepper_controller_id"  type="int"    value="1" />
+    <param name="/tracker/left/stepper_client_id"      type="int"    value="3" />
+    <param name="/tracker/right/stepper_controller_id" type="int"    value="2" />
+    <param name="/tracker/right/stepper_client_id"     type="int"    value="4" />
+
+    <node pkg="tracker" name="tracker_left" type="tracker_node_left" output="screen" respawn="true" />
+    <node pkg="tracker" name="tracker_right" type="tracker_node_right" output="screen" respawn="true" />
 
     <!-- Avoid slowing down tracker nodes with image compression -->
     <!--<node pkg="image_transport" name="tracker0_republisher"

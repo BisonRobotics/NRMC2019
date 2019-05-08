@@ -106,6 +106,32 @@ target_link_libraries(tracker_node
   camera_info)
 add_dependencies(tracker_node tracker_gencpp)
 
+add_executable(tracker_node_left
+  src/thread.cpp
+  src/tracker_node_left.cpp)
+target_link_libraries(tracker_node_left
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${Boost_LIBRARIES}
+  ocam_camera
+  detector
+  tracker_config
+  camera_info)
+add_dependencies(tracker_node_left tracker_gencpp)
+
+add_executable(tracker_node_right
+  src/thread.cpp
+  src/tracker_node_right.cpp)
+target_link_libraries(tracker_node_right
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${Boost_LIBRARIES}
+  ocam_camera
+  detector
+  tracker_config
+  camera_info)
+add_dependencies(tracker_node_right tracker_gencpp)
+
 catkin_add_gtest(tag_tests src/tag.cpp src/tests/tag_tests.cpp)
 if(TARGET tag_tests)
     target_link_libraries(tag_tests gmock_main ${catkin_LIBRARIES})
