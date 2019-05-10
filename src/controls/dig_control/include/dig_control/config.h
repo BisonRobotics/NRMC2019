@@ -17,7 +17,8 @@ namespace dig_control
     const int stow_position  = 1650;
     const int flaps_bottom   = 2000;
     const int dump_bottom    = 2250;
-    const int dump_point     = 2300;
+    //const int dump_point     = 2300;
+    const int dump_point     = 2275;
     const int dump_top       = 2350;
     const int top_limit      = 2500; //2550;
   };
@@ -27,10 +28,10 @@ namespace dig_control
   public:
     const float ultra_slow = 0.05f;
     const float slow = 0.1f;
-    const float slowish = 0.18f;
-    const float normal = 0.3f;
-    const float fast = 0.5f;
-    const float max = 0.5f;
+    const float slowish = 0.25f;
+    const float normal = 0.6f;
+    const float fast = 0.8f;
+    const float max = 0.9f;
   };
 
   class BackhoeDuty
@@ -51,8 +52,8 @@ namespace dig_control
   class BucketDuty
   {
   public:
-    const float fast = 0.4f;
-    const float normal = 0.2f;
+    const float fast = 0.6f;
+    const float normal = 0.6f;
   };
 
   enum class ControlState
