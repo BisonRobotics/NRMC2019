@@ -7,7 +7,7 @@
     <param name="floor_test"                          type="bool"   value="$(arg floor_test)" />
     <param name="min_voltage"                         type="double" value="30.0" />
     <param name="full_voltage"                        type="double" value="42.0" />
-    <param name="max_compensated_duty"                type="double" value="0.50" />
+    <param name="max_compensated_duty"                type="double" value="0.95" />
     <param name="battery_filter_k"                    type="double" value="0.03" />
     <param name="central_drive_current_filter_k"      type="double" value="0.02" />
     <param name="central_drive_dig_current_threshold" type="double" value="7.00" /> <!-- 5 is pretty good -->

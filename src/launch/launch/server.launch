@@ -1,8 +1,9 @@
 <launch>
-    <arg name="full_autonomy" default="true" />
+    <arg name="full_autonomy" default="false" />
     <arg name="voltage_compensation" default="true" />
     <include file="$(find description)/launch/load_robot_and_arena.launch" />
-    <include file="$(find tracker)/launch/tracker.launch" />
+   <!-- <include file="$(find tracker)/launch/tracker.launch" />
+-->
     <include file="$(find waypoint_control)/launch/waypoint_control.launch">
         <arg name="full_autonomy" value="$(arg full_autonomy)" />
         <arg name="voltage_compensation" value="$(arg voltage_compensation)" />

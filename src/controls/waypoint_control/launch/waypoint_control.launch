@@ -5,12 +5,12 @@
         <rosparam file="$(find waypoint_control)/config/drive_profiles.yaml" />
         <param name="rate"                 type="double" value="50.0"  />
         <param name="max_acceleration"     type="double" value="1.00"  />
-        <param name="max_duty"             type="double" value="0.30"  />
-        <param name="max_manual_duty"      type="double" value="0.30"  />
+        <param name="max_duty"             type="double" value="0.85"  />
+        <param name="max_manual_duty"      type="double" value="0.85"  />
         <param name="min_manual_duty"      type="double" value="0.05"  />
         <param name="min_voltage"          type="double" value="30.0"  />
         <param name="full_voltage"         type="double" value="42.0"  />
-        <param name="max_compensated_duty" type="double" value="0.50"  />
+        <param name="max_compensated_duty" type="double" value="0.95"  />
         <param name="battery_filter_k"     type="double" value="0.03"  />
         <param name="full_autonomy" type="bool" value="$(arg full_autonomy)" />
         <param name="voltage_compensation" type="bool" value="$(arg voltage_compensation)" />

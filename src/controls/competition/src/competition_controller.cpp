@@ -297,7 +297,7 @@ void Controller::joyCallback(const sensor_msgs::Joy::ConstPtr &joy_msg)
     else if (joy.get(Joy::DIG))
     {
       DigControlState current = dig_client.getControlState();
-      if (current == DigControlState::ready)
+      if (current == DigControlState::ready || current == DigControlState::manual)
       {
         ROS_INFO("[Controller::joyCallback]: %s to %s",
                  to_string(current).c_str(),
